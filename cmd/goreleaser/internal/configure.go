@@ -31,7 +31,6 @@ const (
 	HostDistro = "nrdot-collector-host"
 	K8sDistro  = "nrdot-collector-k8s"
 
-	DockerHub   = "newrelic"
 	EnvRegistry = "{{ .Env.REGISTRY }}"
 
 	BinaryNamePrefix = "nrdot-collector"
@@ -39,10 +38,9 @@ const (
 )
 
 var (
-	ImagePrefixes        = []string{DockerHub}
-	NightlyImagePrefixes = []string{EnvRegistry}
-	Architectures        = []string{"amd64", "arm64"}
-	SkipBinaries         = map[string]bool{
+	ImagePrefixes = []string{EnvRegistry}
+	Architectures = []string{"amd64", "arm64"}
+	SkipBinaries  = map[string]bool{
 		K8sDistro: true,
 	}
 	NfpmDefaultConfig = map[string]string{
@@ -61,9 +59,11 @@ var (
 func Generate(dist string, nightly bool) config.Project {
 
 	projectName := "nrdot-collector-releases"
+	disableRelease := "false"
 
 	if nightly {
 		projectName = "nrdot-collector-releases-nightly"
+		disableRelease = "true"
 	}
 
 	return config.Project{
@@ -86,8 +86,8 @@ func Generate(dist string, nightly bool) config.Project {
 		},
 		Blobs: Blobs(dist, nightly),
 		Release: config.Release{
-			// Disable releases on all distros for now
-			Disable: "true",
+			Disable: disableRelease,
+			Draft:   true,
 		},
 	}
 }
@@ -286,7 +286,6 @@ func DockerImage(dist string, nightly bool, arch string, armVersion string) conf
 	latestPrefixFormat := "%s/%s:latest-%s"
 
 	if nightly {
-		imagePrefixes = NightlyImagePrefixes
 		prefixFormat = "%s/%s:{{ .Version }}-nightly-%s"
 		latestPrefixFormat = "%s/%s:nightly-%s"
 	}
@@ -335,10 +334,6 @@ func DockerManifests(dist string, nightly bool) []config.DockerManifest {
 	r := make([]config.DockerManifest, 0)
 
 	imagePrefixes := ImagePrefixes
-
-	if nightly {
-		imagePrefixes = NightlyImagePrefixes
-	}
 
 	for _, prefix := range imagePrefixes {
 		if nightly {

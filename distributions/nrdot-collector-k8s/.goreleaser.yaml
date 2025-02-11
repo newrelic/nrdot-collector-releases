@@ -1,7 +1,8 @@
 version: 2
 project_name: nrdot-collector-releases
 release:
-  disable: "true"
+  draft: true
+  disable: "false"
 builds:
   - id: nrdot-collector-k8s
     goos:
@@ -29,8 +30,8 @@ dockers:
     goarch: amd64
     dockerfile: Dockerfile
     image_templates:
-      - newrelic/nrdot-collector-k8s:{{ .Version }}-amd64
-      - newrelic/nrdot-collector-k8s:latest-amd64
+      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:{{ .Version }}-amd64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:latest-amd64'
     extra_files:
       - config-daemonset.yaml
       - config-deployment.yaml
@@ -48,8 +49,8 @@ dockers:
     goarch: arm64
     dockerfile: Dockerfile
     image_templates:
-      - newrelic/nrdot-collector-k8s:{{ .Version }}-arm64
-      - newrelic/nrdot-collector-k8s:latest-arm64
+      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:{{ .Version }}-arm64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:latest-arm64'
     extra_files:
       - config-daemonset.yaml
       - config-deployment.yaml
@@ -64,14 +65,14 @@ dockers:
       - --label=org.opencontainers.image.licenses=Apache-2.0
     use: buildx
 docker_manifests:
-  - name_template: newrelic/nrdot-collector-k8s:{{ .Version }}
+  - name_template: '{{ .Env.REGISTRY }}/nrdot-collector-k8s:{{ .Version }}'
     image_templates:
-      - newrelic/nrdot-collector-k8s:{{ .Version }}-amd64
-      - newrelic/nrdot-collector-k8s:{{ .Version }}-arm64
-  - name_template: newrelic/nrdot-collector-k8s:latest
+      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:{{ .Version }}-amd64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:{{ .Version }}-arm64'
+  - name_template: '{{ .Env.REGISTRY }}/nrdot-collector-k8s:latest'
     image_templates:
-      - newrelic/nrdot-collector-k8s:latest-amd64
-      - newrelic/nrdot-collector-k8s:latest-arm64
+      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:latest-amd64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:latest-arm64'
 changelog:
   disable: "true"
 signs:

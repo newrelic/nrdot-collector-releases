@@ -1,7 +1,8 @@
 version: 2
 project_name: nrdot-collector-releases
 release:
-  disable: "true"
+  draft: true
+  disable: "false"
 builds:
   - id: nrdot-collector-host
     goos:
@@ -77,8 +78,8 @@ dockers:
     goarch: amd64
     dockerfile: Dockerfile
     image_templates:
-      - newrelic/nrdot-collector-host:{{ .Version }}-amd64
-      - newrelic/nrdot-collector-host:latest-amd64
+      - '{{ .Env.REGISTRY }}/nrdot-collector-host:{{ .Version }}-amd64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-host:latest-amd64'
     extra_files:
       - config.yaml
     build_flag_templates:
@@ -95,8 +96,8 @@ dockers:
     goarch: arm64
     dockerfile: Dockerfile
     image_templates:
-      - newrelic/nrdot-collector-host:{{ .Version }}-arm64
-      - newrelic/nrdot-collector-host:latest-arm64
+      - '{{ .Env.REGISTRY }}/nrdot-collector-host:{{ .Version }}-arm64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-host:latest-arm64'
     extra_files:
       - config.yaml
     build_flag_templates:
@@ -110,14 +111,14 @@ dockers:
       - --label=org.opencontainers.image.licenses=Apache-2.0
     use: buildx
 docker_manifests:
-  - name_template: newrelic/nrdot-collector-host:{{ .Version }}
+  - name_template: '{{ .Env.REGISTRY }}/nrdot-collector-host:{{ .Version }}'
     image_templates:
-      - newrelic/nrdot-collector-host:{{ .Version }}-amd64
-      - newrelic/nrdot-collector-host:{{ .Version }}-arm64
-  - name_template: newrelic/nrdot-collector-host:latest
+      - '{{ .Env.REGISTRY }}/nrdot-collector-host:{{ .Version }}-amd64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-host:{{ .Version }}-arm64'
+  - name_template: '{{ .Env.REGISTRY }}/nrdot-collector-host:latest'
     image_templates:
-      - newrelic/nrdot-collector-host:latest-amd64
-      - newrelic/nrdot-collector-host:latest-arm64
+      - '{{ .Env.REGISTRY }}/nrdot-collector-host:latest-amd64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-host:latest-arm64'
 blobs:
   - bucket: nr-releases
     provider: s3
