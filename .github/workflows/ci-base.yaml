@@ -107,7 +107,7 @@ jobs:
           args: ${{ env.goreleaser_args }}
           workdir: distributions/${{ inputs.distribution }}
 
-      - name: Extract image version and arch
+      - name: Extract relevant metadata
         run: |
           VERSION=$(echo '${{ steps.goreleaser.outputs.metadata }}' | jq -r '.version')
           ARCH=$(echo '${{ runner.arch }}' | sed 's/X/amd/g')
