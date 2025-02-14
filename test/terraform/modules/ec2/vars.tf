@@ -35,7 +35,7 @@ variable "collector_distro" {
 }
 
 variable "collector_version" {
-  description = "Version of nr-otel-collector to install"
+  description = "Version of NRDOT to install"
   type        = string
   default     = "nightly"
 }

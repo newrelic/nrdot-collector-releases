@@ -8,7 +8,7 @@ import (
 
 func TestAsQueryWithSingleAssertion(t *testing.T) {
 	assertionFactory := NewNrMetricAssertionFactory(
-		fmt.Sprintf("WHERE host.name = 'nr-otel-collector-foobar'"),
+		fmt.Sprintf("WHERE host.name = 'nrdot-collector-host-foobar'"),
 		"5 minutes ago",
 	)
 	singleAssertion := assertionFactory.NewNrMetricAssertion(
@@ -20,14 +20,14 @@ func TestAsQueryWithSingleAssertion(t *testing.T) {
 SELECT max(^system.cpu.utilization^)
 FROM Metric
 WHERE state='user'
-WHERE host.name = 'nr-otel-collector-foobar'
+WHERE host.name = 'nrdot-collector-host-foobar'
 SINCE 5 minutes ago UNTIL now
 `, t)
 }
 
 func TestAsQueryWithMultipleAssertions(t *testing.T) {
 	assertionFactory := NewNrMetricAssertionFactory(
-		fmt.Sprintf("WHERE host.name = 'nr-otel-collector-foobar'"),
+		fmt.Sprintf("WHERE host.name = 'nrdot-collector-host-foobar'"),
 		"5 minutes ago",
 	)
 	singleAssertion := assertionFactory.NewNrMetricAssertion(NrMetric{Name: "system.cpu.utilization", WhereClause: "WHERE state='user'"}, []NrAssertion{
@@ -40,7 +40,7 @@ func TestAsQueryWithMultipleAssertions(t *testing.T) {
 SELECT max(^system.cpu.utilization^),min(^system.cpu.utilization^),average(^system.cpu.utilization^)
 FROM Metric
 WHERE state='user'
-WHERE host.name = 'nr-otel-collector-foobar'
+WHERE host.name = 'nrdot-collector-host-foobar'
 SINCE 5 minutes ago UNTIL now
 `, t)
 }

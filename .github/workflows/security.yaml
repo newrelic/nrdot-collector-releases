@@ -18,8 +18,8 @@ jobs:
     strategy:
       matrix:
         image:
-          - newrelic/nr-otel-collector
-
+          - newrelic/nrdot-collector-host
+          - newrelic/nrdot-collector-k8s
     steps:
       - name: Run Trivy image vulnerability scanner
         uses: aquasecurity/trivy-action@0.29.0

@@ -1,5 +1,5 @@
 image:
-  repository: newrelic/nr-otel-collector
+  repository: newrelic/nrdot-collector-host
   tag: latest
   # Avoid accidentally pulling remote images in CI
   pullPolicy: Never
@@ -9,6 +9,6 @@ secrets:
   nrIngestKey: PLACEHOLDER
 
 collector:
-  hostname: nr-otel-collector-default-hostname
+  hostname: nrdot-collector-default-hostname
 
 namespace: default-nr-backend
