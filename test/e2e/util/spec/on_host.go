@@ -13,10 +13,34 @@ type TestCase struct {
 // TODO: eventually this should be generated based on a 'test specification' file
 var testCases = []TestCase{
 	{
-		Name: "host receiver cpu.utilization",
+		Name: "host receiver cpu.utilization user",
 		Metric: assert.NrMetric{
 			Name:        "system.cpu.utilization",
 			WhereClause: "WHERE state='user'"},
+		Assertions: []assert.NrAssertion{
+			{AggregationFunction: "max", ComparisonOperator: ">", Threshold: 0},
+		}},
+	{
+		Name: "host receiver cpu.utilization idle",
+		Metric: assert.NrMetric{
+			Name:        "system.cpu.utilization",
+			WhereClause: "WHERE state='idle'"},
+		Assertions: []assert.NrAssertion{
+			{AggregationFunction: "max", ComparisonOperator: ">", Threshold: 0},
+		}},
+	{
+		Name: "host receiver cpu.utilization wait",
+		Metric: assert.NrMetric{
+			Name:        "system.cpu.utilization",
+			WhereClause: "WHERE state='wait'"},
+		Assertions: []assert.NrAssertion{
+			{AggregationFunction: "max", ComparisonOperator: ">", Threshold: 0},
+		}},
+	{
+		Name: "host receiver cpu.utilization steal",
+		Metric: assert.NrMetric{
+			Name:        "system.cpu.utilization",
+			WhereClause: "WHERE state='steal'"},
 		Assertions: []assert.NrAssertion{
 			{AggregationFunction: "max", ComparisonOperator: ">", Threshold: 0},
 		}},
@@ -223,7 +247,8 @@ var testCases = []TestCase{
 	{
 		Name: "host receiver filesystem.utilization",
 		Metric: assert.NrMetric{
-			Name: "system.filesystem.utilization",
+			Name:        "system.filesystem.utilization",
+			WhereClause: "WHERE type != 'squashfs'",
 		},
 		Assertions: []assert.NrAssertion{
 			{AggregationFunction: "max", ComparisonOperator: ">", Threshold: 0},
