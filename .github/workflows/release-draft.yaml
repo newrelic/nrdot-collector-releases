@@ -1,0 +1,113 @@
+name: 📜 Release | Draft
+
+on:
+  push:
+    tags:
+      - '*.*.*'
+
+env:
+  REGISTRY: ${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com
+
+jobs:
+  build-artifacts:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        distribution:
+          - nrdot-collector-host
+          - nrdot-collector-k8s
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # required for tag metadata
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+          check-latest: true
+
+      - name: Tidy go.mod files
+        run: go mod tidy
+
+      - name: Verify build
+        run: make ci DISTRIBUTIONS=${{ matrix.distribution }}
+
+      - name: Login to Docker
+        uses: docker/login-action@v3
+        if: ${{ env.ACT }}
+        with:
+          registry: docker.io
+          username: ${{ secrets.OTELCOMM_DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.OTELCOMM_DOCKER_HUB_PASSWORD }}
+
+      - uses: docker/setup-qemu-action@v2
+
+      - uses: docker/setup-buildx-action@v2
+
+      - name: Import GPG key
+        id: import_gpg
+        uses: crazy-max/ghaction-import-gpg@v6
+        with:
+          gpg_private_key: ${{ secrets.OHAI_GPG_PRIVATE_KEY_BASE64 }}
+          passphrase: ${{ secrets.OHAI_GPG_PASSPHRASE }}
+
+      - name: Write GPG to path in memory for signing rpm/deb
+        id: write_gpg_to_path
+        run: |
+          GPG_KEY_PATH="$(mktemp /dev/shm/gpg.XXXXXX)"
+          echo "$GPG_PRIVATE_KEY" | base64 -d >> "$GPG_KEY_PATH"
+          echo "gpg_key_path=$GPG_KEY_PATH" >> $GITHUB_OUTPUT
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.OHAI_GPG_PRIVATE_KEY_BASE64 }}
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.OTELCOMM_AWS_TEST_ACC_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+          role-to-assume: arn:aws:iam::${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCOUNT_ID }}:role/resource-provisioner
+          role-skip-session-tagging: true
+
+      - name: Login to ECR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY}}/${{ matrix.distribution }}
+
+      - name: Build binaries & packages with GoReleaser
+        id: goreleaser
+        uses: goreleaser/goreleaser-action@v6
+        env:
+          NFPM_PASSPHRASE: ${{ secrets.OHAI_GPG_PASSPHRASE }}
+          GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
+          GPG_KEY_PATH: ${{ steps.write_gpg_to_path.outputs.gpg_key_path }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          distribution: goreleaser
+          version: '~> v2'
+          args: --clean --skip=announce --timeout 2h
+          workdir: distributions/${{ matrix.distribution }}
+
+  draft-release:
+    runs-on: ubuntu-latest
+    needs: build-artifacts
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.23'
+
+      - name: Draft Release From Root Config
+        id: goreleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: '~> v2'
+          args: --clean --timeout 2h
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
