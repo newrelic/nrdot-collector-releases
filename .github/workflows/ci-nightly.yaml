@@ -121,7 +121,49 @@ jobs:
           version: '~> v2'
           args: --skip=announce,validate --clean --timeout 2h --config .goreleaser-nightly.yaml
           workdir: distributions/${{ matrix.distribution }}
+      - name: Extract Docker Manifest SHA
+        id: extract_docker_manifest_sha
+        run: |
+          echo "docker_manifest_sha=$(echo '${{ steps.goreleaser.outputs.artifacts }}' |
+            yq -r '.[] | select(.type == "Docker Manifest") | .extra.Digest')" >> $GITHUB_OUTPUT
+    outputs:
+      docker_manifest_sha: ${{ steps.extract_docker_manifest_sha.outputs.docker_manifest_sha }}
+  
+  deploy-nightly:
+    name: Deploy Nightly
+    uses: ./.github/workflows/terraform.yaml
+    if: ${{ !github.event.act }}
+    needs: publish
+    strategy:
+      matrix:
+        distribution:
+          - nrdot-collector-host
+          - nrdot-collector-k8s
+    with:
+      branch: ${{ github.ref }}
+      tf_work_subdir: nightly
+      workspace: 'nightly-${{ matrix.distribution }}'
+      execute_plan: true
+      execute_apply: true
+      distro: ${{ matrix.distribution }}
+      nightly_docker_manifest_sha: ${{ needs.publish.outputs.docker_manifest_sha }}
+    secrets:
+      aws_access_key_id: ${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCESS_KEY_ID }}
+      aws_secret_access_key: ${{secrets.OTELCOMM_AWS_TEST_ACC_SECRET_ACCESS_KEY}}
+      aws_account_id: ${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCOUNT_ID }}
+      nr_backend_url: ${{secrets.NR_STAGING_BACKEND_URL}}
+      nr_ingest_key: ${{ secrets.OTELCOMM_NR_INGEST_KEY }}
 
+  test-nightly:
+    name: Test Nightly
+    runs-on: ubuntu-latest
+    needs: deploy-nightly
+    strategy:
+      matrix:
+        distribution:
+          - nrdot-collector-host
+          - nrdot-collector-k8s
+    steps:
       - name: Run nightly tests for ${{ matrix.distribution }}
         run: |
           NR_API_KEY=${{ secrets.OTELCOMM_NR_API_KEY }} \

@@ -43,5 +43,3 @@ jobs:
       aws_access_key_id: ${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCESS_KEY_ID }}
       aws_secret_access_key: ${{secrets.OTELCOMM_AWS_TEST_ACC_SECRET_ACCESS_KEY}}
       aws_account_id: ${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCOUNT_ID }}
-      nr_backend_url: ${{secrets.NR_STAGING_BACKEND_URL}}
-      nr_ingest_key: ${{ secrets.OTELCOMM_NR_INGEST_KEY }}

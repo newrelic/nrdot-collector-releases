@@ -11,6 +11,11 @@ on:
         description: "Subdir of ./test/terraform/ to execute tf in. Used to separate different tf use cases"
         type: string
         required: true
+      workspace:
+        description: "Terraform workspace to use"
+        type: string
+        required: false
+        default: default
       execute_plan:
         description: "Whether to run `terraform plan` or not"
         type: boolean
@@ -36,6 +41,16 @@ on:
         type: string
         required: false
         default: "INFO"
+      distro:
+        description: "List of distributions to test"
+        type: string
+        required: false
+        default: "nrdot-collector-host"
+      nightly_docker_manifest_sha:
+        description: "SHA256 to identify nightly docker manifest to use"
+        type: string
+        required: false
+        default: "docker_manifest_sha_placeholder"
     secrets:
       aws_access_key_id:
         description: "AWS credentials for tf with permission to assume resource-provider"
@@ -48,11 +63,10 @@ on:
         required: true
       nr_backend_url:
         description: "NR backend url for test purposes"
-        required: true
+        required: false
       nr_ingest_key:
         description: "NR ingest key for test purposes"
-        required: true
-
+        required: false
 
 jobs:
   terraform:
@@ -66,6 +80,8 @@ jobs:
       TF_VAR_aws_account_id: ${{ secrets.aws_account_id }}
       TF_VAR_nr_backend_url: ${{ secrets.nr_backend_url }}
       TF_VAR_nr_ingest_key: ${{ secrets.nr_ingest_key }}
+      TF_VAR_distros: ${{ inputs.distros}}
+      TF_VAR_nightly_docker_manifest_sha: ${{ inputs.nightly_docker_manifest_sha }}
 
     steps:
       - name: Checkout repository
@@ -81,6 +97,13 @@ jobs:
       - name: Terraform Init
         working-directory: ./test/terraform/${{ inputs.tf_work_subdir }}
         run: terraform init -backend-config='role_arn=arn:aws:iam::${{ secrets.aws_account_id }}:role/resource-provisioner' -backend-config='bucket=nr-terraform-states-${{ secrets.aws_account_id}}'
+
+      - name: Select Workspace
+        working-directory: ./test/terraform/${{ inputs.tf_work_subdir }}
+        env:
+          TF_CLI_ARGS: "" # workspace does not properly support global options
+        run: |
+          terraform workspace select -or-create=true ${{ inputs.workspace }} 
 
       - name: Terraform Plan
         if: ${{ inputs.execute_plan }}
