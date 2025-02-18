@@ -5,9 +5,20 @@ import (
 	"github.com/gruntwork-io/terratest/modules/k8s"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"strings"
 	envutil "test/e2e/util/env"
 	"testing"
 	"time"
+)
+
+const (
+	collectorContainerName = "nrdot-collector"
+)
+
+var (
+	collectorFilter = metav1.ListOptions{
+		LabelSelector: "app=nrdot-collector",
+	}
 )
 
 func NewKubectlOptions(namespacePrefix string) *k8s.KubectlOptions {
@@ -21,14 +32,29 @@ func newTestNamespace(namespacePrefix string, distro string) string {
 }
 
 func WaitForCollectorReady(tb testing.TB, kubectlOptions *k8s.KubectlOptions) corev1.Pod {
-	filters := metav1.ListOptions{
-		LabelSelector: "app=nrdot-collector",
-	}
-	k8s.WaitUntilNumPodsCreated(tb, kubectlOptions, filters, 1, 30, 10*time.Second)
-
-	pods := k8s.ListPods(tb, kubectlOptions, filters)
+	logCollectorLogsOnFail(tb, kubectlOptions)
+	// ensure to fail before running into overall test timeout to allow cleanups to run
+	k8s.WaitUntilNumPodsCreated(tb, kubectlOptions, collectorFilter, 1, 6, 10*time.Second)
+	pods := k8s.ListPods(tb, kubectlOptions, collectorFilter)
 	for _, pod := range pods {
-		k8s.WaitUntilPodAvailable(tb, kubectlOptions, pod.Name, 30, 10*time.Second)
+		// ensure to fail before running into overall test timeout to allow cleanups to run
+		k8s.WaitUntilPodAvailable(tb, kubectlOptions, pod.Name, 6, 10*time.Second)
 	}
 	return pods[0]
+}
+
+func logCollectorLogsOnFail(tb testing.TB, kubectlOptions *k8s.KubectlOptions) {
+	tb.Cleanup(func() {
+		if tb.Failed() {
+			pods := k8s.ListPods(tb, kubectlOptions, collectorFilter)
+			var logs []string
+			for _, pod := range pods {
+				logs = append(logs, fmt.Sprintf("==========START Collector logs for pod %s:==========", pod.Name))
+				logs = append(logs, k8s.GetPodLogs(tb, kubectlOptions, &pod, collectorContainerName))
+				logs = append(logs, fmt.Sprintf("==========END Collector logs for pod %s:==========", pod.Name))
+			}
+			toLog := strings.Join(logs, "\n")
+			tb.Log(toLog)
+		}
+	})
 }

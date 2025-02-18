@@ -27,12 +27,12 @@ func NewHelmOptions(kubectlOptions *k8s.KubectlOptions, chartValues map[string]s
 	}
 }
 
-func ApplyChart(t *testing.T, kubectlOptions *k8s.KubectlOptions, chart chart.Chart, releaseNameSuffix string, testId string) func() {
+func ApplyChart(t *testing.T, kubectlOptions *k8s.KubectlOptions, chart chart.Chart, releaseNameSuffix string, testId string) {
 	releaseName := fmt.Sprintf("%s-%s", releaseNameSuffix, testId)
 	helmOptions := NewHelmOptions(kubectlOptions, chart.RequiredChartValues())
 	helm.Install(t, helmOptions, chart.Meta().ChartPath(), releaseName)
-	return func() {
+	t.Cleanup(func() {
 		t.Log("Cleanup 'ApplyChart': delete helm chart")
 		helm.Delete(t, helmOptions, releaseName, true)
-	}
+	})
 }

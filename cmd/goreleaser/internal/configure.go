@@ -42,9 +42,20 @@ const (
 var (
 	ImagePrefixes        = []string{DockerHub}
 	NightlyImagePrefixes = []string{EnvRegistry}
-
-	Architectures      = []string{"amd64", "arm64"}
-	DefaultConfigDists = map[string]bool{LegacyDistro: true, HostDistro: true}
+	Architectures        = []string{"amd64", "arm64"}
+	SkipBinaries         = map[string]bool{
+		K8sDistro: true,
+	}
+	NfpmDefaultConfig = map[string]string{
+		LegacyDistro: "config.yaml",
+		HostDistro:   "config.yaml",
+		// k8s missing due to not packaged via nfpm
+	}
+	DockerIncludedConfigs = map[string][]string{
+		LegacyDistro: {"config.yaml"},
+		HostDistro:   {"config.yaml"},
+		K8sDistro:    {"config-daemonset.yaml", "config-deployment.yaml"},
+	}
 	K8sDockerSkipArchs = map[string]bool{"arm": true, "386": true}
 	K8sGoos            = []string{"linux"}
 	K8sArchs           = []string{"amd64", "arm64"}
@@ -85,10 +96,9 @@ func Generate(dist string, nightly bool) config.Project {
 }
 
 func Blobs(dist string, nightly bool) []config.Blob {
-	if dist == K8sDistro {
+	if skip, ok := SkipBinaries[dist]; ok && skip {
 		return nil
 	}
-
 	version := "{{ .Version }}"
 
 	if nightly {
@@ -154,6 +164,9 @@ func ArmVersions(dist string) []string {
 }
 
 func Archives(dist string) []config.Archive {
+	if skip, ok := SkipBinaries[dist]; ok && skip {
+		return nil
+	}
 	return []config.Archive{
 		Archive(dist),
 	}
@@ -175,7 +188,7 @@ func Archive(dist string) config.Archive {
 }
 
 func Packages(dist string) []config.NFPM {
-	if dist == K8sDistro {
+	if skip, ok := SkipBinaries[dist]; ok && skip {
 		return nil
 	}
 	return []config.NFPM{
@@ -197,9 +210,9 @@ func Package(dist string) config.NFPM {
 			Type:        "config|noreplace",
 		},
 	}
-	if _, ok := DefaultConfigDists[dist]; ok {
+	if defaultConfig, ok := NfpmDefaultConfig[dist]; ok {
 		nfpmContents = append(nfpmContents, config.NFPMContent{
-			Source:      "config.yaml",
+			Source:      defaultConfig,
 			Destination: path.Join("/etc", dist, "config.yaml"),
 			Type:        "config",
 		})
@@ -294,8 +307,10 @@ func DockerImage(dist string, nightly bool, arch string, armVersion string) conf
 		return fmt.Sprintf("--label=org.opencontainers.image.%s={{%s}}", name, template)
 	}
 	files := make([]string, 0)
-	if _, ok := DefaultConfigDists[dist]; ok {
-		files = append(files, "config.yaml")
+	if configFiles, ok := DockerIncludedConfigs[dist]; ok {
+		for _, configFile := range configFiles {
+			files = append(files, configFile)
+		}
 	}
 	return config.Docker{
 		ImageTemplates: imageTemplates,

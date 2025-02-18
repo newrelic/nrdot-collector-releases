@@ -10,3 +10,5 @@ secrets:
 
 collector:
   hostname: nr-otel-collector-default-hostname
+
+namespace: default-nr-backend

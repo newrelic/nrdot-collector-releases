@@ -14,6 +14,7 @@ spec:
       labels:
         app: *app
     spec:
+      serviceAccountName: read-k8s-api-account
       initContainers:
         # Wait for the backend to be up before starting the collector
         - name: wait-for-validation
@@ -29,7 +30,7 @@ spec:
             - name: health
               containerPort: 13133
           env:
-            - name: NODE_NAME
+            - name: KUBE_NODE_NAME
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
@@ -46,7 +47,7 @@ spec:
                   name: daemonset-secrets
                   key: nrIngestKey
             - name: OTEL_RESOURCE_ATTRIBUTES
-              value: "host.name={{ .Values.collector.hostname }}-$(NODE_NAME)"
+              value: "host.name={{ .Values.collector.hostname }}-$(KUBE_NODE_NAME)"
 ---
 apiVersion: v1
 kind: Secret

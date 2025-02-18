@@ -18,10 +18,12 @@ jobs:
         distribution:
           - nr-otel-collector
           - nrdot-collector-host
+          - nrdot-collector-k8s
     uses: ./.github/workflows/ci-base.yaml
     with:
       distribution: ${{ matrix.distribution }}
-      test_cluster_name: 'ci-e2etest'
+      # namespace by distro to avoid issues with cleanup (distro 1 still running tests while distro 2 cleans up cluster)
+      test_cluster_name: 'ci-e2etest-${{ matrix.distribution }}'
     secrets:
       docker_hub_username: ${{ secrets.OTELCOMM_DOCKER_HUB_USERNAME }}
       docker_hub_password: ${{ secrets.OTELCOMM_DOCKER_HUB_PASSWORD }}

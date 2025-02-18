@@ -6,9 +6,14 @@ import (
 )
 
 type MockedBackendChart struct {
+	namespace string
 }
 
-var MockedBackend = MockedBackendChart{}
+func NewMockedBackendChart(namespace string) MockedBackendChart {
+	return MockedBackendChart{
+		namespace: namespace,
+	}
+}
 
 func (m *MockedBackendChart) AsChart() Chart {
 	var chart Chart = m
@@ -25,5 +30,6 @@ func (m *MockedBackendChart) RequiredChartValues() map[string]string {
 	return map[string]string{
 		"image.repository": fmt.Sprintf("newrelic/%s", envutil.GetDistro()),
 		"image.tag":        envutil.GetImageTag(),
+		"namespace":        m.namespace,
 	}
 }

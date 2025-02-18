@@ -14,6 +14,7 @@ spec:
       labels:
         app: *app
     spec:
+      serviceAccountName: read-k8s-api-account
       initContainers:
         # Wait for the backend to be up before starting the collector
         - name: wait-for-validation
@@ -33,3 +34,11 @@ spec:
               value: "http://validation-backend:4318"
             - name: NEW_RELIC_MEMORY_LIMIT_MIB
               value: "100"
+            # mock values
+                # k8s distro expects this to be present
+            - name: KUBE_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: NEW_RELIC_LICENSE_KEY
+              value: "NR_LICENSE_KEY_PLACEHOLDER"

@@ -3,8 +3,6 @@ package hostmetrics
 import (
 	"fmt"
 	"github.com/gruntwork-io/terratest/modules/k8s"
-	corev1 "k8s.io/api/core/v1"
-	"log"
 	"test/e2e/util/assert"
 	"test/e2e/util/chart"
 	helmutil "test/e2e/util/helm"
@@ -25,20 +23,6 @@ var (
 	testChart      chart.NrBackendChart
 )
 
-type testEnv struct {
-	teardown     func(tb testing.TB)
-	collectorPod corev1.Pod
-}
-
-func setupTest(tb testing.TB) testEnv {
-	collectorPod := k8sutil.WaitForCollectorReady(tb, kubectlOptions)
-
-	return testEnv{collectorPod: collectorPod, teardown: func(tb testing.TB) {
-		log.Println("teardown test")
-	}}
-
-}
-
 func TestStartupBehavior(t *testing.T) {
 	testutil.TagAsSlowTest(t)
 	kubectlOptions = k8sutil.NewKubectlOptions(TestNamespace)
@@ -46,12 +30,8 @@ func TestStartupBehavior(t *testing.T) {
 	testChart = chart.NewNrBackendChart(testId)
 
 	t.Logf("hostname used for test: %s", testChart.NrQueryHostNamePattern)
-	cleanup := helmutil.ApplyChart(t, kubectlOptions, testChart.AsChart(), "hostmetrics-startup", testId)
-	t.Cleanup(cleanup)
-	te := setupTest(t)
-	t.Cleanup(func() {
-		te.teardown(t)
-	})
+	helmutil.ApplyChart(t, kubectlOptions, testChart.AsChart(), "hostmetrics-startup", testId)
+	k8sutil.WaitForCollectorReady(t, kubectlOptions)
 	// wait for at least one default metric harvest cycle (60s) and some buffer to allow NR ingest to process data
 	time.Sleep(70 * time.Second)
 	// space out requests to not run into 25 concurrent request limit

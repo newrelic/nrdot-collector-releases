@@ -16,23 +16,6 @@ jobs:
       - name: Set up Helm
         uses: azure/setup-helm@v4.2.0
 
-      - name: Setup local kind cluster
-        uses: helm/kind-action@v1
-        with:
-          version: v0.21.0
-          cluster_name: "config-drift"
-          wait: 60s
-
-      - name: Install nr-k8s-otel-collector chart
+      - name: Sync k8s distro configs from helm chart
         run: |
-          helm repo add newrelic https://newrelic.github.io/helm-charts
-          
-          helm install test newrelic/nr-k8s-otel-collector -n default \
-            --set cluster=config-drift --set licenseKey=PLACEHOLDER \
-            --create-namespace --dependency-update
-          
-          kubectl get configmaps -n default test-nr-k8s-otel-collector-daemonset-config \
-            -o "jsonpath={.data['daemonset-config\.yaml']}" | yq .
-          
-          kubectl get configmaps -n default test-nr-k8s-otel-collector-deployment-config \
-            -o "jsonpath={.data['deployment-config\.yaml']}" | yq .
+          make -f ./distributions/nrdot-collector-k8s/Makefile sync-configs
