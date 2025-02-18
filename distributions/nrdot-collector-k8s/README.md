@@ -12,8 +12,14 @@ Distribution is available as docker image and runs in `daemonset` mode by defaul
 
 See [general README](../README.md) for information that applies to all distributions.
 
-### nrdot-collector-k8s
 | Environment Variable | Description | Default |
 |---|---|---|
 | `K8S_CLUSTER_NAME` | Kubernetes Cluster Name used to populate attributes like `k8s.cluster.name` | `cluster-name-placeholder` |
 | `MY_POD_IP` | Pod IP to configure `otlpreceiver` | `cluster-name-placeholder` |
+
+## Distro vs Helm Chart
+The initial choice of components and configuration of this distribution was driven by the [nr-k8s-otel-collector](https://github.com/newrelic/helm-charts/tree/master/charts/nr-k8s-otel-collector) helm chart. However, the helm templating syntax is more expressive than the collector configuration and should be used if possible. The configurations embedded in the distro are intended as a stable default with minimal setup for users who cannot use the helm chart but still want to monitor their k8s cluster with the NRDOT collector.
+
+Key differences are formally documented in [the script that ensures the configurations stay in-sync](./sync-configs.sh) and can be summarized as:
+- `lowDataMode: false` is hardcoded and cannot be toggled (easily - it is always possible to overwrite the config with native collector options)
+- `hostmetricsreceiver` in the daemonset config does not assume that the [host file system is mounted](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/hostmetricsreceiver/README.md#collecting-host-metrics-from-inside-a-container-linux-only), thus providing metrics about its container and not the host node.
