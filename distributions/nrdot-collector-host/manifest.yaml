@@ -2,38 +2,38 @@ dist:
   module: github.com/newrelic/nrdot-collector-releases/nrdot-collector-host
   name: nrdot-collector-host
   description: NRDOT Collector Host
-  version: 0.8.10
+  version: 0.8.11
   output_path: ./_build
 
 receivers:
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/filelogreceiver v0.118.0
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/hostmetricsreceiver v0.118.0
-  - gomod: go.opentelemetry.io/collector/receiver/otlpreceiver v0.118.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/filelogreceiver v0.119.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/hostmetricsreceiver v0.119.0
+  - gomod: go.opentelemetry.io/collector/receiver/otlpreceiver v0.119.0
 
 processors:
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/attributesprocessor v0.118.0
-  - gomod: go.opentelemetry.io/collector/processor/batchprocessor v0.118.0
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/cumulativetodeltaprocessor v0.118.0
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/filterprocessor v0.118.0
-  - gomod: go.opentelemetry.io/collector/processor/memorylimiterprocessor v0.118.0
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/metricstransformprocessor v0.118.0
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/resourcedetectionprocessor v0.118.0
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/transformprocessor v0.118.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/attributesprocessor v0.119.0
+  - gomod: go.opentelemetry.io/collector/processor/batchprocessor v0.119.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/cumulativetodeltaprocessor v0.119.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/filterprocessor v0.119.0
+  - gomod: go.opentelemetry.io/collector/processor/memorylimiterprocessor v0.119.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/metricstransformprocessor v0.119.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/resourcedetectionprocessor v0.119.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/transformprocessor v0.119.0
 
 exporters:
-  - gomod: go.opentelemetry.io/collector/exporter/debugexporter v0.118.0
-  - gomod: go.opentelemetry.io/collector/exporter/otlpexporter v0.118.0
-  - gomod: go.opentelemetry.io/collector/exporter/otlphttpexporter v0.118.0
+  - gomod: go.opentelemetry.io/collector/exporter/debugexporter v0.119.0
+  - gomod: go.opentelemetry.io/collector/exporter/otlpexporter v0.119.0
+  - gomod: go.opentelemetry.io/collector/exporter/otlphttpexporter v0.119.0
 
 extensions:
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/extension/healthcheckextension v0.118.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/extension/healthcheckextension v0.119.0
 
 providers:
-  - gomod: go.opentelemetry.io/collector/confmap/provider/envprovider v1.24.0
-  - gomod: go.opentelemetry.io/collector/confmap/provider/fileprovider v1.24.0
-  - gomod: go.opentelemetry.io/collector/confmap/provider/httpprovider v1.24.0
-  - gomod: go.opentelemetry.io/collector/confmap/provider/httpsprovider v1.24.0
-  - gomod: go.opentelemetry.io/collector/confmap/provider/yamlprovider v1.24.0
+  - gomod: go.opentelemetry.io/collector/confmap/provider/envprovider v1.25.0
+  - gomod: go.opentelemetry.io/collector/confmap/provider/fileprovider v1.25.0
+  - gomod: go.opentelemetry.io/collector/confmap/provider/httpprovider v1.25.0
+  - gomod: go.opentelemetry.io/collector/confmap/provider/httpsprovider v1.25.0
+  - gomod: go.opentelemetry.io/collector/confmap/provider/yamlprovider v1.25.0
 
 # When adding a replace, add a comment before it to document why it's needed and when it can be removed
 replaces:
