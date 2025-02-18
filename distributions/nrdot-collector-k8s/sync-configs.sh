@@ -25,7 +25,7 @@ function extract_config_with_overwritable_defaults() {
       # strip away all comments
       yq '... comments=""'
     } | {
-      # remove linux-only configuration
+      # remove configuration requiring mounted host filesystem
       yq 'del(.receivers.hostmetrics.root_path)'
     } | {
       # expose ingest endpoint via env var to align with other distros
