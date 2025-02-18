@@ -28,9 +28,8 @@ import (
 const (
 	ArmArch = "arm"
 
-	LegacyDistro = "nr-otel-collector"
-	HostDistro   = "nrdot-collector-host"
-	K8sDistro    = "nrdot-collector-k8s"
+	HostDistro = "nrdot-collector-host"
+	K8sDistro  = "nrdot-collector-k8s"
 
 	DockerHub   = "newrelic"
 	EnvRegistry = "{{ .Env.REGISTRY }}"
@@ -47,14 +46,12 @@ var (
 		K8sDistro: true,
 	}
 	NfpmDefaultConfig = map[string]string{
-		LegacyDistro: "config.yaml",
-		HostDistro:   "config.yaml",
+		HostDistro: "config.yaml",
 		// k8s missing due to not packaged via nfpm
 	}
 	DockerIncludedConfigs = map[string][]string{
-		LegacyDistro: {"config.yaml"},
-		HostDistro:   {"config.yaml"},
-		K8sDistro:    {"config-daemonset.yaml", "config-deployment.yaml"},
+		HostDistro: {"config.yaml"},
+		K8sDistro:  {"config-daemonset.yaml", "config-deployment.yaml"},
 	}
 	K8sDockerSkipArchs = map[string]bool{"arm": true, "386": true}
 	K8sGoos            = []string{"linux"}

@@ -8,8 +8,8 @@ Generated assets are available in the corresponding Github release page and as d
 
 Current list of distributions:
 
-- [nr-otel-collector](./distributions/nr-otel-collector/): (Deprecated) legacy general-purpose distribution
 - [nrdot-collector-host](./distributions/nrdot-collector-host/): distribution focused on monitoring host metrics and logs
+- [nrdot-collector-k8s](./distributions/nrdot-collector-k8s/): distribution focused on monitoring a Kubernetes cluster
 
 ## Support
 

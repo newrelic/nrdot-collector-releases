@@ -1,5 +1,5 @@
 image:
-  repository: newrelic/nr-otel-collector
+  repository: newrelic/nrdot-collector-host
   tag: latest
   # Avoid accidentally pulling remote images in CI
   pullPolicy: Never

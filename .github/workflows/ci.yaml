@@ -16,7 +16,6 @@ jobs:
     strategy:
       matrix:
         distribution:
-          - nr-otel-collector
           - nrdot-collector-host
           - nrdot-collector-k8s
     uses: ./.github/workflows/ci-base.yaml

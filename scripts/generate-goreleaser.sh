@@ -15,7 +15,7 @@ done
 
 if [[ -z $distributions ]]; then
     echo "List of distributions to generate the goreleaser not provided. Use '-d' to specify the names of the distributions use. Ex.:"
-    echo "$0 -d nr-otel-collector"
+    echo "$0 -d nrdot-collector-host"
     exit 1
 fi
 
