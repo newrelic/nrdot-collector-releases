@@ -128,7 +128,7 @@ jobs:
             yq -r '.[] | select(.type == "Docker Manifest") | .extra.Digest')" >> $GITHUB_OUTPUT
     outputs:
       docker_manifest_sha: ${{ steps.extract_docker_manifest_sha.outputs.docker_manifest_sha }}
-  
+
   deploy-nightly:
     name: Deploy Nightly
     uses: ./.github/workflows/terraform.yaml
