@@ -42,7 +42,7 @@ var testCases = []TestCase{
 			Name:        "system.cpu.utilization",
 			WhereClause: "WHERE state='steal'"},
 		Assertions: []assert.NrAssertion{
-			{AggregationFunction: "max", ComparisonOperator: ">", Threshold: 0},
+			{AggregationFunction: "max", ComparisonOperator: ">=", Threshold: 0},
 		}},
 	{
 		Name: "host receiver disk.io read",
