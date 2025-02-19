@@ -23,7 +23,7 @@ resource "helm_release" "ci_e2e_nightly" {
 
   set {
     name  = "image.repository"
-    value = data.aws_ecr_repository.ecr_repo[var.distro].repository_url
+    value = data.aws_ecr_repository.ecr_repo.repository_url
   }
 
   set {
