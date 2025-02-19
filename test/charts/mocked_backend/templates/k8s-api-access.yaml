@@ -6,7 +6,8 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: read-k8s-api-role
+  # namespace suffix to avoid conflicts when installing chart multiple times
+  name: read-k8s-api-role-{{ .Values.namespace }}
 # required rules copied from:
 # - k8seventsreceiever: https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/k8seventsreceiver/README.md#rbac
 rules:
