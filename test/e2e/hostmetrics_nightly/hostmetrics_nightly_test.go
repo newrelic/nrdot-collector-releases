@@ -55,7 +55,7 @@ func TestNightlyHostMetrics(t *testing.T) {
 				assertion := assertionFactory.NewNrMetricAssertion(testCase.Metric, testCase.Assertions)
 				// space out requests to avoid rate limiting
 				time.Sleep(time.Duration(i) * requestSpacing)
-				assertion.Execute(t, client)
+				assertion.ExecuteWithRetries(t, client, 15, 5*time.Second)
 			})
 		}
 	}
