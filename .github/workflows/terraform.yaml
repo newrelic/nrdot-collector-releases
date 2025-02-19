@@ -80,7 +80,7 @@ jobs:
       TF_VAR_aws_account_id: ${{ secrets.aws_account_id }}
       TF_VAR_nr_backend_url: ${{ secrets.nr_backend_url }}
       TF_VAR_nr_ingest_key: ${{ secrets.nr_ingest_key }}
-      TF_VAR_distros: ${{ inputs.distros}}
+      TF_VAR_distro: ${{ inputs.distro }}
       TF_VAR_nightly_docker_manifest_sha: ${{ inputs.nightly_docker_manifest_sha }}
 
     steps:
