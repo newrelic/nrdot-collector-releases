@@ -2,6 +2,7 @@ version: 2
 project_name: nrdot-collector-releases
 release:
   draft: true
+  use_existing_draft: true
   disable: "false"
 builds:
   - id: nrdot-collector-host
