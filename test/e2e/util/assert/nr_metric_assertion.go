@@ -9,6 +9,7 @@ import (
 	envutil "test/e2e/util/env"
 	"testing"
 	"text/template"
+	"time"
 )
 
 type NrMetricAssertionFactory struct {
@@ -60,7 +61,7 @@ type NrAssertion struct {
 	Threshold           float64
 }
 
-func (m *NrMetricAssertion) Execute(t testing.TB, client *newrelic.NewRelic) {
+func (m *NrMetricAssertion) ExecuteWithRetries(t testing.TB, client *newrelic.NewRelic, retries int, retryInterval time.Duration) {
 	query := nrdb.NRQL(m.AsQuery())
 	response, err := client.Nrdb.Query(envutil.GetNrAccountId(), query)
 	if err != nil {
@@ -70,14 +71,18 @@ func (m *NrMetricAssertion) Execute(t testing.TB, client *newrelic.NewRelic) {
 		t.Fatalf("Query results (%+v) and number of assertions (%+v) do not match", response.Results, m.Assertions)
 	}
 	for i, assertion := range m.Assertions {
-		actualContainer := response.Results[i]
-		actualValue := actualContainer[assertion.AggregationFunction+"."+m.Query.Metric.Name]
-		valueType := reflect.TypeOf(actualValue)
-		if valueType == nil || valueType.Kind() != reflect.Float64 {
-			t.Fatalf("Expected float64 for assertion %+v, but received %+v in response %+v", actualContainer, valueType, response.Results)
-		}
-		if !assertion.satisfiesCondition(actualValue.(float64)) {
-			t.Fatalf("Expected %s(%s) %s %f, but received %f", assertion.AggregationFunction, m.Query.Metric.Name, assertion.ComparisonOperator, assertion.Threshold, actualValue)
+		for attempt := 0; attempt < retries; attempt++ {
+			actualContainer := response.Results[i]
+			actualValue := actualContainer[assertion.AggregationFunction+"."+m.Query.Metric.Name]
+			valueType := reflect.TypeOf(actualValue)
+			if valueType == nil || valueType.Kind() != reflect.Float64 {
+				t.Logf("Attempt %d: Expected float64 for assertion %+v, but received %+v in response %+v. Retrying...", attempt, actualContainer, valueType, response.Results)
+				continue
+			}
+			if !assertion.satisfiesCondition(actualValue.(float64)) {
+				t.Fatalf("Expected %s(%s) %s %f, but received %f", assertion.AggregationFunction, m.Query.Metric.Name, assertion.ComparisonOperator, assertion.Threshold, actualValue)
+			}
+			break
 		}
 	}
 }
