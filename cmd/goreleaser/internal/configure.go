@@ -86,8 +86,10 @@ func Generate(dist string, nightly bool) config.Project {
 		},
 		Blobs: Blobs(dist, nightly),
 		Release: config.Release{
-			Disable: disableRelease,
-			Draft:   true,
+			Disable:              disableRelease,
+			Draft:                true,
+			UseExistingDraft:     true,
+			ReplaceExistingDraft: false,
 		},
 	}
 }
