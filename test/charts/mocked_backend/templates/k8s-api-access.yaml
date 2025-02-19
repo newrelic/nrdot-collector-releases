@@ -1,3 +1,4 @@
+# namespace suffixes to avoid conflicts when installing chart multiple times
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -6,7 +7,6 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  # namespace suffix to avoid conflicts when installing chart multiple times
   name: read-k8s-api-role-{{ .Values.namespace }}
 # required rules copied from:
 # - k8seventsreceiever: https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/k8seventsreceiver/README.md#rbac
@@ -78,11 +78,11 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: read-k8s-api-binding
+  name: read-k8s-api-binding-{{ .Values.namespace }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: read-k8s-api-role
+  name: read-k8s-api-role-{{ .Values.namespace }}
 subjects:
   - kind: ServiceAccount
     name: read-k8s-api-account
