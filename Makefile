@@ -18,7 +18,7 @@ GO_LICENCE_DETECTOR_CONFIG   := $(SRC_ROOT)/internal/assets/license/rules.json
 
 DISTRIBUTIONS ?= "nrdot-collector-host,nrdot-collector-k8s"
 
-ci: check build licenses-check
+ci: check build version-check licenses-check
 check: ensure-goreleaser-up-to-date
 
 build: go ocb
@@ -77,6 +77,22 @@ goreleaser:
 			exit 1; \
 		fi \
 	}
+
+VERSION := $(shell ./scripts/get-version.sh)
+
+.PHONY: version-check
+version-check:
+	@echo $(VERSION)
+
+REMOTE?=git@github.com:newrelic/nrdot-collector-releases.git
+.PHONY: push-release-tag
+push-release-tag:
+	@[ "${VERSION}" ] || ( echo ">> VERSION is not set"; exit 1 )
+	@echo "Adding tag ${VERSION}"
+	@git tag -a ${VERSION} -s -m "Version ${VERSION}"
+	@read -p "Are you sure you want to push the tag ${VERSION} to ${REMOTE}? (y/N) " confirm && [ $${confirm} = y ]
+	@echo "Pushing tag ${VERSION}"
+	@git push ${REMOTE} ${VERSION}
 
 .PHONY: install-tools
 install-tools: $(TOOLS_BIN_NAMES)
