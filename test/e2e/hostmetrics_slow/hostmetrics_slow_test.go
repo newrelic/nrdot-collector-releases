@@ -27,7 +27,7 @@ func TestStartupBehavior(t *testing.T) {
 	testutil.TagAsSlowTest(t)
 	kubectlOptions = k8sutil.NewKubectlOptions(TestNamespace)
 	testId := testutil.NewTestId()
-	testChart = chart.NewNrBackendChart(testId)
+	testChart = chart.NewNrBackendChart(testId, kubectlOptions.Namespace)
 
 	t.Logf("hostname used for test: %s", testChart.NrQueryHostNamePattern)
 	helmutil.ApplyChart(t, kubectlOptions, testChart.AsChart(), "hostmetrics-startup", testId)

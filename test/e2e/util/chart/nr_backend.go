@@ -11,9 +11,10 @@ import (
 type NrBackendChart struct {
 	collectorHostNamePrefix string
 	NrQueryHostNamePattern  string
+	namespace               string
 }
 
-func NewNrBackendChart(testId string) NrBackendChart {
+func NewNrBackendChart(testId string, namespace string) NrBackendChart {
 	var environmentName string
 	if envutil.IsContinuousIntegration() {
 		environmentName = "ci"
@@ -30,6 +31,7 @@ func NewNrBackendChart(testId string) NrBackendChart {
 	return NrBackendChart{
 		collectorHostNamePrefix: hostNamePrefix,
 		NrQueryHostNamePattern:  hostNamePattern,
+		namespace:               namespace,
 	}
 }
 
@@ -51,5 +53,6 @@ func (m *NrBackendChart) RequiredChartValues() map[string]string {
 		"secrets.nrBackendUrl": envutil.GetNrBackendUrl(),
 		"secrets.nrIngestKey":  envutil.GetNrIngestKey(),
 		"collector.hostname":   m.collectorHostNamePrefix,
+		"namespace":            m.namespace,
 	}
 }
