@@ -2,6 +2,8 @@ package assert
 
 import (
 	"bytes"
+	"errors"
+	"fmt"
 	"github.com/newrelic/newrelic-client-go/v2/newrelic"
 	"github.com/newrelic/newrelic-client-go/v2/pkg/nrdb"
 	"log"
@@ -62,31 +64,48 @@ type NrAssertion struct {
 }
 
 func (m *NrMetricAssertion) ExecuteWithRetries(t testing.TB, client *newrelic.NewRelic, retries int, retryInterval time.Duration) {
-	query := nrdb.NRQL(m.AsQuery())
-retryLoop:
 	for attempt := 0; attempt < retries; attempt++ {
-		time.Sleep(retryInterval)
-		response, err := client.Nrdb.Query(envutil.GetNrAccountId(), query)
-		if err != nil {
-			t.Log(err)
-			continue retryLoop
+		if attempt > 0 {
+			time.Sleep(retryInterval)
 		}
-		if len(response.Results) != len(m.Assertions) {
-			t.Fatalf("Query results (%+v) and number of assertions (%+v) do not match", response.Results, m.Assertions)
-		}
-		for i, assertion := range m.Assertions {
-			actualContainer := response.Results[i]
-			actualValue := actualContainer[assertion.AggregationFunction+"."+m.Query.Metric.Name]
-			valueType := reflect.TypeOf(actualValue)
-			if valueType == nil || valueType.Kind() != reflect.Float64 {
-				t.Logf("Attempt %d: Expected float64 for assertion %+v, but received %+v in response %+v. Retrying...", attempt, actualContainer, valueType, response.Results)
-				continue retryLoop
-			}
-			if !assertion.satisfiesCondition(actualValue.(float64)) {
-				t.Fatalf("Expected %s(%s) %s %f, but received %f", assertion.AggregationFunction, m.Query.Metric.Name, assertion.ComparisonOperator, assertion.Threshold, actualValue)
-			}
+		err := m.execute(t, client)
+		if err == nil {
+			break
+		} else {
+			t.Logf("Assertion attempt %d failed with: %+v", attempt, err)
 		}
 	}
+}
+
+func (m *NrMetricAssertion) execute(t testing.TB, client *newrelic.NewRelic) error {
+	query := nrdb.NRQL(m.AsQuery())
+	successfulAssertions := 0
+	response, err := client.Nrdb.Query(envutil.GetNrAccountId(), query)
+	if err != nil {
+		return err
+	}
+	if len(response.Results) != len(m.Assertions) {
+		return errors.New(fmt.Sprintf("query results (%+v) and number of assertions (%+v) do not match", response.Results, m.Assertions))
+	}
+	for i, assertion := range m.Assertions {
+		actualContainer := response.Results[i]
+		actualValue := actualContainer[assertion.AggregationFunction+"."+m.Query.Metric.Name]
+		valueType := reflect.TypeOf(actualValue)
+		if valueType == nil {
+			return errors.New("received nil, metric might not be ingested yet")
+		}
+		if valueType.Kind() != reflect.Float64 {
+			return errors.New(fmt.Sprintf("Expected float64 for assertion %+v, but received %+v in response %+v. Retrying...", actualContainer, valueType, response.Results))
+		}
+		if !assertion.satisfiesCondition(actualValue.(float64)) {
+			return errors.New(fmt.Sprintf("Expected %s(%s) %s %f, but received %f", assertion.AggregationFunction, m.Query.Metric.Name, assertion.ComparisonOperator, assertion.Threshold, actualValue))
+		}
+		successfulAssertions += 1
+	}
+	if successfulAssertions != len(m.Assertions) {
+		return errors.New(fmt.Sprintf("Expected %d successful assertions, but received %d. Check logs for more details", len(m.Assertions), successfulAssertions))
+	}
+	return nil
 }
 
 func (m *NrMetricAssertion) AsQuery() string {
