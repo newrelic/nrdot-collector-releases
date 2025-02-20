@@ -27,5 +27,6 @@ func (m *MockedBackendChart) RequiredChartValues() map[string]string {
 	return map[string]string{
 		"image.repository": fmt.Sprintf("newrelic/%s", envutil.GetDistro()),
 		"image.tag":        envutil.GetImageTag(),
+		"clusterName":      envutil.GetK8sContextName(),
 	}
 }

@@ -2,6 +2,7 @@ package test
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path"
 	"strings"
@@ -9,6 +10,7 @@ import (
 
 func NewPathRelativeToRootDir(pathFromRoot string) string {
 	pwd, err := os.Getwd()
+	log.Printf("pwd: %s", pwd)
 	if err != nil {
 		panic(err)
 	}

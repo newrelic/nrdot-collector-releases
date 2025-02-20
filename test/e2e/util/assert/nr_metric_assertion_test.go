@@ -3,6 +3,7 @@ package assert
 import (
 	"fmt"
 	"strings"
+	"test/e2e/util/spec"
 	"testing"
 )
 
@@ -12,7 +13,7 @@ func TestAsQueryWithSingleAssertion(t *testing.T) {
 		"5 minutes ago",
 	)
 	singleAssertion := assertionFactory.NewNrMetricAssertion(
-		NrMetric{Name: "system.cpu.utilization", WhereClause: "WHERE state='user'"}, []NrAssertion{
+		spec.NrMetric{Name: "system.cpu.utilization", WhereClause: "WHERE state='user'"}, []spec.NrAssertion{
 			{AggregationFunction: "max", ComparisonOperator: ">", Threshold: 0},
 		})
 	actual := singleAssertion.AsQuery()
@@ -30,7 +31,7 @@ func TestAsQueryWithMultipleAssertions(t *testing.T) {
 		fmt.Sprintf("WHERE host.name = 'nrdot-collector-host-foobar'"),
 		"5 minutes ago",
 	)
-	singleAssertion := assertionFactory.NewNrMetricAssertion(NrMetric{Name: "system.cpu.utilization", WhereClause: "WHERE state='user'"}, []NrAssertion{
+	singleAssertion := assertionFactory.NewNrMetricAssertion(spec.NrMetric{Name: "system.cpu.utilization", WhereClause: "WHERE state='user'"}, []spec.NrAssertion{
 		{AggregationFunction: "max", ComparisonOperator: "<", Threshold: 0},
 		{AggregationFunction: "min", ComparisonOperator: ">", Threshold: 0},
 		{AggregationFunction: "average", ComparisonOperator: ">", Threshold: 0},

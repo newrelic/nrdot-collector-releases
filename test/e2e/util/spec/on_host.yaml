@@ -1,0 +1,306 @@
+whereClause:
+  template: "WHERE host.name like '{{ .hostName }}'"
+  vars:
+    - hostName
+
+testCases:
+  host_receiver_cpu.utilization_user:
+    metric:
+      name: system.cpu.utilization
+      whereClause: WHERE state='user'
+    assertions:
+      - aggregationFunction: max
+        comparisonOperator: ">"
+        threshold: 0
+  host_receiver_cpu.utilization_idle:
+    metric:
+      name: system.cpu.utilization
+      whereClause: WHERE state='idle'
+    assertions:
+      - aggregationFunction: max
+        comparisonOperator: ">"
+        threshold: 0
+  host_receiver_cpu.utilization_wait:
+    metric:
+      name: system.cpu.utilization
+      whereClause: WHERE state='wait'
+    assertions:
+      - aggregationFunction: max
+        comparisonOperator: ">"
+        threshold: 0
+  host_receiver_cpu.utilization_steal:
+    metric:
+      name: system.cpu.utilization
+      whereClause: WHERE state='steal'
+    assertions:
+      - aggregationFunction: max
+        comparisonOperator: ">="
+        threshold: 0
+  host_receiver_disk.io_read:
+    metric:
+      name: system.disk.io
+      whereClause: WHERE direction='read'
+    assertions:
+      - aggregationFunction: max
+        comparisonOperator: ">="
+        threshold: 0
+  host_receiver_disk.io_write:
+    metric:
+      name: system.disk.io
+      whereClause: WHERE direction='write'
+    assertions:
+      - aggregationFunction: max
+        comparisonOperator: ">"
+        threshold: 0
+  host_receiver_disk.io_time:
+    metric:
+      name: system.disk.ioTime
+    assertions:
+      - aggregationFunction: max
+        comparisonOperator: ">"
+        threshold: 0
+  host_receiver_disk.operation_time_read:
+    metric:
+      name: system.disk.operationTime
+      whereClause: WHERE direction='read'
+    assertions:
+      - aggregationFunction: max
+        comparisonOperator: ">="
+        threshold: 0
+  host_receiver_disk.operation_time_write:
+    metric:
+      name: system.disk.operationTime
+      whereClause: WHERE direction='write'
+    assertions:
+      - aggregationFunction: max
+        comparisonOperator: ">"
+        threshold: 0
+  host_receiver_disk.operations_read:
+    metric:
+      name: system.disk.operations
+      whereClause: WHERE direction='read'
+    assertions:
+      - aggregationFunction: max
+        comparisonOperator: ">="
+        threshold: 0
+  host_receiver_disk.operations_write:
+    metric:
+      name: system.disk.operations
+      whereClause: WHERE direction='write'
+    assertions:
+      - aggregationFunction: max
+        comparisonOperator: ">"
+        threshold: 0
+  host_receiver_system.load_1m:
+    metric:
+      name: system.cpu.loadAverage.1m
+    assertions:
+      - aggregationFunction: max
+        comparisonOperator: ">"
+        threshold: 0
+  host_receiver_system.load_5m:
+    metric:
+      name: system.cpu.loadAverage.5m
+    assertions:
+      - aggregationFunction: max
+        comparisonOperator: ">"
+        threshold: 0
+  host_receiver_system.load_15m:
+    metric:
+      name: system.cpu.loadAverage.15m
+    assertions:
+      - aggregationFunction: max
+        comparisonOperator: ">="
+        threshold: 0
+  host_receiver_memory.usage_cached:
+    metric:
+      name: system.memory.usage
+      whereClause: WHERE state='cached'
+    assertions:
+      - aggregationFunction: max
+        comparisonOperator: ">"
+        threshold: 0
+  host_receiver_memory.usage_free:
+    metric:
+      name: system.memory.usage
+      whereClause: WHERE state='free'
+    assertions:
+      - aggregationFunction: max
+        comparisonOperator: ">"
+        threshold: 0
+  host_receiver_memory.usage_slab_reclaimable:
+    metric:
+      name: system.memory.usage
+      whereClause: WHERE state='slabReclaimable'
+    assertions:
+      - aggregationFunction: max
+        comparisonOperator: ">"
+        threshold: 0
+  host_receiver_memory.usage_buffered:
+    metric:
+      name: system.memory.usage
+      whereClause: WHERE state='buffered'
+    assertions:
+      - aggregationFunction: max
+        comparisonOperator: ">"
+        threshold: 0
+  host_receiver_memory.usage_used:
+    metric:
+      name: system.memory.usage
+      whereClause: WHERE state='used'
+    assertions:
+      - aggregationFunction: max
+        comparisonOperator: ">"
+        threshold: 0
+  host_receiver_memory.utilization_free:
+    metric:
+      name: system.memory.utilization
+      whereClause: WHERE state='free'
+    assertions:
+      - aggregationFunction: max
+        comparisonOperator: ">"
+        threshold: 0
+  host_receiver_memory.utilization_used:
+    metric:
+      name: system.memory.utilization
+      whereClause: WHERE state='used'
+    assertions:
+      - aggregationFunction: max
+        comparisonOperator: ">"
+        threshold: 0
+  host_receiver_system.paging.operations_out:
+    metric:
+      name: system.paging.operations
+      whereClause: WHERE direction='pageOut'
+    assertions:
+      - aggregationFunction: max
+        comparisonOperator: ">="
+        threshold: 0
+  host_receiver_system.paging.operations_in:
+    metric:
+      name: system.paging.operations
+      whereClause: WHERE direction='pageIn'
+    assertions:
+      - aggregationFunction: max
+        comparisonOperator: ">="
+        threshold: 0
+  host_receiver_paging.usage_used:
+    metric:
+      name: system.paging.usage
+      whereClause: WHERE state='used'
+    assertions:
+      - aggregationFunction: max
+        comparisonOperator: ">="
+        threshold: 0
+  host_receiver_paging.usage_free:
+    metric:
+      name: system.paging.usage
+      whereClause: WHERE state='free'
+    assertions:
+      - aggregationFunction: max
+        comparisonOperator: ">"
+        threshold: 0
+  host_receiver_inodes.usage_free:
+    metric:
+      name: system.filesystem.inodes.usage
+      whereClause: WHERE state='free'
+    assertions:
+      - aggregationFunction: max
+        comparisonOperator: ">"
+        threshold: 0
+  host_receiver_inodes.usage_used:
+    metric:
+      name: system.filesystem.inodes.usage
+      whereClause: WHERE state='used'
+    assertions:
+      - aggregationFunction: max
+        comparisonOperator: ">"
+        threshold: 0
+  host_receiver_filesystem.usage_used:
+    metric:
+      name: system.filesystem.usage
+      whereClause: WHERE state='used'
+    assertions:
+      - aggregationFunction: max
+        comparisonOperator: ">"
+        threshold: 0
+  host_receiver_filesystem.usage_free:
+    metric:
+      name: system.filesystem.usage
+      whereClause: WHERE state='free'
+    assertions:
+      - aggregationFunction: max
+        comparisonOperator: ">"
+        threshold: 0
+  host_receiver_filesystem.utilization:
+    metric:
+      name: system.filesystem.utilization
+      whereClause: WHERE type != 'squashfs'
+    assertions:
+      - aggregationFunction: max
+        comparisonOperator: ">"
+        threshold: 0
+  host_receiver_network_dropped_receive:
+    metric:
+      name: system.network.dropped
+      whereClause: WHERE direction='receive'
+    assertions:
+      - aggregationFunction: max
+        comparisonOperator: ">="
+        threshold: 0
+  host_receiver_network_dropped_transmit:
+    metric:
+      name: system.network.dropped
+      whereClause: WHERE direction='transmit'
+    assertions:
+      - aggregationFunction: max
+        comparisonOperator: ">="
+        threshold: 0
+  host_receiver_network_errors_receive:
+    metric:
+      name: system.network.errors
+      whereClause: WHERE direction='receive'
+    assertions:
+      - aggregationFunction: max
+        comparisonOperator: ">="
+        threshold: 0
+  host_receiver_network_errors_transmit:
+    metric:
+      name: system.network.errors
+      whereClause: WHERE direction='transmit'
+    assertions:
+      - aggregationFunction: max
+        comparisonOperator: ">="
+        threshold: 0
+  host_receiver_network_io_receive:
+    metric:
+      name: system.network.io
+      whereClause: WHERE direction='receive'
+    assertions:
+      - aggregationFunction: max
+        comparisonOperator: ">"
+        threshold: 0
+  host_receiver_network_io_transmit:
+    metric:
+      name: system.network.io
+      whereClause: WHERE direction='transmit'
+    assertions:
+      - aggregationFunction: max
+        comparisonOperator: ">"
+        threshold: 0
+  host_receiver_network_packets_receive:
+    metric:
+      name: system.network.packets
+      whereClause: WHERE direction='receive'
+    assertions:
+      - aggregationFunction: max
+        comparisonOperator: ">"
+        threshold: 0
+  host_receiver_network_packets_transmit:
+    metric:
+      name: system.network.packets
+      whereClause: WHERE direction='transmit'
+    assertions:
+      - aggregationFunction: max
+        comparisonOperator: ">"
+        threshold: 0

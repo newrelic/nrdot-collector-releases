@@ -31,7 +31,7 @@ type ValidationPayload struct {
 	Transactions     uint32 `json:"transactions"`
 }
 
-func TestStartupBehavior(t *testing.T) {
+func TestFast(t *testing.T) {
 	testutil.TagAsFastTest(t)
 	kubectlOptions = k8sutil.NewKubectlOptions(TestNamespace)
 	testChart = chart.NewMockedBackendChart()

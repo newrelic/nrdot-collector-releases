@@ -9,10 +9,17 @@ import (
 )
 
 type TestSpec struct {
+	Fast struct {
+		TestCaseSpecs []string `yaml:"testCaseSpecs"`
+	} `yaml:"fast"`
+	Slow struct {
+		TestCaseSpecs []string `yaml:"testCaseSpecs"`
+	} `yaml:"slow"`
 	Nightly struct {
 		EC2 struct {
 			Enabled bool `yaml:"enabled"`
 		} `yaml:"ec2"`
+		TestCaseSpecs []string `yaml:"testCaseSpecs"`
 	} `yaml:"nightly"`
 }
 
