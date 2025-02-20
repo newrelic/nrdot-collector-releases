@@ -70,11 +70,12 @@ func (m *NrMetricAssertion) ExecuteWithRetries(t testing.TB, client *newrelic.Ne
 		}
 		err := m.execute(t, client)
 		if err == nil {
-			break
+			return
 		} else {
 			t.Logf("Assertion attempt %d failed with: %+v", attempt, err)
 		}
 	}
+	t.Fatalf("Assertions failed after %d attempts", retries)
 }
 
 func (m *NrMetricAssertion) execute(t testing.TB, client *newrelic.NewRelic) error {
