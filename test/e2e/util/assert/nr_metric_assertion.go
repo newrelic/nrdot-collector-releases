@@ -63,26 +63,28 @@ type NrAssertion struct {
 
 func (m *NrMetricAssertion) ExecuteWithRetries(t testing.TB, client *newrelic.NewRelic, retries int, retryInterval time.Duration) {
 	query := nrdb.NRQL(m.AsQuery())
-	response, err := client.Nrdb.Query(envutil.GetNrAccountId(), query)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(response.Results) != len(m.Assertions) {
-		t.Fatalf("Query results (%+v) and number of assertions (%+v) do not match", response.Results, m.Assertions)
-	}
-	for i, assertion := range m.Assertions {
-		for attempt := 0; attempt < retries; attempt++ {
+retryLoop:
+	for attempt := 0; attempt < retries; attempt++ {
+		time.Sleep(retryInterval)
+		response, err := client.Nrdb.Query(envutil.GetNrAccountId(), query)
+		if err != nil {
+			t.Log(err)
+			continue retryLoop
+		}
+		if len(response.Results) != len(m.Assertions) {
+			t.Fatalf("Query results (%+v) and number of assertions (%+v) do not match", response.Results, m.Assertions)
+		}
+		for i, assertion := range m.Assertions {
 			actualContainer := response.Results[i]
 			actualValue := actualContainer[assertion.AggregationFunction+"."+m.Query.Metric.Name]
 			valueType := reflect.TypeOf(actualValue)
 			if valueType == nil || valueType.Kind() != reflect.Float64 {
 				t.Logf("Attempt %d: Expected float64 for assertion %+v, but received %+v in response %+v. Retrying...", attempt, actualContainer, valueType, response.Results)
-				continue
+				continue retryLoop
 			}
 			if !assertion.satisfiesCondition(actualValue.(float64)) {
 				t.Fatalf("Expected %s(%s) %s %f, but received %f", assertion.AggregationFunction, m.Query.Metric.Name, assertion.ComparisonOperator, assertion.Threshold, actualValue)
 			}
-			break
 		}
 	}
 }
