@@ -163,9 +163,6 @@ func ArmVersions(dist string) []string {
 }
 
 func Archives(dist string) []config.Archive {
-	if skip, ok := SkipBinaries[dist]; ok && skip {
-		return nil
-	}
 	return []config.Archive{
 		Archive(dist),
 	}
