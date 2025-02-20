@@ -15,7 +15,7 @@ terraform {
     encrypt        = true
     dynamodb_table = "terraform-states-lock"
     region         = "us-east-1"
-    key            = "newrelic/opentelemetry-collector-releases/permanent/terraform.tfstate"
+    key            = "newrelic/nrdot-collector-releases/nightly/terraform.tfstate"
     # 'bucket' and 'role_arn' provided via '-backend-config'
   }
 }
