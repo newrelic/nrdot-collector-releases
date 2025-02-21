@@ -5,3 +5,29 @@ release:
   draft: true
   use_existing_draft: true
   mode: replace
+changelog:
+  sort: asc
+  use: github
+  groups:
+    - title: Features
+      regexp: "^.*(feat:|feat\\/|feat(\\([^\\)]*\\)):).*"
+      order: 0
+    - title: Bug Fixes
+      regexp: "^.*(fix:|fix\\/|fix(\\([^\\)]*\\)):).*"
+      order: 1
+    - title: CI
+      regexp: "^.*(ci:|ci\\/|ci(\\([^\\)]*\\)):).*"
+      order: 2
+    - title: Docs
+      regexp: "^.*(docs:|docs\\/|docs(\\([^\\)]*\\)):).*"
+      order: 3
+  filters:
+    exclude:
+      - "^test"
+      - "^chore"
+      - "^refactor"
+      - "^style"
+      - "^perf"
+      - "^build"
+      - "^revert"
+      - "^deps"
