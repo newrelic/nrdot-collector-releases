@@ -139,6 +139,9 @@ jobs:
         distribution:
           - nrdot-collector-host
           - nrdot-collector-k8s
+    concurrency:
+      # concurrency limit of 1 b/c failed tf job cancelling each other causes tf state and locks to corrupt
+      group: deploy-nightly-terraform
     with:
       branch: ${{ github.ref }}
       tf_work_subdir: nightly
