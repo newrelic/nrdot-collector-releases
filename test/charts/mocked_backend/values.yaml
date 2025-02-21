@@ -3,5 +3,3 @@ image:
   tag: latest
   # Avoid accidentally pulling remote images in CI
   pullPolicy: Never
-
-namespace: default-mocked-backend

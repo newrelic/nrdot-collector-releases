@@ -34,7 +34,7 @@ type ValidationPayload struct {
 func TestStartupBehavior(t *testing.T) {
 	testutil.TagAsFastTest(t)
 	kubectlOptions = k8sutil.NewKubectlOptions(TestNamespace)
-	testChart = chart.NewMockedBackendChart(kubectlOptions.Namespace)
+	testChart = chart.NewMockedBackendChart()
 	testId = testutil.NewTestId()
 	helmutil.ApplyChart(t, kubectlOptions, testChart.AsChart(), "hostmetrics-startup", testId)
 
