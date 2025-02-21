@@ -2,7 +2,7 @@ dist:
   module: github.com/newrelic/nrdot-collector-releases/nrdot-collector-host
   name: nrdot-collector-host
   description: NRDOT Collector Host
-  version: 0.8.11
+  version: 0.8.12
   output_path: ./_build
 
 receivers:
