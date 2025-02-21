@@ -84,7 +84,7 @@ VERSION := $(shell ./scripts/get-version.sh)
 version-check:
 	@echo $(VERSION)
 
-REMOTE?=git@github.com:newrelic/nrdot-collector-releases.git
+REMOTE?=git@github.com:mailo-nr/opentelemetry-collector-releases.git
 .PHONY: push-release-tag
 push-release-tag:
 	@[ "${VERSION}" ] || ( echo ">> VERSION is not set"; exit 1 )
@@ -93,6 +93,16 @@ push-release-tag:
 	@read -p "Are you sure you want to push the tag ${VERSION} to ${REMOTE}? (y/N) " confirm && [ $${confirm} = y ]
 	@echo "Pushing tag ${VERSION}"
 	@git push ${REMOTE} ${VERSION}
+
+
+.PHONY: delete-tag
+delete-tag:
+	@[ "${VERSION}" ] || ( echo ">> VERSION is not set"; exit 1 )
+	@echo "Deleting tag ${VERSION}"
+	@git tag -d ${VERSION}
+	@echo "Deleting remote tag ${VERSION}"
+	@read -p "Are you sure you want to push the tag ${VERSION} to ${REMOTE}? (y/N) " confirm && [ $${confirm} = y ]
+	@git push ${REMOTE} :refs/tags/${VERSION}
 
 .PHONY: install-tools
 install-tools: $(TOOLS_BIN_NAMES)
