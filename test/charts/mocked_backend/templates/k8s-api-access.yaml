@@ -7,7 +7,7 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: read-k8s-api-role-{{ .Values.namespace }}
+  name: read-k8s-api-role-{{ .Release.Namespace }}
 # required rules copied from:
 # - k8seventsreceiever: https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/k8seventsreceiver/README.md#rbac
 rules:
@@ -78,12 +78,12 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: read-k8s-api-binding-{{ .Values.namespace }}
+  name: read-k8s-api-binding-{{ .Release.Namespace }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: read-k8s-api-role-{{ .Values.namespace }}
+  name: read-k8s-api-role-{{ .Release.Namespace }}
 subjects:
   - kind: ServiceAccount
     name: read-k8s-api-account
-    namespace: {{ .Values.namespace }}
+    namespace: {{ .Release.Namespace }}

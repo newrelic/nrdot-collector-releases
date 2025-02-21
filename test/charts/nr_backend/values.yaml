@@ -10,5 +10,3 @@ secrets:
 
 collector:
   hostname: nrdot-collector-default-hostname
-
-namespace: default-nr-backend
