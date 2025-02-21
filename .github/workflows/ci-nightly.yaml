@@ -125,10 +125,13 @@ jobs:
       - name: Extract Docker Manifest SHA
         id: extract_docker_manifest_sha
         run: |
-          echo "docker_manifest_sha=$(echo '${{ steps.goreleaser_publish.outputs.artifacts }}' |
-            yq -r '.[] | select(.type == "Docker Manifest") | .extra.Digest')" >> $GITHUB_OUTPUT
-    outputs:
-      docker_manifest_sha: ${{ steps.extract_docker_manifest_sha.outputs.docker_manifest_sha }}
+          echo '${{ steps.goreleaser_publish.outputs.artifacts }}' |
+            yq -r '.[] | select(.type == "Docker Manifest") | .extra.Digest')" > docker_manifest_sha
+      - name: Upload math result for job 1
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker_manifest_sha_${{ matrix.distribution }}
+          path: docker_manifest_sha
 
   deploy-nightly:
     name: Deploy Nightly
@@ -150,7 +153,7 @@ jobs:
       execute_plan: true
       execute_apply: true
       distro: ${{ matrix.distribution }}
-      nightly_docker_manifest_sha: ${{ needs.publish.outputs.docker_manifest_sha }}
+      nightly_docker_manifest_sha_artifact_name: docker_manifest_sha_${{ matrix.distribution }}
     secrets:
       aws_access_key_id: ${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCESS_KEY_ID }}
       aws_secret_access_key: ${{secrets.OTELCOMM_AWS_TEST_ACC_SECRET_ACCESS_KEY}}

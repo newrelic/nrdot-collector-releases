@@ -46,11 +46,11 @@ on:
         type: string
         required: false
         default: "nrdot-collector-host"
-      nightly_docker_manifest_sha:
-        description: "SHA256 to identify nightly docker manifest to use"
+      nightly_docker_manifest_sha_artifact_name:
+        description: "artifact name containing SHA256 to identify nightly docker manifest to use"
         type: string
         required: false
-        default: "docker_manifest_sha_placeholder"
+        default: ""
     secrets:
       aws_access_key_id:
         description: "AWS credentials for tf with permission to assume resource-provider"
@@ -81,13 +81,23 @@ jobs:
       TF_VAR_nr_backend_url: ${{ secrets.nr_backend_url }}
       TF_VAR_nr_ingest_key: ${{ secrets.nr_ingest_key }}
       TF_VAR_distro: ${{ inputs.distro }}
-      TF_VAR_nightly_docker_manifest_sha: ${{ inputs.nightly_docker_manifest_sha }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           ref: ${{ inputs.branch }}
+
+      - name: Download artifact for docker manifest sha
+        if: ${{ inputs.nightly_docker_manifest_sha_artifact_name != '' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.nightly_docker_manifest_sha_artifact_name }}
+
+      - name: Terraform Plan
+        if: ${{ inputs.nightly_docker_manifest_sha_artifact_name != '' }}
+        run: |
+          echo "TF_VAR_nightly_docker_manifest_sha=$(cat ${{ inputs.nightly_docker_manifest_sha_artifact_name }})" >> $GITHUB_ENV
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
