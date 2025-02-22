@@ -123,11 +123,12 @@ jobs:
           args: --skip=announce,validate --clean --timeout 2h --config .goreleaser-nightly.yaml
           workdir: distributions/${{ matrix.distribution }}
       - name: Extract Docker Manifest SHA
-        id: extract_docker_manifest_sha
-        run: |
-          echo '${{ steps.goreleaser_publish.outputs.artifacts }}' |
-            yq -r '.[] | select(.type == "Docker Manifest") | .extra.Digest')" > docker_manifest_sha
-      - name: Upload math result for job 1
+        run: | 
+          docker_manifest_sha=$(echo '${{ steps.goreleaser_publish.outputs.artifacts }}' |
+            yq -r '.[] | select(.type == "Docker Manifest") | .extra.Digest')
+          echo "docker manifest sha: ${docker_manifest_sha}"
+          echo -n "${docker_manifest_sha}" > docker_manifest_sha
+      - name: Upload Docker Manifest SHA
         uses: actions/upload-artifact@v4
         with:
           name: docker_manifest_sha_${{ matrix.distribution }}
