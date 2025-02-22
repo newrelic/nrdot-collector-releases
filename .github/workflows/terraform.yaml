@@ -97,6 +97,7 @@ jobs:
       - name: Terraform Plan
         if: ${{ inputs.nightly_docker_manifest_sha_artifact_name != '' }}
         run: |
+          echo "using docker manifest sha: $(cat ${{ inputs.nightly_docker_manifest_sha_artifact_name }})"
           echo "TF_VAR_nightly_docker_manifest_sha=$(cat ${{ inputs.nightly_docker_manifest_sha_artifact_name }})" >> $GITHUB_ENV
 
       - name: Setup Terraform
