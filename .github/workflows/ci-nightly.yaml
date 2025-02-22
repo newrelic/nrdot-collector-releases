@@ -172,6 +172,9 @@ jobs:
           - nrdot-collector-host
           - nrdot-collector-k8s
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Run nightly tests for ${{ matrix.distribution }}
         run: |
           NR_API_KEY=${{ secrets.OTELCOMM_NR_API_KEY }} \
