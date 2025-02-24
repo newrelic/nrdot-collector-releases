@@ -4,6 +4,7 @@ release:
   draft: true
   use_existing_draft: true
   disable: "true"
+  header: New Relic NRDOT Collector
 builds:
   - id: nrdot-collector-k8s
     goos:

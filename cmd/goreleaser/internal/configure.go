@@ -90,6 +90,7 @@ func Generate(dist string, nightly bool) config.Project {
 			Draft:                true,
 			UseExistingDraft:     true,
 			ReplaceExistingDraft: false,
+			Header: 			"New Relic NRDOT Collector",
 		},
 	}
 }
