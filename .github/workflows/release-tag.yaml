@@ -31,6 +31,7 @@ jobs:
           else
             echo "Tag does not exist."
             echo "exists=false" >> $GITHUB_ENV
+          fi
 
       - name: Create and push tag
         if: env.exists == 'false'
