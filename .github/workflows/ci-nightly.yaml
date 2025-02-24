@@ -127,12 +127,12 @@ jobs:
           docker_manifest_sha=$(echo '${{ steps.goreleaser_publish.outputs.artifacts }}' |
             yq -r '.[] | select(.type == "Docker Manifest") | .extra.Digest')
           echo "docker manifest sha: ${docker_manifest_sha}"
-          echo -n "${docker_manifest_sha}" > docker_manifest_sha
+          echo -n "${docker_manifest_sha}" > docker_manifest_sha_${{ matrix.distribution }}
       - name: Upload Docker Manifest SHA
         uses: actions/upload-artifact@v4
         with:
           name: docker_manifest_sha_${{ matrix.distribution }}
-          path: docker_manifest_sha
+          path: docker_manifest_sha_${{ matrix.distribution }}
 
   deploy-nightly:
     name: Deploy Nightly
