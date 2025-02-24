@@ -175,6 +175,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+          check-latest: true
+
       - name: Run nightly tests for ${{ matrix.distribution }}
         run: |
           NR_API_KEY=${{ secrets.OTELCOMM_NR_API_KEY }} \

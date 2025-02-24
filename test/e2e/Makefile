@@ -9,28 +9,40 @@ ROOT_DIR := $(realpath $(THIS_MAKEFILE_DIR)/../..)
 ################
 #### ASSERT ####
 ################
-REQUIRED_BINS := go kind docker awk
-$(foreach bin,$(REQUIRED_BINS),\
-	$(if $(shell command -v $(bin) 2> /dev/null),$(info Found required dependency `$(bin)`),$(error Please install `$(bin)`)))
+.PHONY: assert_require-binary
+assert_require-binary:
+	@{ \
+		for bin in $(REQUIRED_BINS); do \
+			if ! command -v "$$bin" >/dev/null 2>/dev/null; then \
+				echo >&2 "command '$$bin' not found. Please install $$bin"; \
+				exit 1; \
+			else \
+				echo "Found required dependency '$$bin'"; \
+			fi; \
+		done \
+	}
 
 .PHONY: assert_image-tag-present
 assert_image-tag-present:
 	@[ "${IMAGE_TAG}" ] || ( echo ">> env var IMAGE_TAG is not set"; exit 1 )
 
 .PHONY: assert_cluster-exists
-assert_cluster-exists:
+assert_cluster-exists: REQUIRED_BINS=kind go
+assert_cluster-exists: assert_require-binary
 	kind get clusters | grep -q ${KIND_CLUSTER_NAME} || ( echo ">> cluster ${KIND_CLUSTER_NAME} does not exist"; exit 1 )
 
 ################
 ###### CI ######
 ################
 .PHONY: ci_load-image
-ci_load-image: assert_cluster-exists assert_image-tag-present
+ci_load-image: REQUIRED_BINS=kind
+ci_load-image: assert_require-binary assert_cluster-exists assert_image-tag-present
 	kind load docker-image ${IMAGE_REPO}:${IMAGE_TAG} --name ${KIND_CLUSTER_NAME}
 
 .PHONY: ci_build-load-mocked-otlp-image
+ci_build-load-mocked-otlp-image: REQUIRED_BINS=docker kind
 ci_build-load-mocked-otlp-image: BUILD_PATH=${THIS_MAKEFILE_DIR}/mocked_otlp/http
-ci_build-load-mocked-otlp-image: assert_cluster-exists
+ci_build-load-mocked-otlp-image: assert_require-binary assert_cluster-exists
 	docker build -t mocked_otlp:latest -f ${BUILD_PATH}/Dockerfile ${BUILD_PATH}
 	kind load docker-image mocked_otlp:latest --name ${KIND_CLUSTER_NAME}
 
@@ -47,7 +59,8 @@ ci_test-nightly: TEST_MODE=nightlyOnly
 ci_test-nightly: ci_test
 
 .PHONY: ci_test
-ci_test:
+ci_test: REQUIRED_BINS=go
+ci_test: assert_require-binary
 	cd ${THIS_MAKEFILE_DIR} && \
 	E2E_TEST__K8S_CONTEXT_NAME=${K8S_CONTEXT_NAME} \
 	E2E_TEST__DISTRO_TO_TEST=${DISTRO} \
