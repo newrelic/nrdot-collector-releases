@@ -1,0 +1,14 @@
+whereClause:
+  template: "WHERE k8s.cluster.name='{{ .clusterName }}'"
+  vars:
+    - clusterName
+
+# TODO: add more, just one example test case to ensure the overall setup works
+testCases:
+  host_receiver_cpu.utilization_user:
+    metric:
+      name: k8s.pod.cpu.utilization
+    assertions:
+      - aggregationFunction: max
+        comparisonOperator: ">"
+        threshold: 0

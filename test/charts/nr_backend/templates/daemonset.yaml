@@ -2,7 +2,7 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: &app nrdot-collector
+  name: &app nrdot-collector-daemonset
   labels:
     app: *app
 spec:
@@ -39,8 +39,6 @@ spec:
                 secretKeyRef:
                   name: daemonset-secrets
                   key: backendUrl
-            - name: NEW_RELIC_MEMORY_LIMIT_MIB
-              value: "100"
             - name: NEW_RELIC_LICENSE_KEY
               valueFrom:
                 secretKeyRef:
@@ -48,6 +46,9 @@ spec:
                   key: nrIngestKey
             - name: OTEL_RESOURCE_ATTRIBUTES
               value: "host.name={{ .Values.collector.hostname }}-$(KUBE_NODE_NAME)"
+            # used to populate k8s.cluster.name
+            - name: K8S_CLUSTER_NAME
+              value: {{ .Values.clusterName }}
 ---
 apiVersion: v1
 kind: Secret

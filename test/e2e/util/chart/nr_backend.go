@@ -52,5 +52,6 @@ func (m *NrBackendChart) RequiredChartValues() map[string]string {
 		"secrets.nrBackendUrl": envutil.GetNrBackendUrl(),
 		"secrets.nrIngestKey":  envutil.GetNrIngestKey(),
 		"collector.hostname":   m.collectorHostNamePrefix,
+		"clusterName":          envutil.GetK8sContextName(),
 	}
 }

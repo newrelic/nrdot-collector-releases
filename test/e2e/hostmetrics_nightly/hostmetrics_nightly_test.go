@@ -31,7 +31,7 @@ var k8sNode = spec.NightlySystemUnderTest{
 	ExcludedMetrics: []string{"system.paging.usage"},
 }
 
-func TestNightlyHostMetrics(t *testing.T) {
+func TestNightly(t *testing.T) {
 	testutil.TagAsNightlyTest(t)
 	testSpec := spec.LoadTestSpec()
 
@@ -45,18 +45,27 @@ func TestNightlyHostMetrics(t *testing.T) {
 			t.Logf("Skipping nightly system-under-test: %s", sut.HostNamePattern)
 			continue
 		}
-		for i, testCase := range spec.GetOnHostTestCasesWithout(sut.ExcludedMetrics) {
-			t.Run(fmt.Sprintf("%s/%d/%s", sut.HostNamePattern, i, testCase.Name), func(t *testing.T) {
-				t.Parallel()
-				assertionFactory := assert.NewNrMetricAssertionFactory(
-					fmt.Sprintf("WHERE host.name like '%s'", sut.HostNamePattern),
-					"2 hour ago",
-				)
-				assertion := assertionFactory.NewNrMetricAssertion(testCase.Metric, testCase.Assertions)
-				// space out requests to avoid rate limiting
-				time.Sleep(time.Duration(i) * requestSpacing)
-				assertion.ExecuteWithRetries(t, client, 15, 5*time.Second)
-			})
+		testEnvironment := map[string]string{
+			"hostName": sut.HostNamePattern,
+		}
+		for _, testCaseSpecName := range testSpec.Nightly.TestCaseSpecs {
+			testCaseSpec := spec.LoadTestCaseSpec(testCaseSpecName)
+			whereClause := testCaseSpec.RenderWhereClause(testEnvironment)
+			counter := 0
+			for caseName, testCase := range testCaseSpec.GetTestCasesWithout(sut.ExcludedMetrics) {
+				t.Run(fmt.Sprintf("%s/%s/%s", sut.HostNamePattern, testCaseSpecName, caseName), func(t *testing.T) {
+					t.Parallel()
+					assertionFactory := assert.NewNrMetricAssertionFactory(
+						whereClause,
+						"2 hour ago",
+					)
+					assertion := assertionFactory.NewNrMetricAssertion(testCase.Metric, testCase.Assertions)
+					// space out requests to avoid rate limiting
+					time.Sleep(time.Duration(counter) * requestSpacing)
+					assertion.ExecuteWithRetries(t, client, 24, 5*time.Second)
+				})
+				counter += 1
+			}
 		}
 	}
 }

@@ -1,3 +1,9 @@
+slow:
+  testCaseSpecs:
+    - k8s
+    - host
 nightly:
   ec2:
     enabled: false
+  testCaseSpecs:
+    - host

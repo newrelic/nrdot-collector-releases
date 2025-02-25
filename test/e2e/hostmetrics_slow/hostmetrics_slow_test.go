@@ -23,8 +23,10 @@ var (
 	testChart      chart.NrBackendChart
 )
 
-func TestStartupBehavior(t *testing.T) {
+func TestSlow(t *testing.T) {
 	testutil.TagAsSlowTest(t)
+	testSpec := spec.LoadTestSpec()
+
 	kubectlOptions = k8sutil.NewKubectlOptions(TestNamespace)
 	testId := testutil.NewTestId()
 	testChart = chart.NewNrBackendChart(testId)
@@ -39,17 +41,29 @@ func TestStartupBehavior(t *testing.T) {
 	requestSpacing := time.Duration((1/requestsPerSecond)*1000) * time.Millisecond
 	client := nr.NewClient()
 
-	for i, testCase := range spec.GetOnHostTestCases() {
-		t.Run(fmt.Sprintf(testCase.Name), func(t *testing.T) {
-			t.Parallel()
-			assertionFactory := assert.NewNrMetricAssertionFactory(
-				fmt.Sprintf("WHERE host.name like '%s'", testChart.NrQueryHostNamePattern),
-				"5 minutes ago",
-			)
-			assertion := assertionFactory.NewNrMetricAssertion(testCase.Metric, testCase.Assertions)
-			// space out requests to avoid rate limiting
-			time.Sleep(time.Duration(i) * requestSpacing)
-			assertion.ExecuteWithRetries(t, client, 15, 5*time.Second)
-		})
+	testEnvironment := map[string]string{
+		"hostName":    testChart.NrQueryHostNamePattern,
+		"clusterName": kubectlOptions.ContextName,
+	}
+	for _, testCaseSpecName := range testSpec.Slow.TestCaseSpecs {
+		testCaseSpec := spec.LoadTestCaseSpec(testCaseSpecName)
+		whereClause := testCaseSpec.RenderWhereClause(testEnvironment)
+		t.Logf("test case spec where clause: %s", whereClause)
+
+		counter := 0
+		for caseName, testCase := range testCaseSpec.TestCases {
+			t.Run(fmt.Sprintf("%s/%s", testCaseSpecName, caseName), func(t *testing.T) {
+				t.Parallel()
+				assertionFactory := assert.NewNrMetricAssertionFactory(
+					whereClause,
+					"5 minutes ago",
+				)
+				assertion := assertionFactory.NewNrMetricAssertion(testCase.Metric, testCase.Assertions)
+				// space out requests to avoid rate limiting
+				time.Sleep(time.Duration(counter) * requestSpacing)
+				assertion.ExecuteWithRetries(t, client, 24, 5*time.Second)
+			})
+			counter += 1
+		}
 	}
 }

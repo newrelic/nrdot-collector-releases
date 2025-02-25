@@ -1,11 +1,12 @@
 ---
 apiVersion: apps/v1
-kind: DaemonSet
+kind: Deployment
 metadata:
-  name: &app nrdot-collector-daemonset
+  name: &app nrdot-collector-deployment
   labels:
     app: *app
 spec:
+  replicas: {{ .Values.image.repository | hasSuffix "k8s" | ternary 1 0 }}
   selector:
     matchLabels:
       app: *app
@@ -15,30 +16,30 @@ spec:
         app: *app
     spec:
       serviceAccountName: read-k8s-api-account
-      initContainers:
-        # Wait for the backend to be up before starting the collector
-        - name: wait-for-validation
-          image: busybox:latest
-          imagePullPolicy: IfNotPresent
-          command: [ "/bin/sh","-c" ]
-          args: [ 'while [ $(curl -ksw "%{http_code}" "http://validation-backend:8080" -o /dev/null) -ne 200 ]; do sleep 5; echo "health check failed. Waiting for validation service..."; done' ]
       containers:
         - name: *app
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: "{{ .Values.image.pullPolicy }}"
+          args: ["--config", "/etc/nrdot-collector-k8s/config-deployment.yaml"]
           ports:
             - name: health
               containerPort: 13133
           env:
-            - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: "http://validation-backend:4318"
-            - name: NEW_RELIC_LICENSE_KEY
-              value: "NR_LICENSE_KEY_PLACEHOLDER"
-            # k8s distro expects this to be present
             - name: KUBE_NODE_NAME
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: daemonset-secrets
+                  key: backendUrl
+            - name: NEW_RELIC_LICENSE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: daemonset-secrets
+                  key: nrIngestKey
             # used to populate k8s.cluster.name
             - name: K8S_CLUSTER_NAME
               value: {{ .Values.clusterName }}
+

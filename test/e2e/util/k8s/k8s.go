@@ -12,14 +12,16 @@ import (
 )
 
 const (
-	collectorContainerName = "nrdot-collector"
+	daemonsetCollectorId = "nrdot-collector-daemonset"
+	// TODO: use this
+	//deploymentCollectorId = "nrdot-collector-deployment"
 )
 
-var (
-	collectorFilter = metav1.ListOptions{
-		LabelSelector: "app=nrdot-collector",
+func NewCollectorListOptions(appLabel string) metav1.ListOptions {
+	return metav1.ListOptions{
+		LabelSelector: fmt.Sprintf("app=%s", appLabel),
 	}
-)
+}
 
 func NewKubectlOptions(namespacePrefix string) *k8s.KubectlOptions {
 	namespace := newTestNamespace(namespacePrefix, envutil.GetDistro())
@@ -33,9 +35,10 @@ func newTestNamespace(namespacePrefix string, distro string) string {
 
 func WaitForCollectorReady(tb testing.TB, kubectlOptions *k8s.KubectlOptions) corev1.Pod {
 	logCollectorLogsOnFail(tb, kubectlOptions)
+	daemonsetCollectorFilter := NewCollectorListOptions(daemonsetCollectorId)
 	// ensure to fail before running into overall test timeout to allow cleanups to run
-	k8s.WaitUntilNumPodsCreated(tb, kubectlOptions, collectorFilter, 1, 6, 10*time.Second)
-	pods := k8s.ListPods(tb, kubectlOptions, collectorFilter)
+	k8s.WaitUntilNumPodsCreated(tb, kubectlOptions, daemonsetCollectorFilter, 1, 6, 10*time.Second)
+	pods := k8s.ListPods(tb, kubectlOptions, daemonsetCollectorFilter)
 	for _, pod := range pods {
 		// ensure to fail before running into overall test timeout to allow cleanups to run
 		k8s.WaitUntilPodAvailable(tb, kubectlOptions, pod.Name, 6, 10*time.Second)
@@ -44,13 +47,14 @@ func WaitForCollectorReady(tb testing.TB, kubectlOptions *k8s.KubectlOptions) co
 }
 
 func logCollectorLogsOnFail(tb testing.TB, kubectlOptions *k8s.KubectlOptions) {
+	daemonsetCollectorFilter := NewCollectorListOptions(daemonsetCollectorId)
 	tb.Cleanup(func() {
 		if tb.Failed() {
-			pods := k8s.ListPods(tb, kubectlOptions, collectorFilter)
+			pods := k8s.ListPods(tb, kubectlOptions, daemonsetCollectorFilter)
 			var logs []string
 			for _, pod := range pods {
 				logs = append(logs, fmt.Sprintf("==========START Collector logs for pod %s:==========", pod.Name))
-				logs = append(logs, k8s.GetPodLogs(tb, kubectlOptions, &pod, collectorContainerName))
+				logs = append(logs, k8s.GetPodLogs(tb, kubectlOptions, &pod, daemonsetCollectorId))
 				logs = append(logs, fmt.Sprintf("==========END Collector logs for pod %s:==========", pod.Name))
 			}
 			toLog := strings.Join(logs, "\n")

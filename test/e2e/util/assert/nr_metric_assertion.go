@@ -9,6 +9,7 @@ import (
 	"log"
 	"reflect"
 	envutil "test/e2e/util/env"
+	"test/e2e/util/spec"
 	"testing"
 	"text/template"
 	"time"
@@ -28,7 +29,7 @@ func NewNrMetricAssertionFactory(entityWhereClause string, since string) NrMetri
 	}
 }
 
-func (f *NrMetricAssertionFactory) NewNrMetricAssertion(metric NrMetric, assertions []NrAssertion) NrMetricAssertion {
+func (f *NrMetricAssertionFactory) NewNrMetricAssertion(metric spec.NrMetric, assertions []spec.NrAssertion) NrMetricAssertion {
 	return NrMetricAssertion{
 		Query: NrBaseQuery{
 			Metric:            metric,
@@ -42,25 +43,14 @@ func (f *NrMetricAssertionFactory) NewNrMetricAssertion(metric NrMetric, asserti
 
 type NrMetricAssertion struct {
 	Query      NrBaseQuery
-	Assertions []NrAssertion
+	Assertions []spec.NrAssertion
 }
 
 type NrBaseQuery struct {
-	Metric            NrMetric
+	Metric            spec.NrMetric
 	EntityWhereClause string
 	Since             string
 	Until             string
-}
-
-type NrMetric struct {
-	Name        string
-	WhereClause string
-}
-
-type NrAssertion struct {
-	AggregationFunction string
-	ComparisonOperator  string
-	Threshold           float64
 }
 
 func (m *NrMetricAssertion) ExecuteWithRetries(t testing.TB, client *newrelic.NewRelic, retries int, retryInterval time.Duration) {
@@ -68,17 +58,17 @@ func (m *NrMetricAssertion) ExecuteWithRetries(t testing.TB, client *newrelic.Ne
 		if attempt > 0 {
 			time.Sleep(retryInterval)
 		}
-		err := m.execute(t, client)
+		err := m.execute(client)
 		if err == nil {
 			return
 		} else {
 			t.Logf("Assertion attempt %d failed with: %+v", attempt, err)
 		}
 	}
-	t.Fatalf("Assertions failed after %d attempts", retries)
+	t.Fatalf("Assertions failed after %d attempts using query: %s", retries, nrdb.NRQL(m.AsQuery()))
 }
 
-func (m *NrMetricAssertion) execute(t testing.TB, client *newrelic.NewRelic) error {
+func (m *NrMetricAssertion) execute(client *newrelic.NewRelic) error {
 	query := nrdb.NRQL(m.AsQuery())
 	successfulAssertions := 0
 	response, err := client.Nrdb.Query(envutil.GetNrAccountId(), query)
@@ -98,7 +88,7 @@ func (m *NrMetricAssertion) execute(t testing.TB, client *newrelic.NewRelic) err
 		if valueType.Kind() != reflect.Float64 {
 			return errors.New(fmt.Sprintf("Expected float64 for assertion %+v, but received %+v in response %+v. Retrying...", actualContainer, valueType, response.Results))
 		}
-		if !assertion.satisfiesCondition(actualValue.(float64)) {
+		if !satisfiesCondition(assertion, actualValue.(float64)) {
 			return errors.New(fmt.Sprintf("Expected %s(%s) %s %f, but received %f", assertion.AggregationFunction, m.Query.Metric.Name, assertion.ComparisonOperator, assertion.Threshold, actualValue))
 		}
 		successfulAssertions += 1
@@ -107,6 +97,18 @@ func (m *NrMetricAssertion) execute(t testing.TB, client *newrelic.NewRelic) err
 		return errors.New(fmt.Sprintf("Expected %d successful assertions, but received %d. Check logs for more details", len(m.Assertions), successfulAssertions))
 	}
 	return nil
+}
+
+func satisfiesCondition(assertion spec.NrAssertion, actualValue float64) bool {
+	switch assertion.ComparisonOperator {
+	case ">":
+		return actualValue > assertion.Threshold
+	case ">=":
+		return actualValue >= assertion.Threshold
+	default:
+		log.Panicf("Unknown comparison operator: %s", assertion.ComparisonOperator)
+		return false
+	}
 }
 
 func (m *NrMetricAssertion) AsQuery() string {
@@ -128,16 +130,4 @@ SINCE {{ .Query.Since }} UNTIL {{ .Query.Until }}
 		log.Panicf("Couldn't execute template using %+v: %s", m, err)
 	}
 	return query.String()
-}
-
-func (a *NrAssertion) satisfiesCondition(actualValue float64) bool {
-	switch a.ComparisonOperator {
-	case ">":
-		return actualValue > a.Threshold
-	case ">=":
-		return actualValue >= a.Threshold
-	default:
-		log.Panicf("Unknown comparison operator: %s", a.ComparisonOperator)
-		return false
-	}
 }

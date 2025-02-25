@@ -10,3 +10,5 @@ secrets:
 
 collector:
   hostname: nrdot-collector-default-hostname
+
+clusterName: default-cluster-name
