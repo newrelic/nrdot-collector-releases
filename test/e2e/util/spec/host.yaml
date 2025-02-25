@@ -54,14 +54,14 @@ testCases:
         threshold: 0
   host_receiver_disk.io_time:
     metric:
-      name: system.disk.ioTime
+      name: system.disk.io_time
     assertions:
       - aggregationFunction: max
         comparisonOperator: ">"
         threshold: 0
   host_receiver_disk.operation_time_read:
     metric:
-      name: system.disk.operationTime
+      name: system.disk.operation_time
       whereClause: WHERE direction='read'
     assertions:
       - aggregationFunction: max
@@ -69,7 +69,7 @@ testCases:
         threshold: 0
   host_receiver_disk.operation_time_write:
     metric:
-      name: system.disk.operationTime
+      name: system.disk.operation_time
       whereClause: WHERE direction='write'
     assertions:
       - aggregationFunction: max
@@ -93,21 +93,21 @@ testCases:
         threshold: 0
   host_receiver_system.load_1m:
     metric:
-      name: system.cpu.loadAverage.1m
+      name: system.cpu.load_average.1m
     assertions:
       - aggregationFunction: max
         comparisonOperator: ">"
         threshold: 0
   host_receiver_system.load_5m:
     metric:
-      name: system.cpu.loadAverage.5m
+      name: system.cpu.load_average.5m
     assertions:
       - aggregationFunction: max
         comparisonOperator: ">"
         threshold: 0
   host_receiver_system.load_15m:
     metric:
-      name: system.cpu.loadAverage.15m
+      name: system.cpu.load_average.15m
     assertions:
       - aggregationFunction: max
         comparisonOperator: ">="
@@ -131,7 +131,7 @@ testCases:
   host_receiver_memory.usage_slab_reclaimable:
     metric:
       name: system.memory.usage
-      whereClause: WHERE state='slabReclaimable'
+      whereClause: WHERE state='slab_reclaimable'
     assertions:
       - aggregationFunction: max
         comparisonOperator: ">"
@@ -171,7 +171,7 @@ testCases:
   host_receiver_system.paging.operations_out:
     metric:
       name: system.paging.operations
-      whereClause: WHERE direction='pageOut'
+      whereClause: WHERE direction='page_out'
     assertions:
       - aggregationFunction: max
         comparisonOperator: ">="
@@ -179,7 +179,7 @@ testCases:
   host_receiver_system.paging.operations_in:
     metric:
       name: system.paging.operations
-      whereClause: WHERE direction='pageIn'
+      whereClause: WHERE direction='page_in'
     assertions:
       - aggregationFunction: max
         comparisonOperator: ">="
