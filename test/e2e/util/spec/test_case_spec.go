@@ -28,22 +28,22 @@ type TestCaseSpec struct {
 }
 
 type RenderableTemplate struct {
-	template string   `yaml:"template"`
-	vars     []string `yaml:"vars"`
+	Template string   `yaml:"template"`
+	Vars     []string `yaml:"vars"`
 }
 
 func (t *TestCaseSpec) RenderWhereClause(vars map[string]string) string {
-	tmpl, err := template.New("whereClause").Parse(t.WhereClause.template)
+	tmpl, err := template.New("whereClause").Parse(t.WhereClause.Template)
 	if err != nil {
 		panic(err)
 	}
-	for _, requiredVar := range t.WhereClause.vars {
+	for _, requiredVar := range t.WhereClause.Vars {
 		if _, ok := vars[requiredVar]; !ok {
 			panic(fmt.Errorf("missing required variable '%s' for where clause", requiredVar))
 		}
 	}
-	var rendered bytes.Buffer
-	err = tmpl.Execute(&rendered, vars)
+	rendered := new(bytes.Buffer)
+	err = tmpl.Execute(rendered, vars)
 	if err != nil {
 		panic(err)
 	}

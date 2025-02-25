@@ -9,9 +9,6 @@ import (
 )
 
 type TestSpec struct {
-	Fast struct {
-		TestCaseSpecs []string `yaml:"testCaseSpecs"`
-	} `yaml:"fast"`
 	Slow struct {
 		TestCaseSpecs []string `yaml:"testCaseSpecs"`
 	} `yaml:"slow"`
