@@ -1,3 +1,4 @@
+{{- if .Values.image.repository | hasSuffix "k8s" }}
 # namespace suffixes to avoid conflicts when installing chart multiple times
 apiVersion: v1
 kind: ServiceAccount
@@ -9,28 +10,47 @@ kind: ClusterRole
 metadata:
   # namespace suffix to avoid conflicts when installing chart multiple times
   name: read-k8s-api-role-{{ .Release.Namespace }}
-# if not mentioned otherwise, required rules copied from:
-# - k8seventsreceiever: https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/k8seventsreceiver/README.md#rbac
+# if not mentioned otherwise, required rules copied from nr-k8s-otel-collector helm chart: https://github.com/newrelic/helm-charts/blob/3e7dc5d77694c3d661dc6509b2def6076b660c34/charts/nr-k8s-otel-collector/templates/clusterrole.yaml
 rules:
   - apiGroups:
       - ""
     resources:
+      # following required for k8s_events, k8s_cluster receiver
       - events
-      - endpoints # prometheus/api_server
+      # following required for k8s_cluster receiver
       - namespaces
-      - namespaces/status
+      # following required for prometheus, k8s_cluster receiver
       - nodes
-      - nodes/spec
+      - nodes/metrics
       - pods
       - pods/status
-      - replicationcontrollers
-      - replicationcontrollers/status
-      - resourcequotas
       - services
+      - endpoints
     verbs:
       - get
       - list
       - watch
+  - apiGroups:
+      - ""
+    resources:
+      # following required for hostmetrics, prometheus receiver
+      - nodes/spec
+      - nodes/stats
+      - nodes/proxy
+      # following required for filelog receiver
+      - pods/logs
+    verbs:
+      - get
+  # following required for prometheus receiver
+  - apiGroups:
+      - ""
+    resources:
+      - replicationcontrollers
+      - resourcequotas
+    verbs:
+      - list
+      - watch
+  # following required for prometheus receiver
   - apiGroups:
       - apps
     resources:
@@ -42,40 +62,26 @@ rules:
       - get
       - list
       - watch
-  - apiGroups:
-      - extensions
-    resources:
-      - daemonsets
-      - deployments
-      - replicasets
-    verbs:
-      - get
-      - list
-      - watch
+  # following required for prometheus receiver
   - apiGroups:
       - batch
     resources:
       - jobs
       - cronjobs
     verbs:
-      - get
       - list
       - watch
+  # following required for prometheus receiver
   - apiGroups:
       - autoscaling
     resources:
       - horizontalpodautoscalers
     verbs:
-      - get
       - list
       - watch
-  # kubeletstatsreceiver: https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/kubeletstatsreceiver#role-based-access-control
-  - apiGroups: [ "" ]
-    resources: [ "nodes/stats" ]
-    verbs: [ "get" ]
-  - apiGroups: [ "" ]
-    resources: [ "nodes/proxy" ]
-    verbs: [ "get" ]
+  # following required for prometheus receiver
+  - nonResourceURLs: ["/metrics"]
+    verbs: ["get"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -89,3 +95,4 @@ subjects:
   - kind: ServiceAccount
     name: read-k8s-api-account
     namespace: {{ .Release.Namespace }}
+{{- end }}

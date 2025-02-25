@@ -1,3 +1,4 @@
+{{- if .Values.image.repository | hasSuffix "k8s" }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -6,7 +7,7 @@ metadata:
   labels:
     app: *app
 spec:
-  replicas: {{ .Values.image.repository | hasSuffix "k8s" | ternary 1 0 }}
+  replicas: 1
   selector:
     matchLabels:
       app: *app
@@ -32,14 +33,14 @@ spec:
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               valueFrom:
                 secretKeyRef:
-                  name: daemonset-secrets
+                  name: collector-secrets
                   key: backendUrl
             - name: NEW_RELIC_LICENSE_KEY
               valueFrom:
                 secretKeyRef:
-                  name: daemonset-secrets
+                  name: collector-secrets
                   key: nrIngestKey
             # used to populate k8s.cluster.name
             - name: K8S_CLUSTER_NAME
               value: {{ .Values.clusterName }}
-
+{{- end }}

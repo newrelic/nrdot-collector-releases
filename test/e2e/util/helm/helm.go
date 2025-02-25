@@ -13,6 +13,7 @@ func NewHelmOptions(kubectlOptions *k8s.KubectlOptions, chartValues map[string]s
 	installArg := []string{
 		"--namespace", kubectlOptions.Namespace,
 		"--create-namespace",
+		"--dependency-update",
 	}
 	for key, val := range chartValues {
 		installArg = append(installArg, "--set", fmt.Sprintf("%s=%s", key, val))
