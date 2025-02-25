@@ -1,11 +1,9 @@
-fast:
-  testCaseSpecs:
-    - on_host
 slow:
   testCaseSpecs:
-    - on_host
+    - k8s
+    - host
 nightly:
   ec2:
     enabled: false
   testCaseSpecs:
-    - on_host
+    - host

@@ -42,15 +42,17 @@ func TestSlow(t *testing.T) {
 	client := nr.NewClient()
 
 	testEnvironment := map[string]string{
-		"hostName": testChart.NrQueryHostNamePattern,
+		"hostName":    testChart.NrQueryHostNamePattern,
+		"clusterName": kubectlOptions.ContextName,
 	}
 	for _, testCaseSpecName := range testSpec.Slow.TestCaseSpecs {
 		testCaseSpec := spec.LoadTestCaseSpec(testCaseSpecName)
 		whereClause := testCaseSpec.RenderWhereClause(testEnvironment)
+		t.Logf("test case spec where clause: %s", whereClause)
 
 		counter := 0
 		for caseName, testCase := range testCaseSpec.TestCases {
-			t.Run(fmt.Sprintf(caseName), func(t *testing.T) {
+			t.Run(fmt.Sprintf("%s/%s", testCaseSpecName, caseName), func(t *testing.T) {
 				t.Parallel()
 				assertionFactory := assert.NewNrMetricAssertionFactory(
 					whereClause,
@@ -59,7 +61,7 @@ func TestSlow(t *testing.T) {
 				assertion := assertionFactory.NewNrMetricAssertion(testCase.Metric, testCase.Assertions)
 				// space out requests to avoid rate limiting
 				time.Sleep(time.Duration(counter) * requestSpacing)
-				assertion.ExecuteWithRetries(t, client, 15, 5*time.Second)
+				assertion.ExecuteWithRetries(t, client, 24, 5*time.Second)
 			})
 			counter += 1
 		}

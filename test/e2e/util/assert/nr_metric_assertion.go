@@ -65,7 +65,7 @@ func (m *NrMetricAssertion) ExecuteWithRetries(t testing.TB, client *newrelic.Ne
 			t.Logf("Assertion attempt %d failed with: %+v", attempt, err)
 		}
 	}
-	t.Fatalf("Assertions failed after %d attempts", retries)
+	t.Fatalf("Assertions failed after %d attempts using query: %s", retries, nrdb.NRQL(m.AsQuery()))
 }
 
 func (m *NrMetricAssertion) execute(client *newrelic.NewRelic) error {
