@@ -12,6 +12,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # required for tag metadata
+          token: ${{ secrets.RELEASE_TOKEN }} # Uses a PAT to ensure subsequent workflows get triggered
 
       - name: Set up Git
         run: |
