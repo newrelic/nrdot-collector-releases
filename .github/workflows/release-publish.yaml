@@ -73,6 +73,12 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ !github.event.release.prerelease && !github.event.release.draft }}
     steps:
+      - name: Sync Fork
+        run: |
+          gh repo sync otelcomm-bot/docs-website -b develop --force --source newrelic/docs-website
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          
       - name: Checkout target repository
         uses: actions/checkout@v4
         with:
