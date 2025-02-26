@@ -2,7 +2,7 @@ locals {
   test_spec                                       = yamldecode(file("${path.module}/../../../distributions/${var.distro}/test-spec.yaml"))
   releases_bucket_name                            = "nr-releases"
   required_permissions_boundary_arn_for_new_roles = "arn:aws:iam::${var.aws_account_id}:policy/resource-provisioner-boundary"
-  k8s_namespace = "nightly-${var.distro}"
+  k8s_namespace                                   = "nightly-${var.distro}"
 }
 
 resource "random_string" "deploy_id" {
@@ -19,8 +19,9 @@ resource "helm_release" "ci_e2e_nightly" {
   name  = "ci-e2etest-nightly-${var.distro}"
   chart = "../../charts/nr_backend"
 
-  create_namespace = true
-  namespace        = local.k8s_namespace
+  create_namespace  = true
+  namespace         = local.k8s_namespace
+  dependency_update = true
 
   set {
     name  = "image.repository"
