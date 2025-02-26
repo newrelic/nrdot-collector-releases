@@ -13,7 +13,7 @@ on:
       test_cluster_name:
         required: false
         type: string
-        default: 'ci-e2etest-${{ github.run_id }}-${{ github.run_attempt }}'
+        default: 'ci-${{ github.run_id }}-${{ github.run_attempt }}'
     secrets:
       registry:
         required: false
