@@ -67,3 +67,67 @@ jobs:
             --tag "newrelic/${{ matrix.distribution }}:${version}" \
             --tag "newrelic/${{ matrix.distribution }}:latest" \
             "${image_name}:${version}"
+
+  create-docs-pr:
+    name: Create PR with Release Notes
+    runs-on: ubuntu-latest
+    if: ${{ !github.event.release.prerelease && !github.event.release.draft }}
+    steps:
+      - name: Sync Fork
+        run: |
+          gh repo sync otelcomm-bot/docs-website -b develop --force --source newrelic/docs-website
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          
+      - name: Checkout target repository
+        uses: actions/checkout@v4
+        with:
+          repository: otelcomm-bot/docs-website
+          token: ${{ secrets.RELEASE_TOKEN }}
+          path: docs-website
+          fetch-depth: 1
+          ref: develop
+          sparse-checkout: src/content/docs/release-notes
+
+      - name: Setup ENV
+        run: |
+          version="${{ github.event.release.tag_name }}"
+          release_date=$(date -u -d "${{ github.event.release.published_at }}" +"%Y-%m-%d")
+          echo "release_date=${release_date}" >> $GITHUB_ENV
+          echo "version=${version}" >> $GITHUB_ENV
+          echo "branch=nrdot-release-notes-${version}-${release_date}" >> $GITHUB_ENV
+
+      - name: Commit Release Notes
+        run: |
+          cd docs-website/src/content/docs/release-notes
+          git switch -c ${{ env.branch }}
+         
+          release_notes_file="nrdot-release-notes/nrdot-${{ env.release_date }}.mdx"
+
+          echo "---" > $release_notes_file
+          echo "subject: NRDOT" >> $release_notes_file
+          echo "releaseDate: '${{ env.release_date }}'" >> $release_notes_file
+          echo "version: ${{ env.version }}" >> $release_notes_file
+          echo "metaDescription: Release notes for NRDOT Collector version ${{ env.version }}" >> $release_notes_file
+          echo "---" >> $release_notes_file
+          echo "" >> $release_notes_file
+          echo "${{ github.event.release.body }}" >> $release_notes_file
+
+          echo "Release notes file created at ${release_notes_file} with:"
+          cat $release_notes_file
+
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add $release_notes_file
+          git commit -m "feat: Add release notes for NRDOT ${{ env.version }}"
+          git push origin ${{ env.branch }}
+      
+      - name: Issue PR
+        if: ${{ !env.ACT }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: |
+          gh pr create --title "Add release notes for NRDOT ${{ env.version }}" \
+           --body "Add release notes for NRDOT ${{ env.version }}\n\n Note: PR is auto-generated. If anything looks off, please contact the maintainers of ${{ github.event.repository.name }}." \
+           --repo newrelic/docs-website \
+           --base develop --head ${{ env.branch }}
