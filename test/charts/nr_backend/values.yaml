@@ -12,3 +12,8 @@ collector:
   hostname: nrdot-collector-default-hostname
 
 clusterName: default-cluster-name
+
+# provides metrics required for entity synthesis of various k8s resources
+kube-state-metrics:
+  enabled: true
+  prometheusScrape: false
