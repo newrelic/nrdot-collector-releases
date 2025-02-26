@@ -26,7 +26,7 @@ jobs:
     with:
       nightly: true
       distribution: ${{ matrix.distribution }}
-      test_cluster_name: 'ci-e2etest-nightly-${{ matrix.distribution }}-${{ github.run_id }}-${{ github.run_attempt }}'
+      test_cluster_name: '${{ matrix.distribution }}-${{ github.run_id }}-${{ github.run_attempt }}'
     secrets:
       docker_hub_username: ${{ secrets.OTELCOMM_DOCKER_HUB_USERNAME }}
       docker_hub_password: ${{ secrets.OTELCOMM_DOCKER_HUB_PASSWORD }}
