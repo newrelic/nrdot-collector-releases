@@ -36,9 +36,6 @@ func TestSlow(t *testing.T) {
 	k8sutil.WaitForCollectorReady(t, kubectlOptions)
 	// wait for at least one default metric harvest cycle (60s) and some buffer to allow NR ingest to process data
 	time.Sleep(70 * time.Second)
-	// space out requests to not run into 25 concurrent request limit
-	requestsPerSecond := 4.0
-	requestSpacing := time.Duration((1/requestsPerSecond)*1000) * time.Millisecond
 	client := nr.NewClient()
 
 	testEnvironment := map[string]string{
@@ -59,8 +56,6 @@ func TestSlow(t *testing.T) {
 					"5 minutes ago",
 				)
 				assertion := assertionFactory.NewNrMetricAssertion(testCase.Metric, testCase.Assertions)
-				// space out requests to avoid rate limiting
-				time.Sleep(time.Duration(counter) * requestSpacing)
 				assertion.ExecuteWithRetries(t, client, 24, 5*time.Second)
 			})
 			counter += 1

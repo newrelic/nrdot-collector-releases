@@ -35,9 +35,6 @@ func TestNightly(t *testing.T) {
 	testutil.TagAsNightlyTest(t)
 	testSpec := spec.LoadTestSpec()
 
-	// space out requests to not run into 25 concurrent request limit
-	requestsPerSecond := 4.0
-	requestSpacing := time.Duration((1/requestsPerSecond)*1000) * time.Millisecond
 	client := nr.NewClient()
 
 	for _, sut := range []spec.NightlySystemUnderTest{ec2Ubuntu22, ec2Ubuntu24, k8sNode} {
@@ -60,8 +57,6 @@ func TestNightly(t *testing.T) {
 						"2 hour ago",
 					)
 					assertion := assertionFactory.NewNrMetricAssertion(testCase.Metric, testCase.Assertions)
-					// space out requests to avoid rate limiting
-					time.Sleep(time.Duration(counter) * requestSpacing)
 					assertion.ExecuteWithRetries(t, client, 24, 5*time.Second)
 				})
 				counter += 1
