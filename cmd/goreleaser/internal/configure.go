@@ -403,7 +403,7 @@ func Sign() []config.Sign {
 	return []config.Sign{
 		{
 			Artifacts: "all",
-			Signature: "${artifact}.sig",
+			Signature: "${artifact}.asc",
 			Args: []string{
 				"--batch",
 				"-u",
@@ -411,6 +411,7 @@ func Sign() []config.Sign {
 				"--output",
 				"${signature}",
 				"--detach-sign",
+				"--armor",
 				"${artifact}",
 			},
 		},
