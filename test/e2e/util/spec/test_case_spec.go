@@ -51,7 +51,7 @@ func (t *TestCaseSpec) RenderWhereClause(vars map[string]string) string {
 }
 
 func (t *TestCaseSpec) GetTestCasesWithout(excludedMetrics []string) map[string]TestCase {
-	var filteredTestCases map[string]TestCase
+	filteredTestCases := map[string]TestCase{}
 	for testCaseName, testCase := range t.TestCases {
 		included := true
 		for _, skippedMetric := range excludedMetrics {
