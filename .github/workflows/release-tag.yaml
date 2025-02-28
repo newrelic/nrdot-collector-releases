@@ -16,6 +16,14 @@ jobs:
           fetch-depth: 0 # required for tag metadata
           token: ${{ secrets.RELEASE_TOKEN }} # Uses a PAT to ensure subsequent workflows get triggered
 
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@v6
+        with:
+          gpg_private_key: ${{ secrets.OTELCOMM_BOT_GPG_PRIVATE_KEY_BASE64 }}
+          passphrase: ${{ secrets.OTELCOMM_BOT_GPG_PASSPHRASE }}
+          git_user_signingkey: true
+          git_commit_gpgsign: true
+
       - name: Set up Git
         run: |
           git config --global user.name 'github-actions[bot]'
@@ -39,5 +47,5 @@ jobs:
       - name: Create and push tag
         if: env.exists == 'false'
         run: |
-          git tag -a "${{ env.version }}" -m "Release version ${{ env.version }}"
+          git tag -s -a "${{ env.version }}" -m "Release version ${{ env.version }}"
           git push origin "${{ env.version }}"
