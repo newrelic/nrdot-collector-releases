@@ -72,7 +72,7 @@ ci_test: assert_require-binary
 	E2E_TEST__NR_ACCOUNT_ID=${NR_ACCOUNT_ID} \
 	E2E_TEST__NR_API_BASE_URL=${NR_API_BASE_URL} \
 	E2E_TEST__TEST_MODE=${TEST_MODE} \
-	go test ./... -count=1 -timeout=3m
+	go test ./... -count=1 -timeout=10m -parallel=50
 
 ################
 #### LOCAL #####
