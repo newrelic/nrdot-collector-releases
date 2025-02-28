@@ -74,8 +74,8 @@ jobs:
         id: import_gpg
         uses: crazy-max/ghaction-import-gpg@v6
         with:
-          gpg_private_key: ${{ secrets.OHAI_GPG_PRIVATE_KEY_BASE64 }}
-          passphrase: ${{ secrets.OHAI_GPG_PASSPHRASE }}
+          gpg_private_key: ${{ secrets.OTELCOMM_GPG_PRIVATE_KEY_BASE64 }}
+          passphrase: ${{ secrets.OTELCOMM_GPG_PASSPHRASE }}
 
       - name: Write GPG to path in memory for signing rpm/deb
         id: write_gpg_to_path
@@ -84,7 +84,7 @@ jobs:
           echo "$GPG_PRIVATE_KEY" | base64 -d >> "$GPG_KEY_PATH"
           echo "gpg_key_path=$GPG_KEY_PATH" >> $GITHUB_OUTPUT
         env:
-          GPG_PRIVATE_KEY: ${{ secrets.OHAI_GPG_PRIVATE_KEY_BASE64 }}
+          GPG_PRIVATE_KEY: ${{ secrets.OTELCOMM_GPG_PRIVATE_KEY_BASE64 }}
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -104,7 +104,7 @@ jobs:
         id: goreleaser
         uses: goreleaser/goreleaser-action@v6
         env:
-          NFPM_PASSPHRASE: ${{ secrets.OHAI_GPG_PASSPHRASE }}
+          NFPM_PASSPHRASE: ${{ secrets.OTELCOMM_GPG_PASSPHRASE }}
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
           GPG_KEY_PATH: ${{ steps.write_gpg_to_path.outputs.gpg_key_path }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

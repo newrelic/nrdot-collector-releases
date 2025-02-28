@@ -26,8 +26,8 @@ jobs:
     secrets:
       docker_hub_username: ${{ secrets.OTELCOMM_DOCKER_HUB_USERNAME }}
       docker_hub_password: ${{ secrets.OTELCOMM_DOCKER_HUB_PASSWORD }}
-      gpg_private_key: ${{ secrets.OHAI_GPG_PRIVATE_KEY_BASE64 }}
-      gpg_passphrase: ${{ secrets.OHAI_GPG_PASSPHRASE }}
+      gpg_private_key: ${{ secrets.OTELCOMM_GPG_PRIVATE_KEY_BASE64 }}
+      gpg_passphrase: ${{ secrets.OTELCOMM_GPG_PASSPHRASE }}
       registry: 'newrelic'
 
   terraform:

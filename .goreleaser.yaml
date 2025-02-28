@@ -28,7 +28,7 @@ release:
 changelog:
   sort: asc
   use: github
-  format: "{{ .Message }} ({{ with .AuthorUsername }}@{{ . }}{{ else }}{{ .AuthorName }} <{{ .AuthorEmail }}>{{ end }})"
+  format: "{{ .Message }}"
   groups:
     - title: Features
       regexp: "^.*(feat:|feat\\/|feat(\\([^\\)]*\\)):).*"

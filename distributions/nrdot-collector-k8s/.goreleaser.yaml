@@ -93,6 +93,7 @@ signs:
       - --output
       - ${signature}
       - --detach-sign
+      - --armor
       - ${artifact}
-    signature: ${artifact}.sig
+    signature: ${artifact}.asc
     artifacts: all
