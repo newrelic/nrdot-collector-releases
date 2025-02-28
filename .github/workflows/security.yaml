@@ -18,13 +18,13 @@ jobs:
     strategy:
       matrix:
         image:
-          - newrelic/nrdot-collector-host
-          - newrelic/nrdot-collector-k8s
+          - nrdot-collector-host
+          - nrdot-collector-k8s
     steps:
       - name: Run Trivy image vulnerability scanner
         uses: aquasecurity/trivy-action@0.29.0
         with:
-          image-ref: ${{ matrix.image }}:${{ inputs.tag }}
+          image-ref: newrelic/${{ matrix.image }}:${{ inputs.tag }}
           format: sarif
           output: trivy-${{ matrix.image }}-results.sarif
           vuln-type: os,library
