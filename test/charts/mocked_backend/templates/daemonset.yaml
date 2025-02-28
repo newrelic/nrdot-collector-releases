@@ -33,7 +33,7 @@ spec:
               value: "http://validation-backend:4318"
             - name: NEW_RELIC_LICENSE_KEY
               value: "NR_LICENSE_KEY_PLACEHOLDER"
-            # k8s distro expects this to be present
+            {{- if .Values.image.repository | hasSuffix "k8s" }}
             - name: KUBE_NODE_NAME
               valueFrom:
                 fieldRef:
@@ -41,3 +41,4 @@ spec:
             # used to populate k8s.cluster.name
             - name: K8S_CLUSTER_NAME
               value: {{ .Values.clusterName }}
+            {{- end }}
