@@ -42,13 +42,13 @@ spec:
                 secretKeyRef:
                   name: collector-secrets
                   key: nrIngestKey
-            {{- if .Values.image.repository | hasSuffix "k8s" }}
             - name: KUBE_NODE_NAME
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: "host.name={{ .Values.collector.hostname }}-$(KUBE_NODE_NAME)"
+            {{- if .Values.image.repository | hasSuffix "k8s" }}
             - name: K8S_CLUSTER_NAME
               value: {{ .Values.clusterName }}
             {{- end }}
-            - name: OTEL_RESOURCE_ATTRIBUTES
-              value: "host.name={{ .Values.collector.hostname }}-$(KUBE_NODE_NAME)"
