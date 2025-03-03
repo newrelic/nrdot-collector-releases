@@ -52,6 +52,11 @@ resource "helm_release" "ci_e2e_nightly" {
     name  = "collector.hostname"
     value = "${var.test_environment}-${random_string.deploy_id.result}-${var.distro}-k8s_node"
   }
+
+  set {
+    name = "clusterName"
+    value = data.aws_eks_cluster.eks_cluster.name
+  }
 }
 
 module "ci_e2e_ec2" {
