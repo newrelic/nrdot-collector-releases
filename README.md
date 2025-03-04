@@ -11,6 +11,8 @@ Current list of distributions:
 - [nrdot-collector-host](./distributions/nrdot-collector-host/): distribution focused on monitoring host metrics and logs
 - [nrdot-collector-k8s](./distributions/nrdot-collector-k8s/): distribution focused on monitoring a Kubernetes cluster
 
+Please refer to the README of each distribution for documentation.
+
 ## Support
 
 New Relic hosts and moderates an online forum where customers can interact with New Relic employees as well as other customers to get help and share best practices. You can find this project's topic/threads here: [New Relic Community](https://forum.newrelic.com).
