@@ -78,7 +78,7 @@ for cmd in curl tee; do
 done
 
 export collector_distro="nrdot-collector-host"
-export collector_version="0.8.11"
+export collector_version="1.0.0"
 export collector_arch="amd64"
 curl "https://github.com/newrelic/nrdot-collector-releases/releases/download/${collector_version}/${collector_distro}_${collector_version}_linux_${collector_arch}.deb" --location --output collector.deb
 # This automatically starts the collector as a systemd service
