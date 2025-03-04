@@ -62,8 +62,6 @@ for file in $ARTIFACTS_DIR/*.asc; do
 done
 ```
 
-TODO: add gpg verification instructions using https://github.com/newrelic/nrdot-collector-releases/blob/main/nrdot.gpg
-
 #### Example: Installing the host distribution on Ubuntu with systemd
 ```bash
 #!/bin/bash
@@ -83,8 +81,10 @@ export collector_arch="amd64"
 curl "https://github.com/newrelic/nrdot-collector-releases/releases/download/${collector_version}/${collector_distro}_${collector_version}_linux_${collector_arch}.deb" --location --output collector.deb
 # This automatically starts the collector as a systemd service
 sudo dpkg -i collector.deb
+
 # Add your New Relic ingest key
 echo 'NEW_RELIC_LICENSE_KEY=INSERT_YOUR_INGEST_KEY' | sudo tee -a /etc/${collector_distro}/${collector_distro}.conf > /dev/null
+
 # Restart to use new license key
 sudo systemctl reload-or-restart "${collector_distro}.service"
 # Data should now be flowing to New Relic and be available within a few minutes
