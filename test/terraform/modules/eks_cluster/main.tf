@@ -64,6 +64,8 @@ module "eks_cluster" {
   enable_cluster_creator_admin_permissions = true
   iam_role_permissions_boundary            = var.permission_boundary
 
+  cloudwatch_log_group_retention_in_days = 1
+
   eks_managed_node_group_defaults = {
     iam_role_permissions_boundary = var.permission_boundary
 
