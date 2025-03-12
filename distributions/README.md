@@ -1,5 +1,9 @@
 # Collector Distributions
 
+This README covers topics that apply to all distributions. For distribution-specific information please refer to:
+- [nrdot-collector-host](./nrdot-collector-host/README.md)
+- [nrdot-collector-k8s](./nrdot-collector-k8s/README.md)
+
 ## Installation
 
 ### Docker
@@ -96,7 +100,7 @@ sudo systemctl reload-or-restart "${collector_distro}.service"
 
 The full list of components is available in the respective `manifest.yaml`
 
-### Customize Default Configuration
+### Configuration
 
 The default configuration exposes some options via environment variables:
 
@@ -106,3 +110,7 @@ The default configuration exposes some options via environment variables:
 | `NEW_RELIC_MEMORY_LIMIT_MIB` | Maximum amount of memory to be used | 100 |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | New Relic OTLP endpoint to export metrics to, see [official docs](https://docs.newrelic.com/docs/opentelemetry/best-practices/opentelemetry-otlp/) | `https://otlp.nr-data.net` |
 
+
+## Troubleshooting
+
+Please refer to our [troubleshooting guide](./TROUBLESHOOTING.md).
