@@ -47,7 +47,7 @@ var (
 		HostDistro: "config.yaml",
 		// k8s missing due to not packaged via nfpm
 	}
-	DockerIncludedConfigs = map[string][]string{
+	IncludedConfigs = map[string][]string{
 		HostDistro: {"config.yaml"},
 		K8sDistro:  {"config-daemonset.yaml", "config-deployment.yaml"},
 	}
@@ -171,10 +171,19 @@ func Archives(dist string) []config.Archive {
 // Archive configures a goreleaser archive (tarball).
 // https://goreleaser.com/customization/archive/
 func Archive(dist string) config.Archive {
+	files := make([]config.File, 0)
+	if configFiles, ok := IncludedConfigs[dist]; ok {
+		for _, configFile := range configFiles {
+			files = append(files, config.File{
+				Source: configFile,
+			})
+		}
+	}
 	return config.Archive{
 		ID:           dist,
 		NameTemplate: "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}",
 		Builds:       []string{dist},
+		Files:        files,
 		FormatOverrides: []config.FormatOverride{
 			{
 				Goos: "windows", Formats: []string{"zip"},
@@ -302,7 +311,7 @@ func DockerImage(dist string, nightly bool, arch string, armVersion string) conf
 		return fmt.Sprintf("--label=org.opencontainers.image.%s={{%s}}", name, template)
 	}
 	files := make([]string, 0)
-	if configFiles, ok := DockerIncludedConfigs[dist]; ok {
+	if configFiles, ok := IncludedConfigs[dist]; ok {
 		for _, configFile := range configFiles {
 			files = append(files, configFile)
 		}
