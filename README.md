@@ -11,7 +11,7 @@ Current list of distributions:
 - [nrdot-collector-host](./distributions/nrdot-collector-host/): distribution focused on monitoring host metrics and logs
 - [nrdot-collector-k8s](./distributions/nrdot-collector-k8s/): distribution focused on monitoring a Kubernetes cluster
 
-Please refer to the README of each distribution for documentation.
+Please refer to [this README](./distributions/README.md) for documentation.
 
 ## Support
 

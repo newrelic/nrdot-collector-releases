@@ -1,0 +1,19 @@
+# Troubleshooting for nrdot-collector-host
+
+For general NRDOT troubleshooting, see [this guide](../TROUBLESHOOTING.md). This document assumes you are familiar with
+the troubleshooting tools mentioned.
+
+## Known issues
+
+### No `root_path` in containerized environments
+The `hostmetricsreceiver` auto-detects the files to scrape system metrics from. When running in a container, this causes issues as the receiver would then scrape metrics of the container instead of the host system which you most likely want to monitor. In order to bridge this gap, the receiver provides the `root_path` option which allows you to specify the path where the host file system is available to the collector, most commonly by mounting it into the container. The warning indicating this issue looks like this:
+```
+2025-01-01T21:08:21.097Z	warn	filesystemscraper/factory.go:48	No `root_path` config set when running in docker environment, will report container filesystem stats. See https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/hostmetricsreceiver#collecting-host-metrics-from-inside-a-container-linux-only	{"otelcol.component.id": "hostmetrics", "otelcol.component.kind": "Receiver", "otelcol.signal": "metrics"}
+```
+In order to resolve this, make sure to follow the [receiver's docs](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/hostmetricsreceiver/README.md#collecting-host-metrics-from-inside-a-container-linux-only) to mount the host file system into the container at the `root_path` and configure the `root_path` accordingly, e.g.
+```bash
+docker run -v /:/hostfs \
+-e NEW_RELIC_LICENSE_KEY='license-key' newrelic/nrdot-collector-host \
+--config /etc/nrdot-collector-host/config.yaml \
+--config 'yaml:receivers::hostmetrics::root_path: /hostfs'
+```

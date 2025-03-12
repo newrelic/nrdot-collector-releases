@@ -12,8 +12,12 @@ A distribution of the NRDOT collector focused on
 
 Distribution is available as docker image and as OS-specific package.
 
-### Distribution-specific configuration
+## Configuration
 
 Note: See [general README](../README.md) for information that applies to all distributions.
 
 There is currently no distribution-specific configuration.
+
+## Troubleshooting
+
+Please refer to our [troubleshooting guide](./TROUBLESHOOTING.md).
