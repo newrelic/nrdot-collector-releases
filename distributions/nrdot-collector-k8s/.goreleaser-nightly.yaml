@@ -29,6 +29,9 @@ archives:
       - goos: windows
         formats:
           - zip
+    files:
+      - src: config-daemonset.yaml
+      - src: config-deployment.yaml
 snapshot:
   version_template: '{{ incpatch .Version }}-SNAPSHOT-{{.ShortCommit}}'
 checksum:
