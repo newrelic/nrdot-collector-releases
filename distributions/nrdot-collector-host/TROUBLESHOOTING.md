@@ -5,7 +5,6 @@ the troubleshooting tools mentioned.
 
 ## Known issues
 
-<a name="troubleshooting-no-root-path"></a>
 ### No `root_path` in containerized environments
 The `hostmetricsreceiver` auto-detects the files to scrape system metrics from. When running in a container, this causes issues as the receiver would then scrape metrics of the container instead of the host system which you most likely want to monitor. In order to bridge this gap, the receiver provides the `root_path` option which allows you to specify the path where the host file system is available to the collector, most commonly by mounting it into the container. The warning indicating this issue looks like this:
 ```

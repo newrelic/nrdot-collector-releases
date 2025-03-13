@@ -19,7 +19,7 @@ The following instructions assume you have read and understood the [general inst
 ### Containerized Environments
 If you're deploying the `host` distribution in a containerized environment like docker and want to scrape metrics of a linux host machine,
 make sure to configure the [root_path](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/hostmetricsreceiver/README.md#collecting-host-metrics-from-inside-a-container-linux-only) and mount the host's file system accordingly.
-See also [our troubleshooting guide](./TROUBLESHOOTING.md#troubleshooting-no-root-path) for more details.
+See also [our troubleshooting guide](./TROUBLESHOOTING.md) for more details.
 
 
 ## Configuration
