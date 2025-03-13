@@ -5,6 +5,7 @@
 # If they don't, it prints an error message to stderr and exits with status 1.
 
 set -e
+set -x
 
 version=""
 
@@ -22,6 +23,11 @@ done
 
 if [ -z "$version" ]; then
   echo "No version found in any manifest.yaml"
+  exit 1
+fi
+
+if ! grep -q "collector_version=\"${version}\"" ./distributions/README.md; then
+  echo "README was not updated to use ${version} for install instructions"
   exit 1
 fi
 
