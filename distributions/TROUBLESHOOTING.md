@@ -63,6 +63,7 @@ By default, the log `level` is set to `INFO` which is usually sufficient for deb
 2025-01-01T23:19:14.828Z    info    service@v0.121.0/service.go:281    Everything is ready. Begin running and processing data.
 2025-01-01T23:19:16.031Z    info    Metrics    {"otelcol.component.id": "debug", "otelcol.component.kind": "Exporter", "otelcol.signal": "metrics", "resource metrics": 4, "metrics": 9, "data points": 32}
 ```
+The logs are written to `stderr` unless you installed the collector as a linux package, then you'll have to access the logs via `journalctl | grep nrdot-collector`.
 
 ### Debugexporter
 The [debugexporter](https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/debugexporter/README.md) is a special exporter that logs details about all the telemetry it receives and then drops it. This can be very helpful to quickly validate changes to the configuration without
