@@ -14,8 +14,8 @@ In order to run the collector via docker, you'll have to supply the required env
 docker run -e NEW_RELIC_LICENSE_KEY='your-ingest-license-key' newrelic/nrdot-collector-host
 ```
 
-### OS-specific packages
-For certain distributions (refer to its README), signed OS-specific packages are also available under [Releases](https://github.com/newrelic/opentelemetry-collector-releases/releases) on GitHub.
+### Linux packages and Archives
+All linux packages and archives are available under [Releases](https://github.com/newrelic/opentelemetry-collector-releases/releases), including checksums and signatures.
 
 #### Verifying Signatures
 
@@ -70,52 +70,47 @@ for file in $ARTIFACTS_DIR/*.asc; do
 done
 ```
 
-#### Installation on Ubuntu with systemd
-We will use the `host` distribution as an example.
+#### Packages
+If a distribution provides linux packages (refer to its README), you can follow the instructions below to install them (using the `host` distribution as an example).
+
+> Note: `systemd` is required for automatic service configuration.
+
+##### DEB Installation
 ```bash
-#!/bin/bash
-
-set -e
-
-# Step 1: choose your distro
 export collector_distro="nrdot-collector-host"
-# Step 2: choose the version
 export collector_version="1.0.0"
-# Step 3: Choose the arch - you can check https://github.com/newrelic/nrdot-collector-releases/releases/tag/${collector_version} for available options
-export collector_arch="amd64"
-# Step 4: Configure your license key
+export collector_arch="amd64" # or arm64
 export license_key="YOUR_LICENSE_KEY"
 
-
-
-if command -v dpkg &> /dev/null; then
-    export package_installer_cmd="dpkg -i"
-    export package_extension="deb"
-elif command -v rpm &> /dev/null; then
-    export package_installer_cmd="rpm -i"
-    export package_extension="rpm"
-else
-    echo "Didn't detect supported package managers: dpkg, rpm - please install manually by using the tar.gz"
-    exit 1
-fi
-for cmd in curl tee; do
-    if ! command -v $cmd &> /dev/null; then
-        echo "$cmd could not be found. Please install $cmd."
-        exit 1
-    fi
-done
-
-# Download the package
-curl "https://github.com/newrelic/nrdot-collector-releases/releases/download/${collector_version}/${collector_distro}_${collector_version}_linux_${collector_arch}.${package_extension}" --location --output "collector.${package_extension}"
-# This automatically starts the collector as a systemd service
-sudo ${package_installer_cmd} "collector.${package_extension}"
-
-# Add your New Relic ingest key to the systemd config
+curl "https://github.com/newrelic/nrdot-collector-releases/releases/download/${collector_version}/${collector_distro}_${collector_version}_linux_${collector_arch}.deb" --location --output collector.deb
+sudo dpkg -i collector.deb
 echo "NEW_RELIC_LICENSE_KEY=${license_key}" | sudo tee -a /etc/${collector_distro}/${collector_distro}.conf > /dev/null
-
-# Restart to use new license key
 sudo systemctl reload-or-restart "${collector_distro}.service"
-# Data should now be flowing to New Relic and be available within a few minutes
+```
+
+### RPM Installation
+```bash
+export collector_distro="nrdot-collector-host"
+export collector_version="1.0.0"
+export collector_arch="x86_64" # or arm64
+export license_key="YOUR_LICENSE_KEY"
+
+curl "https://github.com/newrelic/nrdot-collector-releases/releases/download/${collector_version}/${collector_distro}_${collector_version}_linux_${collector_arch}.rpm" --location --output collector.rpm
+sudo rpm -i collector.rpm
+echo "NEW_RELIC_LICENSE_KEY=${license_key}" | sudo tee -a /etc/${collector_distro}/${collector_distro}.conf > /dev/null
+sudo systemctl reload-or-restart "${collector_distro}.service"
+```
+
+### Archives
+Archives contain the binary and the default configuration which is usually `config.yaml` unless the distro packages multiple defaults, e.g. `nrdot-collector-k8s`.
+```bash
+export collector_distro="nrdot-collector-host"
+export collector_version="1.0.0"
+export collector_arch="amd64" # or arm64
+export license_key="YOUR_LICENSE_KEY"
+curl "https://github.com/newrelic/nrdot-collector-releases/releases/download/${collector_version}/${collector_distro}_${collector_version}_linux_${collector_arch}.tar.gz" --location --output collector.tar.gz
+tar -xzf collector.tar.gz
+NEW_RELIC_LICENSE_KEY="${license_key}" ./nrdot-collector-host --config ./config.yaml 
 ```
 
 ## Configuration
