@@ -7,11 +7,15 @@ This README covers topics that apply to all distributions. For distribution-spec
 ## Installation
 
 ### Docker
-
 Each distribution is available as a Docker image under the [newrelic](https://hub.docker.com/u/newrelic?page=1&search=nrdot-collector) organization on Docker Hub.
 
-### OS-specific packages
-For certain distributions, signed OS-specific packages are also available under [Releases](https://github.com/newrelic/opentelemetry-collector-releases/releases) on GitHub.
+In order to run the collector via docker, you'll have to supply the required environment variables, see also [Configuration](#configuration). Using the `host` distribution as an example:
+```bash
+docker run -e NEW_RELIC_LICENSE_KEY='your-ingest-license-key' newrelic/nrdot-collector-host
+```
+
+### Linux packages and Archives
+All linux packages and archives are available under [Releases](https://github.com/newrelic/opentelemetry-collector-releases/releases), including checksums and signatures.
 
 #### Verifying Signatures
 
@@ -66,42 +70,52 @@ for file in $ARTIFACTS_DIR/*.asc; do
 done
 ```
 
-#### Example: Installing the host distribution on Ubuntu with systemd
+#### Packages
+If a distribution provides linux packages (refer to its README), you can follow the instructions below to install them (using the `host` distribution as an example).
+
+> Note: `systemd` is required for automatic service configuration.
+
+##### DEB Installation
 ```bash
-#!/bin/bash
-
-set -e
-
-for cmd in curl tee; do
-    if ! command -v $cmd &> /dev/null; then
-        echo "$cmd could not be found. Please install $cmd."
-        exit 1
-    fi
-done
-
 export collector_distro="nrdot-collector-host"
 export collector_version="1.0.0"
-export collector_arch="amd64"
+export collector_arch="amd64" # or arm64
+export license_key="YOUR_LICENSE_KEY"
+
 curl "https://github.com/newrelic/nrdot-collector-releases/releases/download/${collector_version}/${collector_distro}_${collector_version}_linux_${collector_arch}.deb" --location --output collector.deb
-# This automatically starts the collector as a systemd service
 sudo dpkg -i collector.deb
-
-# Add your New Relic ingest key
-echo 'NEW_RELIC_LICENSE_KEY=INSERT_YOUR_INGEST_KEY' | sudo tee -a /etc/${collector_distro}/${collector_distro}.conf > /dev/null
-
-# Restart to use new license key
+echo "NEW_RELIC_LICENSE_KEY=${license_key}" | sudo tee -a /etc/${collector_distro}/${collector_distro}.conf > /dev/null
 sudo systemctl reload-or-restart "${collector_distro}.service"
-# Data should now be flowing to New Relic and be available within a few minutes
+```
+
+### RPM Installation
+```bash
+export collector_distro="nrdot-collector-host"
+export collector_version="1.0.0"
+export collector_arch="x86_64" # or arm64
+export license_key="YOUR_LICENSE_KEY"
+
+curl "https://github.com/newrelic/nrdot-collector-releases/releases/download/${collector_version}/${collector_distro}_${collector_version}_linux_${collector_arch}.rpm" --location --output collector.rpm
+sudo rpm -i collector.rpm
+echo "NEW_RELIC_LICENSE_KEY=${license_key}" | sudo tee -a /etc/${collector_distro}/${collector_distro}.conf > /dev/null
+sudo systemctl reload-or-restart "${collector_distro}.service"
+```
+
+### Archives
+Archives contain the binary and the default configuration which is usually `config.yaml` unless the distro packages multiple defaults, e.g. `nrdot-collector-k8s`.
+```bash
+export collector_distro="nrdot-collector-host"
+export collector_version="1.0.0"
+export collector_arch="amd64" # or arm64
+export license_key="YOUR_LICENSE_KEY"
+curl "https://github.com/newrelic/nrdot-collector-releases/releases/download/${collector_version}/${collector_distro}_${collector_version}_linux_${collector_arch}.tar.gz" --location --output collector.tar.gz
+tar -xzf collector.tar.gz
+NEW_RELIC_LICENSE_KEY="${license_key}" ./nrdot-collector-host --config ./config.yaml 
 ```
 
 ## Configuration
 
-### Components
-
-The full list of components is available in the respective `manifest.yaml`
-
-### Configuration
-
+### Customize Default Configuration
 The default configuration exposes some options via environment variables:
 
 | Environment Variable | Description | Default |
@@ -110,6 +124,9 @@ The default configuration exposes some options via environment variables:
 | `NEW_RELIC_MEMORY_LIMIT_MIB` | Maximum amount of memory to be used | 100 |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | New Relic OTLP endpoint to export metrics to, see [official docs](https://docs.newrelic.com/docs/opentelemetry/best-practices/opentelemetry-otlp/) | `https://otlp.nr-data.net` |
 
+### Advanced: Using your own collector configuration
+
+We recommend using the default configuration, but you can always supply your own via the `--config` [flag](https://opentelemetry.io/docs/collector/configuration/). The full list of components available for configuration is available in the respective `manifest.yaml`.
 
 ## Troubleshooting
 
