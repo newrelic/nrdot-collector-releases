@@ -10,6 +10,8 @@ A distribution of the NRDOT collector focused on
 - monitoring the host the collector is deployed on via `hostmetricsreceiver` and `filelogreceiver`
 - support piping other telemetry through it via the `otlpreceiver`
 
+Note: See [general README](../README.md) for information that applies to all distributions.
+
 ## Installation
 
 The following instructions assume you have read and understood the [general installation instructions](../README.md#installation).

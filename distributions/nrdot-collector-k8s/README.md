@@ -6,11 +6,11 @@
 | Stability | `preview`                                                                           |
 | Artifacts | [Docker images on DockerHub](https://hub.docker.com/r/newrelic/nrdot-collector-k8s) |
 
-Note: See [general README](../README.md) for information that applies to all distributions.
-
 A distribution of the NRDOT collector focused on gathering metrics in a kubernetes environment with two different configs:
 - [config-daemonset.yaml](./config-daemonset.yaml) (default): Typically deployed as a `DaemonSet`. Collects node-level metrics via `hostmetricsreceiver`, `filelogreceiver`, `kubeletstatsreceiver` and `prometheusreceiver` (`cAdvisor`, `kubelet`).
 - [config-deployment.yaml](./config-deployment.yaml): Typically deployed as a `Deployment`. Collects cluster-level metrics via `k8seventsreceiver`,  `prometheusreceiver` (`kube-state-metrics`, `apiserver`, `controller-manager`, `scheduler`). Can be enabled by overriding the default docker `CMD`, i.e. `--config /etc/nrdot-collector-k8s/config-deployment.yaml`.
+
+Note: See [general README](../README.md) for information that applies to all distributions.
 
 ## Installation
 The distribution's main purpose is to be a building block for the [nr-k8s-otel-collector](https://github.com/newrelic/helm-charts/tree/master/charts/nr-k8s-otel-collector) helm chart which we recommend using. The helm chart takes care of a lot of configuration required to ensure a smooth operation of the collector and drive the NR Kubernetes experience.
