@@ -13,6 +13,16 @@ Current list of distributions:
 
 Please refer to [this README](./distributions/README.md) for documentation.
 
+## Distribution Governance
+Our intention is that each distribution we maintain serves a specific use case powering a particular slice of the New Relic experience. This ensures that each distribution is easy to understand, has a small attack surface and can be updated quickly to patch security issues or bugs.
+However, this also means that we need to be deliberate about the components we include in a distribution. Our current
+philosophy is that we will only add a new component to a distribution if
+- it is required to support the use case of the distribution
+- we consider it essential for all distributions, e.g. `debugexporter` or `healthcheckextension`
+Our goal is to work with customers and internal teams to iteratively create new distributions when a strong enough use case has been developed and the components to support it have been identified.
+
+Please note that while the set of distributions is still limited, we encourage you to also explore the distributions provided by the [OpenTelemetry community](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions). In particular the `contrib` distribution can be helpful as a stopgap solution as it includes all core and contrib components.
+
 ## Support
 
 New Relic hosts and moderates an online forum where customers can interact with New Relic employees as well as other customers to get help and share best practices. You can find this project's topic/threads here: [New Relic Community](https://forum.newrelic.com).

@@ -1,19 +1,19 @@
 # nrdot-collector-k8s
 
-| Status    |                                                                    |
-|-----------|--------------------------------------------------------------------|
-| Distro    | `nrdot-collector-k8s`                                              |
-| Stability | `preview`                                                          |
-| Images    | [DockerHub](https://hub.docker.com/r/newrelic/nrdot-collector-k8s) |
-
-Note: See [general README](../README.md) for information that applies to all distributions.
+| Status    |                                                                                     |
+|-----------|-------------------------------------------------------------------------------------|
+| Distro    | `nrdot-collector-k8s`                                                               |
+| Stability | `preview`                                                                           |
+| Artifacts | [Docker images on DockerHub](https://hub.docker.com/r/newrelic/nrdot-collector-k8s) |
 
 A distribution of the NRDOT collector focused on gathering metrics in a kubernetes environment with two different configs:
 - [config-daemonset.yaml](./config-daemonset.yaml) (default): Typically deployed as a `DaemonSet`. Collects node-level metrics via `hostmetricsreceiver`, `filelogreceiver`, `kubeletstatsreceiver` and `prometheusreceiver` (`cAdvisor`, `kubelet`).
 - [config-deployment.yaml](./config-deployment.yaml): Typically deployed as a `Deployment`. Collects cluster-level metrics via `k8seventsreceiver`,  `prometheusreceiver` (`kube-state-metrics`, `apiserver`, `controller-manager`, `scheduler`). Can be enabled by overriding the default docker `CMD`, i.e. `--config /etc/nrdot-collector-k8s/config-deployment.yaml`.
 
+Note: See [general README](../README.md) for information that applies to all distributions.
+
 ## Installation
-Distribution is available as docker image and its main purpose is to be a building block for the [nr-k8s-otel-collector](https://github.com/newrelic/helm-charts/tree/master/charts/nr-k8s-otel-collector) helm chart which we recommend using. The helm chart takes care of a lot of configuration required to ensure a smooth operation of the collector and drive the NR Kubernetes experience.
+The distribution's main purpose is to be a building block for the [nr-k8s-otel-collector](https://github.com/newrelic/helm-charts/tree/master/charts/nr-k8s-otel-collector) helm chart which we recommend using. The helm chart takes care of a lot of configuration required to ensure a smooth operation of the collector and drive the NR Kubernetes experience.
 If you choose not to use the helm chart, you'll have to follow the [general installation](../README.md#installation) and provide the necessary permissions for the collector to access the k8s APIs yourself, see also our [troubleshooting guide](./TROUBLESHOOTING.md).
 
 ### Dependencies
