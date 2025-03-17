@@ -17,13 +17,6 @@ spec:
       {{- if .Values.image.repository | hasSuffix "k8s" }}
       serviceAccountName: read-k8s-api-account
       {{- end }}
-      initContainers:
-        # Wait for the backend to be up before starting the collector
-        - name: wait-for-validation
-          image: busybox:latest
-          imagePullPolicy: IfNotPresent
-          command: [ "/bin/sh","-c" ]
-          args: [ 'while [ $(curl -ksw "%{http_code}" "http://validation-backend:8080" -o /dev/null) -ne 200 ]; do sleep 5; echo "health check failed. Waiting for validation service..."; done' ]
       containers:
         - name: *app
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
