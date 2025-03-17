@@ -193,7 +193,7 @@ processors:
     override: true
 
 exporters:
-  otlphttp:
+  otlphttp/newrelic:
     endpoint: ${env:OTEL_EXPORTER_OTLP_ENDPOINT:-https://otlp.nr-data.net}
     headers:
       api-key: ${env:NEW_RELIC_LICENSE_KEY}
@@ -220,22 +220,22 @@ service:
         - resourcedetection/env
         - cumulativetodelta
         - batch
-      exporters: [otlphttp]
+      exporters: [otlphttp/newrelic]
     logs/host:
       receivers: [filelog]
       processors: [transform, resourcedetection, resourcedetection/cloud, resourcedetection/env, batch]
-      exporters: [otlphttp]
+      exporters: [otlphttp/newrelic]
     traces:
       receivers: [otlp]
       processors: [transform, resourcedetection, resourcedetection/cloud, resourcedetection/env, batch]
-      exporters: [otlphttp]
+      exporters: [otlphttp/newrelic]
     metrics:
       receivers: [otlp]
       processors: [transform, resourcedetection, resourcedetection/cloud, resourcedetection/env, batch]
-      exporters: [otlphttp]
+      exporters: [otlphttp/newrelic]
     logs:
       receivers: [otlp]
       processors: [transform, resourcedetection, resourcedetection/cloud, resourcedetection/env, batch]
-      exporters: [otlphttp]
+      exporters: [otlphttp/newrelic]
 
   extensions: [health_check]
