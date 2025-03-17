@@ -70,6 +70,7 @@ jobs:
       - uses: docker/setup-buildx-action@v2
 
       - name: Import GPG key
+        if: ${{github.event.pull_request.user.login != 'dependabot[bot]' }}
         id: import_gpg
         uses: crazy-max/ghaction-import-gpg@v6
         with:
@@ -77,6 +78,7 @@ jobs:
           passphrase: ${{ secrets.gpg_passphrase }}
 
       - name: Write GPG to path in memory for signing rpm/deb
+        if: ${{github.event.pull_request.user.login != 'dependabot[bot]' }}
         id: write_gpg_to_path
         run: |
           GPG_KEY_PATH="$(mktemp /dev/shm/gpg.XXXXXX)"
@@ -89,6 +91,8 @@ jobs:
         run: |
           if [ ${{ inputs.nightly }} = "true" ]; then
             echo "goreleaser_args=--snapshot --clean --skip=publish,validate --timeout 2h --config .goreleaser-nightly.yaml" >> $GITHUB_ENV
+          elif [ ${{github.event.pull_request.user.login == 'dependabot[bot]' }} ]; then
+            echo "goreleaser_args=--snapshot --clean --skip=publish,validate,sign --timeout 2h" >> $GITHUB_ENV
           else
             echo "goreleaser_args=--snapshot --clean --skip=publish,validate --timeout 2h" >> $GITHUB_ENV
           fi
