@@ -38,9 +38,6 @@ providers:
 # When adding a replace, add a comment before it to document why it's needed and when it can be removed
 replaces:
   ### Transitive deps determined via `go mod graph | grep $dep@$dep_replace_version`
-  # Why: Fixes CVE-2024-45337
-  # Transitive dep of: x/net, hostmetricsreceiver
-  - golang.org/x/crypto v0.28.0 => golang.org/x/crypto v0.31.0
   # Why: Fixes CVE-2024-45338
   # Transitive dep of: almost all components
   - golang.org/x/net v0.30.0 => golang.org/x/net v0.33.0
