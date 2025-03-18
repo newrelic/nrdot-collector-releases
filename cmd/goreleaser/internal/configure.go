@@ -182,7 +182,7 @@ func Archive(dist string) config.Archive {
 	return config.Archive{
 		ID:           dist,
 		NameTemplate: "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}",
-		Builds:       []string{dist},
+		IDs:          []string{dist},
 		Files:        files,
 		FormatOverrides: []config.FormatOverride{
 			{
@@ -224,7 +224,7 @@ func Package(dist string) config.NFPM {
 	}
 	return config.NFPM{
 		ID:          dist,
-		Builds:      []string{dist},
+		IDs:         []string{dist},
 		Formats:     []string{"deb", "rpm"},
 		License:     "Apache 2.0",
 		Description: fmt.Sprintf("NRDOT Collector - %s", dist),
