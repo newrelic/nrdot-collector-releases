@@ -7,7 +7,7 @@ whereClause:
 testCases:
   host_receiver_cpu.utilization_user:
     metric:
-      name: k8s.pod.cpu.utilization
+      name: k8s.pod.cpu.usage
     assertions:
       - aggregationFunction: max
         comparisonOperator: ">"
