@@ -116,7 +116,7 @@ jobs:
           echo "metaDescription: Release notes for NRDOT Collector version ${{ env.version }}" >> $release_notes_file
           echo "---" >> $release_notes_file
           echo "" >> $release_notes_file
-          echo "${{ github.event.release.body }}" >> $release_notes_file
+          echo '${{ github.event.release.body }}' >> $release_notes_file
 
           echo "Release notes file created at ${release_notes_file} with:"
           cat $release_notes_file
