@@ -39,7 +39,6 @@ func TestSlow(t *testing.T) {
 	client := nr.NewClient()
 
 	testEnvironment := map[string]string{
-		"hostName":    testChart.NrQueryHostNamePattern,
 		"clusterName": kubectlOptions.ContextName,
 	}
 	for _, testCaseSpecName := range testSpec.Slow.TestCaseSpecs {
