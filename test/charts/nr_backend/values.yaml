@@ -17,3 +17,6 @@ clusterName: default-cluster-name
 kube-state-metrics:
   enabled: true
   prometheusScrape: false
+
+demoService:
+  enabled: false

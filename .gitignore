@@ -22,3 +22,5 @@ ci/terraform/caos.auto.tfvars
 .secrets
 .input
 .tools
+
+test/**/charts/*.tgz

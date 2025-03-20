@@ -57,6 +57,11 @@ resource "helm_release" "ci_e2e_nightly" {
     name = "clusterName"
     value = data.aws_eks_cluster.eks_cluster.name
   }
+
+  set {
+    name = "demoService.enabled"
+    value = "true"
+  }
 }
 
 module "ci_e2e_ec2" {
