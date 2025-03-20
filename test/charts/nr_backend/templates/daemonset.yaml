@@ -18,7 +18,7 @@ spec:
       serviceAccountName: read-k8s-api-account
       {{- end }}
       containers:
-        {{- if .Values.demoService.enabled }}
+        {{- if and (not (.Values.image.repository | hasSuffix "k8s")) .Values.demoService.enabled}}
         - name: adservice
           image: otel/demo:2.0.2-ad
           env:
