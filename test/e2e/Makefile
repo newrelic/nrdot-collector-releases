@@ -1,5 +1,5 @@
 KIND_CLUSTER_NAME ?=e2etest
-K8S_CONTEXT_NAME=kind-${KIND_CLUSTER_NAME}
+K8S_CONTEXT_NAME ?=kind-${KIND_CLUSTER_NAME}
 DISTRO ?=nrdot-collector-host
 IMAGE_REPO ?=newrelic/${DISTRO}
 THIS_MAKEFILE_DIR := $(realpath $(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
