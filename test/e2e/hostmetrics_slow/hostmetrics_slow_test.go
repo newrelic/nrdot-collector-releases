@@ -39,11 +39,17 @@ func TestSlow(t *testing.T) {
 	client := nr.NewClient()
 
 	testEnvironment := map[string]string{
-		"hostName":    testChart.NrQueryHostNamePattern,
 		"clusterName": kubectlOptions.ContextName,
+		"hostName":    testChart.NrQueryHostNamePattern,
 	}
 	for _, testCaseSpecName := range testSpec.Slow.TestCaseSpecs {
 		testCaseSpec := spec.LoadTestCaseSpec(testCaseSpecName)
+
+		// Allow overriding where clause in distro test specs
+		if clause, exists := testSpec.WhereClause[testCaseSpecName]; exists {
+			testCaseSpec.WhereClause = clause
+		}
+
 		whereClause := testCaseSpec.RenderWhereClause(testEnvironment)
 		t.Logf("test case spec where clause: %s", whereClause)
 

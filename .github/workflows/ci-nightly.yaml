@@ -2,11 +2,6 @@ name: 🔄 CI | Nightly Tests
 
 on:
   workflow_dispatch:
-    inputs:
-      branch:
-        description: "Branch to run the workflow on, e.g. main"
-        type: string
-        required: true
   schedule:
     # Scheduled to run in the morning (PT) on every day-of-week from Monday through Friday.
     - cron: '0 15 * * 1-5'
@@ -187,4 +182,5 @@ jobs:
           NR_ACCOUNT_ID=${{ secrets.OTELCOMM_NR_TEST_ACCOUNT_ID }} \
           NR_API_BASE_URL=${{ secrets.NR_STAGING_API_BASE_URL }} \
           DISTRO=${{ matrix.distribution }} \
+          K8S_CONTEXT_NAME=aws-ci-e2etest \
           make -f ./test/e2e/Makefile ci_test-nightly

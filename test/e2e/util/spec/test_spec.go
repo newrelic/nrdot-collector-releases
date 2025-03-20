@@ -9,7 +9,8 @@ import (
 )
 
 type TestSpec struct {
-	Slow struct {
+	WhereClause map[string]RenderableTemplate `yaml:"whereClause"`
+	Slow        struct {
 		TestCaseSpecs []string `yaml:"testCaseSpecs"`
 	} `yaml:"slow"`
 	Nightly struct {

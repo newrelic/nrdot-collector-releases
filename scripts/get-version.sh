@@ -5,7 +5,6 @@
 # If they don't, it prints an error message to stderr and exits with status 1.
 
 set -e
-set -x
 
 version=""
 
