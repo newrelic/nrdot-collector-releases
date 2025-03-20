@@ -3,6 +3,7 @@ package hostmetrics
 import (
 	"fmt"
 	"test/e2e/util/assert"
+	envutil "test/e2e/util/env"
 	"test/e2e/util/nr"
 	"test/e2e/util/spec"
 	testutil "test/e2e/util/test"
@@ -43,10 +44,17 @@ func TestNightly(t *testing.T) {
 			continue
 		}
 		testEnvironment := map[string]string{
-			"hostName": sut.HostNamePattern,
+			"clusterName": envutil.GetK8sContextName(),
+			"hostName":    sut.HostNamePattern,
 		}
 		for _, testCaseSpecName := range testSpec.Nightly.TestCaseSpecs {
 			testCaseSpec := spec.LoadTestCaseSpec(testCaseSpecName)
+
+			// Allow overriding where clause in distro test specs
+			if clause, exists := testSpec.WhereClause[testCaseSpecName]; exists {
+				testCaseSpec.WhereClause = clause
+			}
+
 			whereClause := testCaseSpec.RenderWhereClause(testEnvironment)
 			counter := 0
 			for caseName, testCase := range testCaseSpec.GetTestCasesWithout(sut.ExcludedMetrics) {

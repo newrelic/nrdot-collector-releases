@@ -1,3 +1,8 @@
+whereClause:
+  example:
+    template: "WHERE var='{{ .var1 }}'"
+    vars:
+      - "var1"
 slow:
   testCaseSpecs:
     - "test1"

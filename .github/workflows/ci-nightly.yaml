@@ -187,4 +187,5 @@ jobs:
           NR_ACCOUNT_ID=${{ secrets.OTELCOMM_NR_TEST_ACCOUNT_ID }} \
           NR_API_BASE_URL=${{ secrets.NR_STAGING_API_BASE_URL }} \
           DISTRO=${{ matrix.distribution }} \
+          K8S_CONTEXT_NAME=aws-ci-e2etest \
           make -f ./test/e2e/Makefile ci_test-nightly

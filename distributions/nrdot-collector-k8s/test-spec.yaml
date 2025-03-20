@@ -1,3 +1,8 @@
+whereClause:
+  host:
+    template: "WHERE k8s.cluster.name='{{ .clusterName }}'"
+    vars:
+      - clusterName
 slow:
   testCaseSpecs:
     - k8s
