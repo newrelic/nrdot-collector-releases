@@ -18,6 +18,19 @@ spec:
     spec:
       serviceAccountName: read-k8s-api-account
       containers:
+        {{- if and (.Values.image.repository | hasSuffix "k8s") .Values.demoService.enabled}}
+        - name: adservice
+          image: otel/demo:2.0.2-ad
+          env:
+            - name: AD_PORT
+              value: "8080"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://localhost:4318
+            - name: OTEL_SERVICE_NAME
+              value: adservice
+          ports:
+            - containerPort: 8080
+        {{- end }}
         - name: *app
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: "{{ .Values.image.pullPolicy }}"
@@ -25,6 +38,8 @@ spec:
           ports:
             - name: health
               containerPort: 13133
+            - name: otlp-http
+              containerPort: 4318
           env:
             - name: KUBE_NODE_NAME
               valueFrom:
