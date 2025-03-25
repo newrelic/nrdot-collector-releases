@@ -44,4 +44,9 @@ providers:
 
 # When adding a replace, add a comment before it to document why it's needed and when it can be removed
 # replaces:
+### Verification of dep usage via `go list -m all | grep $dep`
 ### Transitive deps determined via `go mod graph | grep $dep@$dep_replace_version`
+replaces:
+  # fixed CVE-2025-30204
+  # used by: prometheusreceiver and 'deps of deps'
+  - github.com/golang-jwt/jwt/v5 v5.2.1 => github.com/golang-jwt/jwt/v5 v5.2.2
