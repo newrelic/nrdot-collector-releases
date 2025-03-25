@@ -37,10 +37,9 @@ docker run newrelic/nrdot-collector-host --config /etc/nrdot-collector-host/conf
 
 #### Kubernetes
 ```yaml
-# k8s daemonset example
-image: newrelic/nrdot-collector-k8s
+image: newrelic/nrdot-collector-host
 # args can be fully omitted if no override as `CMD` directive supplies the default config
-args: [ "--config", "/etc/nrdot-collector-k8s/config-daemonset.yaml", "--config", "yaml:service::telemetry::logs::level: WARN" ]
+args: [ "--config", "/etc/nrdot-collector-host/config.yaml", "--config", "yaml:service::telemetry::logs::level: WARN" ]
 ```
 
 #### Linux packages
@@ -75,7 +74,7 @@ having to wait for data being ingested by New Relic.
 All NRDOT collector distributions include the `debugexporter` but disable it by default due to its verbosity and performance overhead. In order to enable it, you'll have to add it as a component and use it in the pipeline you're trying to debug.
 ```
 # Configure debugexporter (empty config is valid) and use it in pipeline 'metrics'
---config /etc/nrdot-collector-k8s/config-daemonset.yaml --config 'yaml:exporters::debug: ' --config 'yaml:service::pipelines::metrics::exporters: [otlphttp/newrelic, debug]'
+--config /etc/nrdot-collector-host/config.yaml --config 'yaml:exporters::debug: ' --config 'yaml:service::pipelines::metrics::exporters: [otlphttp, debug]'
 ```
 Additional configuration options to increase verbosity or enable sampling are available in the [exporter's docs](https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/debugexporter/README.md#getting-started).
 
