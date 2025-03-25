@@ -82,22 +82,25 @@ Additional configuration options to increase verbosity or enable sampling are av
 ## Common Issues
 
 ### Collector not starting up
-The collector validates the configuration on startup and fails to start if a provided value cannot be parsed as expected. Example:
+The collector validates the configuration on startup and fails to start if a provided value cannot be parsed as expected. Example when providing `100m` instead of `100` as `NEW_RELIC_MEMORY_LIMIT_MIB`:
 ```
-2025-01-01T23:31:53.920Z    warn    envprovider@v1.27.0/provider.go:61    Configuration references unset environment variable {"name": "NEW_RELIC_LICENSE_KEY"}
 Error: failed to get config: cannot unmarshal the configuration: decoding failed due to the following error(s):
 error decoding 'processors': error reading configuration for "memory_limiter": decoding failed due to the following error(s):
 'limit_mib' expected type 'uint32', got unconvertible type 'string', value: '100m'
 ```
 
+<a id="stablelink-telemetry-not-reaching-new-relic"></a>
 ### Telemetry not reaching New Relic
-If the UI does not light up as you expect it to and there are no [NrIntegrationError](https://docs.newrelic.com/docs/data-apis/ingest-apis/metric-api/troubleshoot-nrintegrationerror-events/), you can run some basic NRQL queries to check whether telemetry is reaching New Relic at all. If you do see some but not all the data you expect, there is either an issue with a specific pipeline or you might be running into [cardinality limits](https://docs.newrelic.com/docs/data-apis/ingest-apis/metric-api/NRQL-high-cardinality-metrics/.
+If the UI does not light up as you expect it to and there are no [NrIntegrationError](https://docs.newrelic.com/docs/data-apis/ingest-apis/metric-api/troubleshoot-nrintegrationerror-events/), you can run some basic NRQL queries to check whether telemetry is reaching New Relic at all. If you do see some but not all the data you expect, there is either an issue with a specific pipeline or you might be running into [cardinality limits](https://docs.newrelic.com/docs/data-apis/ingest-apis/metric-api/NRQL-high-cardinality-metrics/).
 ```
 # Metrics
 FROM Metric SELECT * WHERE newrelic.source='api.metrics.otlp' WHERE otel.library.name like 'github.com/open-telemetry/opentelemetry-collector-contrib/receiver%' SINCE 1 hour ago
 
 # Logs (if expected)
 FROM Log SELECT * where newrelic.source='api.logs.otlp' SINCE 1 hour ago
+
+# Traces (in the form of Spans - if expected)
+FROM Span SELECT * where newrelic.source='api.traces.otlp' SINCE 1 hour ago
 ```
 
 #### 1. Connection issues
