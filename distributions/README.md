@@ -113,6 +113,7 @@ tar -xzf collector.tar.gz
 NEW_RELIC_LICENSE_KEY="${license_key}" ./nrdot-collector-host --config ./config.yaml 
 ```
 
+
 ## Configuration
 
 ### Customize Default Configuration
