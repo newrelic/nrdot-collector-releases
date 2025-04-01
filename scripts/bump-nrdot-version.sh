@@ -1,8 +1,8 @@
 #!/bin/bash
 # Simple script to bump versions for new release to document all places that need to be updated
 set -e
-old_version=1.0.2
-new_version=1.0.3
+old_version=1.0.3
+new_version=1.0.4
 
 # Determine the OS and set the sed -i command accordingly
 if [[ "$OSTYPE" == "darwin"* ]]; then
