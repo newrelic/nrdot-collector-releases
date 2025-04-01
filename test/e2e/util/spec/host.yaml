@@ -184,22 +184,6 @@ testCases:
       - aggregationFunction: max
         comparisonOperator: ">="
         threshold: 0
-  host_receiver_paging.usage_used:
-    metric:
-      name: system.paging.usage
-      whereClause: WHERE state='used'
-    assertions:
-      - aggregationFunction: max
-        comparisonOperator: ">="
-        threshold: 0
-  host_receiver_paging.usage_free:
-    metric:
-      name: system.paging.usage
-      whereClause: WHERE state='free'
-    assertions:
-      - aggregationFunction: max
-        comparisonOperator: ">"
-        threshold: 0
   host_receiver_inodes.usage_free:
     metric:
       name: system.filesystem.inodes.usage

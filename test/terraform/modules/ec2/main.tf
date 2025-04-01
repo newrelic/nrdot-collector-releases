@@ -123,12 +123,6 @@ resource "aws_instance" "ubuntu" {
   user_data_replace_on_change = true
   user_data                   = <<-EOF
               #!/bin/bash
-              echo 'Configuring swap file to ensure system.paging.usage metric gets published'
-              dd if=/dev/zero of=/swapfile bs=1M count=128
-              chmod 600 /swapfile
-              mkswap /swapfile
-              swapon /swapfile
-              swapon -s
               ################################################
               echo 'Installing Collector'
               export DEBIAN_FRONTEND=noninteractive

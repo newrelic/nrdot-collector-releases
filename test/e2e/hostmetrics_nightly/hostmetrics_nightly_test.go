@@ -13,23 +13,18 @@ import (
 
 var ec2Ubuntu22 = spec.NightlySystemUnderTest{
 	HostNamePattern: testutil.NewNrQueryHostNamePattern("nightly", testutil.Wildcard, "ec2_ubuntu22_04"),
-	// TODO: NR-362121
-	ExcludedMetrics: []string{"system.paging.usage"},
 	SkipIf: func(testSpec *spec.TestSpec) bool {
 		return !testSpec.Nightly.EC2.Enabled
 	},
 }
 var ec2Ubuntu24 = spec.NightlySystemUnderTest{
 	HostNamePattern: testutil.NewNrQueryHostNamePattern("nightly", testutil.Wildcard, "ec2_ubuntu24_04"),
-	// TODO: NR-362121
-	ExcludedMetrics: []string{"system.paging.usage"},
 	SkipIf: func(testSpec *spec.TestSpec) bool {
 		return !testSpec.Nightly.EC2.Enabled
 	},
 }
 var k8sNode = spec.NightlySystemUnderTest{
 	HostNamePattern: testutil.NewNrQueryHostNamePattern("nightly", testutil.Wildcard, "k8s_node"),
-	ExcludedMetrics: []string{"system.paging.usage"},
 }
 
 func TestNightly(t *testing.T) {
