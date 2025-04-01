@@ -128,6 +128,15 @@ The default configuration exposes some options via environment variables:
 
 We recommend using the default configuration, but you can always supply your own via the `--config` [flag](https://opentelemetry.io/docs/collector/configuration/). The full list of components available for configuration is available in the respective `manifest.yaml`.
 
+## Additional Notes
+
+### Healthcheck
+Each NRDOT distribution enables the [healthcheckextension](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/extension/healthcheckextension/README.md) which is exposed at `localhost:13133` by default:
+```
+# curl localhost:13133
+{"status":"Server available","upSince":"2025-01-01T23:46:56.653164293Z","uptime":"15.241689299s"}
+```
+
 ## Troubleshooting
 
 Please refer to our [troubleshooting guide](./TROUBLESHOOTING.md).
