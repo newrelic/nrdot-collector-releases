@@ -1,0 +1,24 @@
+name: 📊 Report Metrics
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Scheduled to run every 2 hours
+    - cron: '0 */2 * * *'
+
+jobs:
+  downloads:
+    name: Report GH Metrics
+    runs-on: ubuntu-latest
+    steps:
+      # Check out code using git
+      - uses: actions/checkout@v4
+      # Install Node 20
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install @octokit/action
+      - run: node .github/actions/gh-metrics.js
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEW_RELIC_LICENSE_KEY: ${{ secrets.OTELCOMM_NR_INGEST_KEY }}
