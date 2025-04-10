@@ -1,0 +1,105 @@
+name: 🔄 Check artifacts to match AC expectations
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check-artifacts-ac:
+    name: Check artifacts to match AC expectations
+    runs-on: ubuntu-latest
+    outputs:
+      checks: ${{ steps.aggregated_msg.outputs.failure_message }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Ensure config.yaml file exists
+        id: check_file_existence
+        run: |
+          if [ ! -f distributions/nrdot-collector-host/config.yaml ]; then
+            echo "file_exists=false" >> $GITHUB_ENV
+            echo "file_message=The file distributions/nrdot-collector-host/config.yaml does not exist." >> $GITHUB_ENV
+            exit 0
+          fi
+          echo "file_exists=true" >> $GITHUB_ENV
+
+      - name: Check for config.yaml modification
+        id: check_config
+        run: |
+          if git diff --name-only HEAD~1 HEAD | grep -q 'distributions/nrdot-collector-host/config.yaml'; then
+            echo "config_modified=true" >> $GITHUB_ENV
+            echo "config_message=The config.yaml file has been modified." >> $GITHUB_ENV
+            exit 0
+          fi
+          echo "config_modified=false" >> $GITHUB_ENV
+
+      - name: Check binary name in goreleaser file
+        id: check_binary
+        run: |
+          binary_name=$(grep 'binary:' distributions/nrdot-collector-host/.goreleaser.yaml | awk '{print $2}')
+          if [ "$binary_name" != "nrdot-collector-host" ]; then
+            echo "binary_correct=false" >> $GITHUB_ENV
+            echo "binary_message=The binary name is not nrdot-collector-host." >> $GITHUB_ENV
+            exit 0
+          fi
+          echo "binary_correct=true" >> $GITHUB_ENV
+
+      - name: Check package name in goreleaser file
+        id: check_package
+        run: |
+          package_name=$(grep 'package_name:' distributions/nrdot-collector-host/.goreleaser.yaml | awk '{print $2}')
+          if [ "$package_name" != "nrdot-collector-host" ]; then
+            echo "package_correct=false" >> $GITHUB_ENV
+            echo "package_message=The package name is not nrdot-collector-host." >> $GITHUB_ENV
+            exit 0
+          fi
+          echo "package_correct=true" >> $GITHUB_ENV
+
+      - name: Aggregate failure messages
+        id: aggregated_msg
+        if: env.config_modified == 'true' || env.binary_correct == 'false' || env.package_correct == 'false' || env.file_exists == 'false'
+        run: |
+          failure_message=""
+          if [ "$file_exists" == "false" ]; then
+            failure_message="$file_message"
+          fi
+          if [ "$config_modified" == "true" ]; then
+            failure_message="$failure_message\n$config_message"
+          fi
+          if [ "$binary_correct" == "false" ]; then
+            failure_message="$failure_message\n$binary_message"
+          fi
+          if [ "$package_correct" == "false" ]; then
+            failure_message="$failure_message\n$package_message"
+          fi
+          echo "failure_message=$failure_message" >> $GITHUB_OUTPUT
+
+  notify-conflicts:
+    needs: check-artifacts-ac
+    if: needs.check-artifacts-ac.outputs.checks != ''
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify AC artifact conflicts via Otel Slack
+        uses: slackapi/slack-github-action@v2.0.0
+        with:
+          webhook: ${{ secrets.OTELCOMM_BOTS_SLACK_HOOK }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": ":warning: [Nightly workflow to check nrdot artifacts integrity found conflicts] @hero check ${{needs.check-artifacts-ac.outputs.checks }}"
+            }
+
+      - name: Notify AC artifact conflicts via AC Slack
+        uses: slackapi/slack-github-action@v2.0.0
+        with:
+          webhook: ${{ secrets.AC_SLACK_WEBHOOK }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": ":warning: [Nightly workflow to check nrdot artifacts integrity found conflicts] @hero check ${{needs.check-artifacts-ac.outputs.checks }}"
+            }
