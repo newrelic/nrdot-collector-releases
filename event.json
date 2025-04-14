@@ -1,3 +1,13 @@
 {
-  "act": true
+  "act": true,
+  "pull_request": {
+    "_description": "pull request event - needs to be used with 'act pull_request'",
+    "head": {
+      "ref": "branch_of_pull_request"
+    },
+    "base": {
+      "ref": "main"
+    }
+  },
+  "ref": "branch_pushed_to"
 }

@@ -1,0 +1,48 @@
+name: 🔄 CI | Agent Control Config Drift
+
+on:
+  pull_request:
+    # PRs should maintain this invariant
+    branches: [main]
+  push:
+    # if it gets merged into main by accident, we can escalate via slack notifications
+    branches: [main]
+
+jobs:
+  host-config-drift:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Assert nrdot-collector-host invariants
+        run: |
+          make -f ./distributions/nrdot-collector-host/Makefile assert-config-invariants
+
+  notify-drift:
+    needs: host-config-drift
+    # notify if drift made it into the main branch
+    if: ${{ failure() && github.event_name == 'push' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify OTELCOMM slack of drift
+        uses: slackapi/slack-github-action@v2.0.0
+        with:
+          webhook: ${{ secrets.OTELCOMM_BOTS_SLACK_HOOK }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": ":rotating_light: NRDOT Host artifacts on 'main' in conflict with Agent Control's expectations, check workflow logs of '${{github.workflow}}'. Needs to be addressed before next release!"
+            }
+
+      - name: Notify Agent Control slack of drift
+        uses: slackapi/slack-github-action@v2.0.0
+        with:
+          webhook: ${{ secrets.AC_SLACK_WEBHOOK }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": ":rotating_light: NRDOT Host artifacts on 'main' in conflict with Agent Control's expectations, check workflow logs of '${{github.workflow}}'. Needs to be addressed before next release!"
+            }
