@@ -21,6 +21,8 @@ for goreleaser_yaml in "${goreleaser_yamls[@]}"; do
     { echo "expected binary name 'nrdot-collector-host' in ${goreleaser_yaml}"; exit 1; }
   yq -e '.nfpms[].package_name == "nrdot-collector-host"' "${host_distro_dir}/${goreleaser_yaml}" ||
     { echo "expected package_name 'nrdot-collector-host' in ${goreleaser_yaml}"; exit 1; }
+  yq -e '.nfpms[].contents[] | select(.src == "nrdot-collector-host.conf") | .dst == "/etc/nrdot-collector-host/nrdot-collector-host.conf"' "${host_distro_dir}/${goreleaser_yaml}" ||
+    { echo "expected file 'nrdot-collector-host' in ${goreleaser_yaml}"; exit 1; }
 done
 
 
