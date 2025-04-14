@@ -11,7 +11,21 @@ host_distro_dir="${script_dir}"
 test -f "${host_distro_dir}/config.yaml" ||
   { echo "expect config at config.yaml"; exit 1; }
 
-# TODO: assert invariants within config
+# assert unchanged env vars
+env_vars=(
+  'NEW_RELIC_MEMORY_LIMIT_MIB'
+  'OTEL_EXPORTER_OTLP_ENDPOINT'
+  'NEW_RELIC_LICENSE_KEY'
+)
+for env_var in "${env_vars[@]}"; do
+  echo "Checking for env var ${env_var}"
+  echo "\${env:${env_var}[^}]+}"
+  grep -E '\${env:[^}]+}' "${host_distro_dir}/config.yaml" |
+  grep "${env_var}" ||
+    { echo "expected env var '${env_var}' in config.yaml"; exit 1; }
+done
+# TODO: assert additional invariants within config
+
 
 # assert binary name
 goreleaser_yamls=('.goreleaser.yaml' '.goreleaser-nightly.yaml')
