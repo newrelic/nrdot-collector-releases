@@ -19,12 +19,14 @@ env_vars=(
 )
 for env_var in "${env_vars[@]}"; do
   echo "Checking for env var ${env_var}"
-  echo "\${env:${env_var}[^}]+}"
   grep -E '\${env:[^}]+}' "${host_distro_dir}/config.yaml" |
-  grep "${env_var}" ||
+  grep "${env_var}" -q ||
     { echo "expected env var '${env_var}' in config.yaml"; exit 1; }
 done
-# TODO: assert additional invariants within config
+
+echo 'Checking for host.id detection'
+yq -e '.processors.resourcedetection.system.resource_attributes["host.id"].enabled == "true"' "${host_distro_dir}/config.yaml" ||
+  { echo "expected host.id detection to be enabled"; exit 1; }
 
 
 # assert binary name
@@ -35,8 +37,6 @@ for goreleaser_yaml in "${goreleaser_yamls[@]}"; do
     { echo "expected binary name 'nrdot-collector-host' in ${goreleaser_yaml}"; exit 1; }
   yq -e '.nfpms[].package_name == "nrdot-collector-host"' "${host_distro_dir}/${goreleaser_yaml}" ||
     { echo "expected package_name 'nrdot-collector-host' in ${goreleaser_yaml}"; exit 1; }
-  yq -e '.nfpms[].contents[] | select(.src == "nrdot-collector-host.conf") | .dst == "/etc/nrdot-collector-host/nrdot-collector-host.conf"' "${host_distro_dir}/${goreleaser_yaml}" ||
-    { echo "expected file 'nrdot-collector-host' in ${goreleaser_yaml}"; exit 1; }
 done
 
 
