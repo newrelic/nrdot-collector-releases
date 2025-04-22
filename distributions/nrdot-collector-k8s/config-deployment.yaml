@@ -356,9 +356,6 @@ processors:
       - key: newrelicOnly
         action: upsert
         value: 'true'
-      - key: "newrelic.chart.version"
-        action: upsert
-        value: 0.8.7
       - key: service.name
         action: delete
       - key: service_name
@@ -380,9 +377,6 @@ processors:
       - key: newrelicOnly
         action: upsert
         value: 'true'
-      - key: "newrelic.chart.version"
-        action: upsert
-        value: 0.8.7
   transform/events:
     log_statements:
       - context: log
