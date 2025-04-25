@@ -541,10 +541,6 @@ exporters:
     endpoint: ${env:OTEL_EXPORTER_OTLP_ENDPOINT:-https://otlp.nr-data.net}
     headers:
       api-key: ${env:NEW_RELIC_LICENSE_KEY}
-  debug:
-    verbosity: detailed
-    sampling_initial: 5
-    sampling_thereafter: 200
 service:
   pipelines:
     metrics:
@@ -553,6 +549,7 @@ service:
         - kubeletstats
         - prometheus
       processors:
+        - memory_limiter
         - metricstransform/hostmetrics_cpu
         - transform/truncate
         - filter/exclude_cpu_utilization
@@ -569,7 +566,6 @@ service:
         - resource
         - attributes/self
         - k8sattributes
-        - memory_limiter
         - cumulativetodelta
         - batch
       exporters:
@@ -578,6 +574,7 @@ service:
       receivers:
         - filelog
       processors:
+        - memory_limiter
         - transform/truncate
         - resource
         - k8sattributes
