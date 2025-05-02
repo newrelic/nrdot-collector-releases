@@ -25,8 +25,14 @@ function extract_config_with_overwritable_defaults() {
       # strip away all comments
       yq '... comments=""'
     } | {
+      # remove references to helm chart
+      yq 'del(.processors[] | select(has("attributes")) | .[][] | select(.key == "newrelic.chart.version"))'
+    } | {
       # remove configuration requiring mounted host filesystem
       yq 'del(.receivers.hostmetrics.root_path)'
+      } | {
+      # temporarily remove unused debug exporter until fixed upstream
+      yq 'del(.exporters.debug)'
     } | {
       # expose ingest endpoint via env var to align with other distros
       sed 's/"https:\/\/otlp.nr-data.net"/${env:OTEL_EXPORTER_OTLP_ENDPOINT:-https:\/\/otlp.nr-data.net}/g'
