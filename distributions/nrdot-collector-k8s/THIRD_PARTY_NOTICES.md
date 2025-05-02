@@ -12,6 +12,14 @@ can be found at https://github.com/newrelic/nrdot-collector-releases.
 
 
 
+## [github.com/open-telemetry/opentelemetry-collector-contrib/connector/routingconnector](https://github.com/open-telemetry/opentelemetry-collector-contrib)
+
+Distributed under the following license(s):
+
+* Apache-2.0
+
+
+
 ## [github.com/open-telemetry/opentelemetry-collector-contrib/extension/healthcheckextension](https://github.com/open-telemetry/opentelemetry-collector-contrib)
 
 Distributed under the following license(s):
