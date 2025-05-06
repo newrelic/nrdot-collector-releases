@@ -1,0 +1,22 @@
+name: 🔄 Lint | Conventional Commits
+
+on:
+  pull_request:
+    branches: [main]
+
+env:
+  GH_TOKEN: ${{ github.token }}
+permissions:
+  pull-requests: write
+jobs:
+  check-pr-name:
+    runs-on: ubuntu-latest
+    steps:
+      # Low-tech linter to avoid squashing commits into non-semantic conventional commit by addressing the most common cause
+      - name: Assert PR name adhering to conventional commits
+        run: |
+          gh pr view ${{ github.event.number }} --json title
+            | jq --args '.title | test("\\w+: \\w+")' -e 1 || {
+            gh pr comment ${{ github.event.number }} \
+              --body "PR title does not adhere to conventional commits. Change PR title to ensure that the suggested squash commit follows the conventions and thus ends up in the changelog."
+          }
