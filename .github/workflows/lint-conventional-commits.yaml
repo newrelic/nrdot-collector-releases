@@ -2,6 +2,7 @@ name: 🔄 Lint | Conventional Commits
 
 on:
   pull_request:
+    types: [opened, edited]
     branches: [main]
 
 env:
