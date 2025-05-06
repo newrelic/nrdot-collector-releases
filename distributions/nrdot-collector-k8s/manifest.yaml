@@ -2,7 +2,7 @@ dist:
   module: github.com/newrelic/nrdot-collector-releases/nrdot-collector-k8s
   name: nrdot-collector-k8s
   description: NRDOT Collector k8s
-  version: 1.0.3
+  version: 1.1.0
   output_path: ./_build
 
 receivers:
