@@ -22,4 +22,5 @@ jobs:
             pr_title=$(echo "${pr_title_json}" | jq -r '.title')
             gh pr --repo ${{ github.repository }} comment ${{ github.event.number }} \
               --body "PR title '${pr_title}' does not adhere to conventional commits. Change PR title to ensure that the suggested squash commit follows the conventions and thus ends up in the changelog."
+            exit 1
           }
