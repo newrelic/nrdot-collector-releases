@@ -9,18 +9,6 @@ import (
 	"go.uber.org/zap"
 )
 
-func TestIsOtelCoreComponent(t *testing.T) {
-	assert.True(t, isOtelCoreComponent("go.opentelemetry.io/collector/component v1.0.0"))
-	assert.True(t, isOtelCoreComponent("go.opentelemetry.io/collector/component"))
-	assert.False(t, isOtelCoreComponent("github.com/some/other/module"))
-}
-
-func TestIsOtelContribComponent(t *testing.T) {
-	assert.True(t, isOtelContribComponent("github.com/open-telemetry/opentelemetry-collector-contrib/component v1.0.0"))
-	assert.True(t, isOtelContribComponent("github.com/open-telemetry/opentelemetry-collector-contrib/component"))
-	assert.False(t, isOtelContribComponent("github.com/some/other/module"))
-}
-
 func TestFetchAllModuleVersions_Success(t *testing.T) {
 	cfg := &Config{
 		Verbose: true,

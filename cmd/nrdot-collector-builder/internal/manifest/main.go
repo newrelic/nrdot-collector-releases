@@ -23,9 +23,6 @@ var (
 	ErrVersionMismatch = errors.New("mismatch in go.mod and builder configuration versions")
 )
 
-const coreModule = "go.opentelemetry.io/collector"
-const contribModule = "github.com/open-telemetry/opentelemetry-collector-contrib"
-
 // runGoCommand replicates behavoir of the OCB, effectively running `go list` to fetch module versions
 func runGoCommand(cfg *Config, args ...string) ([]byte, error) {
 	if cfg.Verbose {
@@ -48,40 +45,6 @@ func runGoCommand(cfg *Config, args ...string) ([]byte, error) {
 	}
 
 	return stdout.Bytes(), nil
-}
-
-func isOtelCoreComponent(mod string) bool {
-	// Check if the component is part of the OpenTelemetry Collector core
-	if strings.HasPrefix(mod, coreModule) {
-		return true
-	}
-	return false
-}
-
-func isOtelContribComponent(mod string) bool {
-	// Check if the component is part of the OpenTelemetry Collector contrib
-	if strings.HasPrefix(mod, contribModule) {
-		return true
-	}
-	return false
-}
-
-func isOtelComponent(component Module) bool {
-	// Check if the component is part of the OpenTelemetry Collector
-	if isOtelCoreComponent(component.GoMod) || isOtelContribComponent(component.GoMod) {
-		return true
-	}
-	return false
-}
-
-func allOtelComponents(cfg *Config) []Module {
-	allOtelComponents := []Module{}
-	for _, component := range cfg.allComponents() {
-		if isOtelComponent(component) {
-			allOtelComponents = append(allOtelComponents, component)
-		}
-	}
-	return allOtelComponents
 }
 
 func fetchAllModuleVersions(cfg *Config, modules []string) (map[string][]string, error) {
@@ -114,7 +77,7 @@ func fetchLatestModuleVersions(cfg *Config) (map[string][]string, error) {
 	updates := make(map[string][]string)
 
 	var modules []string
-	for _, component := range allOtelComponents(cfg) {
+	for _, component := range cfg.allOtelComponents() {
 		module, _, _ := strings.Cut(component.GoMod, " ")
 		modules = append(modules, module)
 	}
@@ -126,13 +89,13 @@ func fetchLatestModuleVersions(cfg *Config) (map[string][]string, error) {
 	}
 
 	// Iterate over all components in cfg.allComponents()
-	for _, component := range allOtelComponents(cfg) {
+	for _, component := range cfg.allOtelComponents() {
 		// Extract the module name from the component's GoMod field
 		module, currentVersion, _ := strings.Cut(component.GoMod, " ")
 		// Log the current version
-		cfg.Logger.Info("Checking for updates", zap.String("module", module), zap.String("currentVersion", currentVersion))
-
-		cfg.Logger.Debug("Fetched module versions", zap.String("module", module), zap.Strings("versions", versions[module]))
+		if cfg.Verbose {
+			cfg.Logger.Info("Checking for updates", zap.String("module", module), zap.String("currentVersion", currentVersion))
+		}
 		// Iterate through the versions and filter out any that are equal to or less than the current version using semver.Compare
 		for _, version := range versions[module] {
 			if semver.Compare(version, currentVersion) > 0 {
@@ -145,13 +108,16 @@ func fetchLatestModuleVersions(cfg *Config) (map[string][]string, error) {
 			sort.Slice(updates[module], func(i, j int) bool {
 				return semver.Compare(updates[module][i], updates[module][j]) < 0
 			})
-
-			cfg.Logger.Debug("Valid update candidates", zap.String("module", module), zap.Strings("versions", updates[module]))
+			if cfg.Verbose {
+				cfg.Logger.Debug("Valid update candidates", zap.String("module", module), zap.Strings("versions", updates[module]))
+			}
 		} else {
-			cfg.Logger.Debug("No updates available for module",
-				zap.String("module", module),
-				zap.String("currentVersion", currentVersion),
-			)
+			if cfg.Verbose {
+				cfg.Logger.Debug("No updates available for module",
+					zap.String("module", module),
+					zap.String("currentVersion", currentVersion),
+				)
+			}
 		}
 	}
 
@@ -170,8 +136,10 @@ func CopyAndUpdateConfigModules(cfg *Config, updates map[string][]string) (*Conf
 				// Update the GoMod field with the latest version
 				component.GoMod = fmt.Sprintf("%s %s", module, latestVersions[len(latestVersions)-1])
 			} else {
-				// log the module name and version
-				cfg.Logger.Info("No updates available for module", zap.String("module", module))
+				if cfg.Verbose {
+					// log the module name and version
+					cfg.Logger.Info("No updates available for module", zap.String("module", module))
+				}
 			}
 
 			updatedComponents[i] = component
@@ -187,6 +155,8 @@ func CopyAndUpdateConfigModules(cfg *Config, updates map[string][]string) (*Conf
 	cfgCopy.Connectors = update(cfg.Connectors)
 	cfgCopy.ConfmapProviders = update(cfg.ConfmapProviders)
 	cfgCopy.ConfmapConverters = update(cfg.ConfmapConverters)
+
+	cfgCopy.SetOtelColVersion()
 
 	return &cfgCopy, nil
 }
@@ -209,18 +179,21 @@ func UpdateConfigModules(cfg *Config) (*Config, error) {
 
 	// Log the updated modules
 	for _, component := range updatedCfg.allComponents() {
-		cfg.Logger.Info("Updated module",
-			zap.String("module", component.GoMod),
-		)
+		if cfg.Verbose {
+			cfg.Logger.Info("Updated module",
+				zap.String("module", component.GoMod),
+			)
+		}
 	}
 
 	return updatedCfg, nil
 }
 
 func WriteConfigFile(cfg *Config) error {
-	// Log the start of the operation
-	cfg.Logger.Info("Writing updated configuration to file", zap.String("path", cfg.Path))
-
+	if cfg.Verbose {
+		// Log the start of the operation
+		cfg.Logger.Info("Writing updated configuration to file", zap.String("path", cfg.Path))
+	}
 	// Open the YAML file
 	file, err := os.Open(cfg.Path)
 	if err != nil {
@@ -262,7 +235,9 @@ func WriteConfigFile(cfg *Config) error {
 		return fmt.Errorf("failed to encode YAML file: %w", err)
 	}
 
-	cfg.Logger.Info("Successfully wrote updated configuration to file", zap.String("path", cfg.Path))
+	if cfg.Verbose {
+		cfg.Logger.Info("Successfully wrote updated configuration to file", zap.String("path", cfg.Path))
+	}
 	return nil
 }
 

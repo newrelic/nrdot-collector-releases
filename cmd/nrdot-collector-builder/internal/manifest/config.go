@@ -13,10 +13,14 @@ import (
 
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
+	"gopkg.in/yaml.v3"
 )
 
 // errMissingGoMod indicates an empty gomod field
 var errMissingGoMod = errors.New("missing gomod specification for module")
+
+const coreModule = "go.opentelemetry.io/collector"
+const contribModule = "github.com/open-telemetry/opentelemetry-collector-contrib"
 
 // Config holds the builder's configuration
 type Config struct {
@@ -24,8 +28,9 @@ type Config struct {
 	Path   string `mapstructure:"-"` // path to the config file
 	Dir    string `mapstructure:"-"` // path to the config directory
 
-	OtelColVersion string `mapstructure:"-"` // only used be the go.mod template
-	Verbose        bool   `mapstructure:"-"`
+	OtelColVersion string    `mapstructure:"-"` // only used be the go.mod template
+	Verbose        bool      `mapstructure:"-"`
+	YamlNode       yaml.Node `mapstructure:"-"`
 
 	Distribution      Distribution `mapstructure:"dist"`
 	Exporters         []Module     `mapstructure:"exporters"`
@@ -66,6 +71,44 @@ type Module struct {
 	Path   string `mapstructure:"path"`   // an optional path to the local version of this module
 }
 
+func isOtelCoreComponent(mod string) bool {
+	// Check if the component is part of the OpenTelemetry Collector core
+	if strings.HasPrefix(mod, coreModule) {
+		return true
+	}
+	return false
+}
+
+func isOtelContribComponent(mod string) bool {
+	// Check if the component is part of the OpenTelemetry Collector contrib
+	if strings.HasPrefix(mod, contribModule) {
+		return true
+	}
+	return false
+}
+
+func isOtelComponent(component Module) bool {
+	// Check if the component is part of the OpenTelemetry Collector
+	if isOtelCoreComponent(component.GoMod) || isOtelContribComponent(component.GoMod) {
+		return true
+	}
+	return false
+}
+
+func (c *Config) SetOtelColVersion() error {
+	for _, component := range c.allOtelComponents() {
+		if isOtelCoreComponent(component.GoMod) {
+			c.OtelColVersion = strings.Split(component.GoMod, " ")[1]
+			break
+		}
+	}
+
+	if c.OtelColVersion == "" {
+		return fmt.Errorf("failed to set OpenTelemetry Collector version")
+	}
+	return nil
+}
+
 // Validate checks whether the current configuration is valid
 func (c *Config) Validate() error {
 	return multierr.Combine(
@@ -89,7 +132,9 @@ func (c *Config) SetGoPath() error {
 		}
 		c.Distribution.Go = path
 	}
-	c.Logger.Info("Using go", zap.String("go-executable", c.Distribution.Go))
+	if c.Verbose {
+		c.Logger.Info("Using go", zap.String("go-executable", c.Distribution.Go))
+	}
 	return nil
 }
 
@@ -136,6 +181,16 @@ func (c *Config) ParseModules() error {
 
 func (c *Config) allComponents() []Module {
 	return slices.Concat(c.Exporters, c.Receivers, c.Processors, c.Extensions, c.Connectors, c.ConfmapProviders, c.ConfmapConverters)
+}
+
+func (cfg *Config) allOtelComponents() []Module {
+	allOtelComponents := []Module{}
+	for _, component := range cfg.allComponents() {
+		if isOtelComponent(component) {
+			allOtelComponents = append(allOtelComponents, component)
+		}
+	}
+	return allOtelComponents
 }
 
 func validateModules(name string, mods []Module) error {

@@ -3,12 +3,14 @@
 package manifest
 
 import (
+	"encoding/json"
 	"fmt"
 	"newrelic-collector-builder/internal/manifest"
 	"path/filepath"
 
 	"github.com/knadh/koanf/parsers/yaml"
 	"github.com/knadh/koanf/v2"
+	"golang.org/x/mod/semver"
 
 	"github.com/knadh/koanf/providers/file"
 	"github.com/spf13/cobra"
@@ -22,8 +24,10 @@ var UpdateCmd = &cobra.Command{
 	Long:  "Update the manifest file to ensure otel components are up to date.",
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fmt.Println("manifest update called")
 		configPath, _ := cmd.Flags().GetString("config")
+
+		jsonOutput, _ := cmd.Root().PersistentFlags().GetBool("json")
+		verbose, _ := cmd.Root().PersistentFlags().GetBool("verbose")
 
 		matches, _ := filepath.Glob(configPath)
 
@@ -32,8 +36,10 @@ var UpdateCmd = &cobra.Command{
 			return nil
 		}
 
+		var otelColVersion string
+
 		for _, match := range matches {
-			cfg, _, err := initConfig(match)
+			cfg, _, err := initConfig(match, verbose)
 
 			if err != nil {
 				return err
@@ -44,6 +50,10 @@ var UpdateCmd = &cobra.Command{
 			}
 
 			if err = cfg.SetGoPath(); err != nil {
+				return fmt.Errorf("go not found: %w", err)
+			}
+
+			if err = cfg.SetOtelColVersion(); err != nil {
 				return fmt.Errorf("go not found: %w", err)
 			}
 
@@ -60,13 +70,31 @@ var UpdateCmd = &cobra.Command{
 				return fmt.Errorf("failed to write configuration file: %w", err)
 			}
 
+			if otelColVersion == "" || semver.Compare(otelColVersion, cfg.OtelColVersion) > 0 {
+				otelColVersion = cfg.OtelColVersion
+			}
 		}
+
+		if jsonOutput {
+			// print JSON output of all otel versions
+			output := struct {
+				OtelColVersion string `json:"otelColVersion"`
+			}{
+				OtelColVersion: otelColVersion,
+			}
+			b, err := json.Marshal(output)
+			if err != nil {
+				return fmt.Errorf("failed to marshal JSON output: %w", err)
+			}
+			fmt.Println(string(b))
+		}
+
 		return nil
 
 	},
 }
 
-func initConfig(cfgFile string) (*manifest.Config, *koanf.Koanf, error) {
+func initConfig(cfgFile string, verbose bool) (*manifest.Config, *koanf.Koanf, error) {
 	var err error
 	log, err := zap.NewDevelopment()
 	if err != nil {
@@ -74,10 +102,13 @@ func initConfig(cfgFile string) (*manifest.Config, *koanf.Koanf, error) {
 	}
 
 	cfg := &manifest.Config{
-		Logger: log,
+		Logger:  log,
+		Verbose: verbose,
 	}
 
-	cfg.Logger.Info("Using config file", zap.String("path", cfgFile))
+	if cfg.Verbose {
+		cfg.Logger.Info("Using config file", zap.String("path", cfgFile))
+	}
 	// load the config file
 	provider := file.Provider(cfgFile)
 

@@ -73,3 +73,15 @@ func TestConfig_ParseModules_InvalidPath(t *testing.T) {
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "filepath does not exist")
 }
+
+func TestConfig_IsOtelCoreComponent(t *testing.T) {
+	assert.True(t, isOtelCoreComponent("go.opentelemetry.io/collector/component v1.0.0"))
+	assert.True(t, isOtelCoreComponent("go.opentelemetry.io/collector/component"))
+	assert.False(t, isOtelCoreComponent("github.com/some/other/module"))
+}
+
+func TestConfig_IsOtelContribComponent(t *testing.T) {
+	assert.True(t, isOtelContribComponent("github.com/open-telemetry/opentelemetry-collector-contrib/component v1.0.0"))
+	assert.True(t, isOtelContribComponent("github.com/open-telemetry/opentelemetry-collector-contrib/component"))
+	assert.False(t, isOtelContribComponent("github.com/some/other/module"))
+}
