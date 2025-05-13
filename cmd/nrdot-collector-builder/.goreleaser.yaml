@@ -1,0 +1,97 @@
+version: 2
+builds:
+  - flags:
+      - -trimpath
+    ldflags:
+      - -s
+      - -w
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+      - ppc64le
+    ignore:
+      - goos: windows
+        goarch: arm64
+      - goos: windows
+        goarch: ppc64le
+      - goos: darwin
+        goarch: ppc64le
+    binary: nrdot-collector-builder
+dockers:
+  - goos: linux
+    goarch: amd64
+    dockerfile: Dockerfile
+    image_templates:
+      - ghcr.io/newrelic/nrdot-collector-releases/nrdot-collector-builder:{{ .Version }}-amd64
+      - ghcr.io/newrelic/nrdot-collector-releases/nrdot-collector-builder:latest-amd64
+    build_flag_templates:
+      - --pull
+      - --platform=linux/amd64
+      - --label=org.opencontainers.image.created={{.Date}}
+      - --label=org.opencontainers.image.name={{.ProjectName}}
+      - --label=org.opencontainers.image.revision={{.FullCommit}}
+      - --label=org.opencontainers.image.version={{.Version}}
+      - --label=org.opencontainers.image.source={{.GitURL}}
+      - --label=org.opencontainers.image.licenses=Apache-2.0
+  - goos: linux
+    goarch: arm64
+    dockerfile: Dockerfile
+    image_templates:
+      - ghcr.io/newrelic/nrdot-collector-releases/nrdot-collector-builder:{{ .Version }}-arm64
+      - ghcr.io/newrelic/nrdot-collector-releases/nrdot-collector-builder:latest-arm64
+    build_flag_templates:
+      - --pull
+      - --platform=linux/arm64
+      - --label=org.opencontainers.image.created={{.Date}}
+      - --label=org.opencontainers.image.name={{.ProjectName}}
+      - --label=org.opencontainers.image.revision={{.FullCommit}}
+      - --label=org.opencontainers.image.version={{.Version}}
+      - --label=org.opencontainers.image.source={{.GitURL}}
+      - --label=org.opencontainers.image.licenses=Apache-2.0
+  - goos: linux
+    goarch: ppc64le
+    dockerfile: Dockerfile
+    image_templates:
+      - ghcr.io/newrelic/nrdot-collector-releases/nrdot-collector-builder:{{ .Version }}-ppc64le
+      - ghcr.io/newrelic/nrdot-collector-releases/nrdot-collector-builder:latest-ppc64le
+    build_flag_templates:
+      - --pull
+      - --platform=linux/ppc64le
+      - --label=org.opencontainers.image.created={{.Date}}
+      - --label=org.opencontainers.image.name={{.ProjectName}}
+      - --label=org.opencontainers.image.revision={{.FullCommit}}
+      - --label=org.opencontainers.image.version={{.Version}}
+      - --label=org.opencontainers.image.source={{.GitURL}}
+      - --label=org.opencontainers.image.licenses=Apache-2.0
+    use: buildx
+docker_manifests:
+  - name_template: ghcr.io/newrelic/nrdot-collector-releases/nrdot-collector-builder:{{ .Version }}
+    image_templates:
+      - ghcr.io/newrelic/nrdot-collector-releases/nrdot-collector-builder:{{ .Version }}-amd64
+      - ghcr.io/newrelic/nrdot-collector-releases/nrdot-collector-builder:{{ .Version }}-arm64
+      - ghcr.io/newrelic/nrdot-collector-releases/nrdot-collector-builder:{{ .Version }}-ppc64le
+  - name_template: ghcr.io/newrelic/nrdot-collector-releases/nrdot-collector-builder:latest
+    image_templates:
+      - ghcr.io/newrelic/nrdot-collector-releases/nrdot-collector-builder:latest-amd64
+      - ghcr.io/newrelic/nrdot-collector-releases/nrdot-collector-builder:latest-arm64
+      - ghcr.io/newrelic/nrdot-collector-releases/nrdot-collector-builder:latest-ppc64le
+release:
+  disable: true
+archives:
+  - formats:
+      - binary
+snapshot:
+  version_template: "{{ .Tag }}-alpha"
+changelog:
+  disable: true
+sboms:
+  - id: archive
+    artifacts: archive
+  - id: package
+    artifacts: package
