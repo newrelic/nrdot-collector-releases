@@ -10,6 +10,7 @@ on:
 permissions:
   contents: read
   packages: write
+  id-token: write
 
 jobs:
   snapshot:
@@ -67,67 +68,17 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
+          
       - name: Extract and Publish Docker Manifests
-        shell: bash
         if: ${{ !env.ACT && (github.ref_name == 'main' && github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          VERSION=$(echo '${{ steps.goreleaser.outputs.metadata }}' | jq -r '.version')
+
           # Extract Docker image names and digests
-          DOCKER_IMAGES=$(echo '${{ steps.goreleaser.outputs.artifacts }}' | jq -r '.[] | select(.type=="Docker Image")')
+          DOCKER_IMAGES=$(docker image ls --format "{{.Repository}}:{{.Tag}}" | grep "$GITHUB_REPOSITORY/nrdot-collector-builder:$VERSION" | tr '\n' ' ')
 
-          # Create temporary files to store grouped data
-          mkdir -p ${{ runner.temp }}/manifest_groups
-          rm -f ${{ runner.temp }}/manifest_groups/*
-
-          # Convert to an array of objects for iteration
-          echo "$DOCKER_IMAGES" | jq -c '.' | while read -r image_object; do
-            # Extract image name and architecture
-            name=$(echo "$image_object" | jq -r '.name')
-            goarch=$(echo "$image_object" | jq -r '.goarch')
-            
-            # Extract the base name and tag
-            base_name=$(echo "$name" | cut -d ':' -f 1)
-            tag=$(echo "$name" | cut -d ':' -f 2)
-            
-            # Extract base tag (without architecture suffix)
-            base_tag=$(echo "$tag" | cut -d '-' -f 1)
-            
-            echo "Processing image: $name (arch: $goarch)"
-            echo "  Base name: $base_name"
-            echo "  Base tag: $base_tag"
-            
-            # Use files to store the grouped data
-            # Create a file named after the base_tag and append the image name to it
-            echo "$name" >> "${{ runner.temp }}/manifest_groups/$base_tag"
-          done
-
-          # Now create manifests for each group
-          echo "Creating Docker manifests..."
-          for group_file in ${{ runner.temp }}/manifest_groups/*; do
-            # Extract base_tag from filename
-            base_tag=$(basename "$group_file")
-            
-            # Read all images for this tag
-            images=$(cat "$group_file" | tr '\n' ' ')
-            
-            # Get base name from the first image
-            first_image=$(echo "$images" | awk '{print $1}')
-            base_name=$(echo "$first_image" | cut -d ':' -f 1)
-            
-            # Create manifest name (base name + base tag without arch)
-            manifest_name="${base_name}:${base_tag}"
-            
-            echo "Creating manifest: $manifest_name"
-            echo "  With images: $images"
-            
-            # Create and push the manifest
-            # Uncomment these lines when you're ready to execute them
-            docker manifest create "$manifest_name" $images
-            docker manifest push "$manifest_name"
-          done
-
-          # Clean up temporary files
-          rm -rf ${{ runner.temp }}/manifest_groups
-
+          echo $DOCKER_IMAGES | xargs -d ' ' -I{} -n1 sh -c "docker push {}"
+          docker manifest create $GITHUB_REPOSITORY/nrdot-collector-builder:$VERSION $(echo $DOCKER_IMAGES)
+          docker manifest push $GITHUB_REPOSITORY/nrdot-collector-builder:$VERSION
