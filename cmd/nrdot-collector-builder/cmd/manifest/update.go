@@ -70,8 +70,8 @@ var UpdateCmd = &cobra.Command{
 				return fmt.Errorf("failed to write configuration file: %w", err)
 			}
 
-			if otelColVersion == "" || semver.Compare(otelColVersion, cfg.OtelColVersion) > 0 {
-				otelColVersion = cfg.OtelColVersion
+			if otelColVersion == "" || semver.Compare(otelColVersion, updatedCfg.OtelColVersion) > 0 {
+				otelColVersion = updatedCfg.OtelColVersion
 			}
 		}
 
