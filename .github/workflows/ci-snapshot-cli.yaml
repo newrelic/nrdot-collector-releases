@@ -80,5 +80,5 @@ jobs:
           DOCKER_IMAGES=$(docker image ls --format "{{.Repository}}:{{.Tag}}" | grep "$GITHUB_REPOSITORY/nrdot-collector-builder:$VERSION" | tr '\n' ' ')
 
           echo $DOCKER_IMAGES | xargs -d ' ' -I{} -n1 sh -c "docker push {}"
-          docker manifest create $GITHUB_REPOSITORY/nrdot-collector-builder:$VERSION $(echo $DOCKER_IMAGES)
-          docker manifest push $GITHUB_REPOSITORY/nrdot-collector-builder:$VERSION
+          docker manifest create ghcr.io/$GITHUB_REPOSITORY/nrdot-collector-builder:$VERSION $(echo $DOCKER_IMAGES)
+          docker manifest push ghcr.io/$GITHUB_REPOSITORY/nrdot-collector-builder:$VERSION
