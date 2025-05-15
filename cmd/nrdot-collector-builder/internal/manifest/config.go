@@ -13,6 +13,7 @@ import (
 
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
+	"golang.org/x/mod/semver"
 	"gopkg.in/yaml.v3"
 )
 
@@ -22,15 +23,21 @@ var errMissingGoMod = errors.New("missing gomod specification for module")
 const coreModule = "go.opentelemetry.io/collector"
 const contribModule = "github.com/open-telemetry/opentelemetry-collector-contrib"
 
+type Versions struct {
+	BetaCoreVersion    string `json:"betaCoreVersion"`
+	BetaContribVersion string `json:"betaContribVersion"`
+	StableCoreVersion  string `json:"stableCoreVersion"`
+}
+
 // Config holds the builder's configuration
 type Config struct {
 	Logger *zap.Logger
 	Path   string `mapstructure:"-"` // path to the config file
 	Dir    string `mapstructure:"-"` // path to the config directory
 
-	OtelColVersion string    `mapstructure:"-"` // only used be the go.mod template
-	Verbose        bool      `mapstructure:"-"`
-	YamlNode       yaml.Node `mapstructure:"-"`
+	Versions Versions  `mapstructure:"-"` // only used be the go.mod template
+	Verbose  bool      `mapstructure:"-"`
+	YamlNode yaml.Node `mapstructure:"-"`
 
 	Distribution      Distribution `mapstructure:"dist"`
 	Exporters         []Module     `mapstructure:"exporters"`
@@ -95,17 +102,44 @@ func isOtelComponent(component Module) bool {
 	return false
 }
 
-func (c *Config) SetOtelColVersion() error {
+func isStableVersion(version string) bool {
+	// Check if the version is a stable version (not a pre-release)
+	if semver.Compare(version, "v1.0.0") >= 0 {
+		return true
+	}
+	return false
+}
+
+func (c *Config) SetVersions() error {
+
+	versions := Versions{}
+
 	for _, component := range c.allOtelComponents() {
-		if isOtelCoreComponent(component.GoMod) {
-			c.OtelColVersion = strings.Split(component.GoMod, " ")[1]
-			break
+		if isOtelComponent(component) {
+			componentVersion := strings.Split(component.GoMod, " ")[1]
+			if isOtelCoreComponent(component.GoMod) {
+				if isStableVersion(componentVersion) {
+					versions.StableCoreVersion = componentVersion
+				} else {
+					versions.BetaCoreVersion = componentVersion
+				}
+			}
+
+			if isOtelContribComponent(component.GoMod) && !isStableVersion(componentVersion) {
+				versions.BetaContribVersion = componentVersion
+			}
+
+			if versions.StableCoreVersion != "" && versions.BetaCoreVersion != "" && versions.BetaContribVersion != "" {
+				break
+			}
 		}
 	}
 
-	if c.OtelColVersion == "" {
-		return fmt.Errorf("failed to set OpenTelemetry Collector version")
+	if versions.BetaCoreVersion == "" {
+		return fmt.Errorf("missing beta core version")
 	}
+
+	c.Versions = versions
 	return nil
 }
 

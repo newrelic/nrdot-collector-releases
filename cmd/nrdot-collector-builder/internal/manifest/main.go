@@ -156,7 +156,7 @@ func CopyAndUpdateConfigModules(cfg *Config, updates map[string][]string) (*Conf
 	cfgCopy.ConfmapProviders = update(cfg.ConfmapProviders)
 	cfgCopy.ConfmapConverters = update(cfg.ConfmapConverters)
 
-	cfgCopy.SetOtelColVersion()
+	cfgCopy.SetVersions()
 
 	return &cfgCopy, nil
 }

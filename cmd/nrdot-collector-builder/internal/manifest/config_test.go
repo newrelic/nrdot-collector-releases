@@ -85,3 +85,38 @@ func TestConfig_IsOtelContribComponent(t *testing.T) {
 	assert.True(t, isOtelContribComponent("github.com/open-telemetry/opentelemetry-collector-contrib/component"))
 	assert.False(t, isOtelContribComponent("github.com/some/other/module"))
 }
+
+func TestConfig_SetVersions(t *testing.T) {
+	cfg := &Config{
+		Extensions: []Module{
+			{GoMod: "github.com/open-telemetry/opentelemetry-collector-contrib/component v0.1.0"},
+		},
+		Receivers: []Module{
+			{GoMod: "go.opentelemetry.io/collector v1.0.0"},
+			{GoMod: "go.opentelemetry.io/collector/component v0.1.0"},
+		},
+	}
+
+	err := cfg.SetVersions()
+	assert.NoError(t, err)
+
+	assert.Equal(t, "v1.0.0", cfg.Versions.StableCoreVersion)
+	assert.Equal(t, "v0.1.0", cfg.Versions.BetaCoreVersion)
+	assert.Equal(t, "v0.1.0", cfg.Versions.BetaContribVersion)
+}
+
+func TestConfig_SetVersions_MissingCore(t *testing.T) {
+	cfg := &Config{
+		Extensions: []Module{
+			{GoMod: "github.com/open-telemetry/opentelemetry-collector-contrib/component v0.1.0"},
+		},
+		Receivers: []Module{
+			{GoMod: "go.opentelemetry.io/collector v1.0.0"},
+		},
+	}
+
+	err := cfg.SetVersions()
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "missing beta core version")
+
+}

@@ -4,6 +4,7 @@ package cmd
 
 import (
 	"fmt"
+
 	"newrelic-collector-builder/cmd/manifest"
 
 	"github.com/spf13/cobra"
