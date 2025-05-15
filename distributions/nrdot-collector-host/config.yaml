@@ -44,14 +44,35 @@ receivers:
         metrics:
           system.network.connections:
             enabled: false
-      # Uncomment to enable process metrics, which can be noisy but valuable.
-      # processes:
-      # process:
-      #  metrics:
-      #    process.cpu.utilization:
-      #      enabled: true
-      #    process.cpu.time:
-      #      enabled: false
+      processes:
+      process:
+        metrics:
+          process.cpu.time:
+            enabled: true
+          process.cpu.utilization:
+            enabled: true
+          process.memory.usage:
+            enabled: true
+          process.memory.virtual:
+            enabled: true
+          process.disk.io:
+            enabled: true
+          process.disk.operations:
+            enabled: true
+          process.threads:
+            enabled: true
+          process.open_file_descriptors:
+            enabled: true
+          process.paging.faults:
+            enabled: true
+          process.context_switches:
+            enabled: true
+          process.uptime:
+            enabled: true
+          process.handles:
+            enabled: false
+          process.signals_pending:
+            enabled: true
 
   filelog:
     include:
@@ -80,6 +101,14 @@ processors:
           - action: aggregate_labels
             label_set: [ direction ]
             aggregation_type: sum
+
+  # Top N process filter processor configuration
+  topnprocessfilter:
+    cpu_threshold_percent: 5.0
+    memory_threshold_percent: 10.0
+    retention_minutes: 60
+    storage_path: "/var/lib/nrdot-collector/topnprocess.db"
+
   # remove system.cpu metrics for states
   filter/exclude_cpu_utilization:
     metrics:
@@ -204,6 +233,7 @@ service:
       receivers: [hostmetrics]
       processors:
         - memory_limiter
+        - topnprocessfilter
         - metricstransform
         - filter/exclude_cpu_utilization
         - filter/exclude_memory_utilization
