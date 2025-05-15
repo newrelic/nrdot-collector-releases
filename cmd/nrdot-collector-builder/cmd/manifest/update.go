@@ -5,8 +5,9 @@ package manifest
 import (
 	"encoding/json"
 	"fmt"
-	"newrelic-collector-builder/internal/manifest"
 	"path/filepath"
+
+	"newrelic-collector-builder/internal/manifest"
 
 	"github.com/knadh/koanf/parsers/yaml"
 	"github.com/knadh/koanf/v2"
@@ -36,7 +37,8 @@ var UpdateCmd = &cobra.Command{
 			return nil
 		}
 
-		var otelColVersion string
+		var currentVersions manifest.Versions
+		var nextVersions manifest.Versions
 
 		for _, match := range matches {
 			cfg, _, err := initConfig(match, verbose)
@@ -53,12 +55,16 @@ var UpdateCmd = &cobra.Command{
 				return fmt.Errorf("go not found: %w", err)
 			}
 
-			if err = cfg.SetOtelColVersion(); err != nil {
-				return fmt.Errorf("go not found: %w", err)
+			if err = cfg.SetVersions(); err != nil {
+				return fmt.Errorf("versions not found: %w", err)
 			}
 
 			if err = cfg.ParseModules(); err != nil {
 				return fmt.Errorf("invalid module configuration: %w", err)
+			}
+
+			if (currentVersions.BetaCoreVersion == "") || semver.Compare(cfg.Versions.BetaCoreVersion, currentVersions.BetaCoreVersion) > 0 {
+				currentVersions = cfg.Versions
 			}
 
 			updatedCfg, err := manifest.UpdateConfigModules(cfg)
@@ -70,17 +76,19 @@ var UpdateCmd = &cobra.Command{
 				return fmt.Errorf("failed to write configuration file: %w", err)
 			}
 
-			if otelColVersion == "" || semver.Compare(otelColVersion, updatedCfg.OtelColVersion) > 0 {
-				otelColVersion = updatedCfg.OtelColVersion
+			if (nextVersions.BetaCoreVersion == "") || semver.Compare(updatedCfg.Versions.BetaCoreVersion, nextVersions.BetaCoreVersion) > 0 {
+				nextVersions = updatedCfg.Versions
 			}
 		}
 
 		if jsonOutput {
 			// print JSON output of all otel versions
 			output := struct {
-				OtelColVersion string `json:"otelColVersion"`
+				NextVersions    manifest.Versions `json:"nextVersions"`
+				CurrentVersions manifest.Versions `json:"currentVersions"`
 			}{
-				OtelColVersion: otelColVersion,
+				NextVersions:    nextVersions,
+				CurrentVersions: currentVersions,
 			}
 			b, err := json.Marshal(output)
 			if err != nil {
