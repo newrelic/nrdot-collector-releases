@@ -1,0 +1,77 @@
+name: 🔄 CI | Bump Component Versions
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Scheduled to run every hour on every day-of-week from Monday through Friday.
+    - cron: '0 * * * 1-5'
+
+jobs:
+    bump:
+        name: Bump Component Versions
+        runs-on: ubuntu-latest
+        steps:
+        - name: Checkout
+          uses: actions/checkout@v4
+          with:
+            fetch-depth: 0 # required for tag metadata
+    
+        - name: Setup Go
+          uses: actions/setup-go@v5
+          with:
+            go-version: '1.23'
+            check-latest: true
+    
+        - name: Tidy go.mod files
+          run: go mod tidy
+    
+        - name: Bump component versions
+          id: bump_component_versions
+          run: |
+            output=$(./scripts/bump-component-versions.sh)
+            echo "output=${output}" >> $GITHUB_OUTPUT
+            # Check for unstaged changes
+            if git diff --quiet; then
+              echo "No unstaged changes found. Exiting."
+              echo "has_changes=false" >> $GITHUB_OUTPUT
+            else
+              echo "Unstaged changes found. Continuing..."
+              echo "has_changes=true" >> $GITHUB_OUTPUT
+            fi
+
+        - name: Setup ENV
+          if: steps.bump_component_versions.outputs.has_changes == 'true'
+          env:
+            GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          run: |
+            gh_username=$(gh api user | jq -r '.login')
+            output=$(echo "${{ steps.bump_component_versions.outputs.output }}")
+            echo "gh_username=${gh_username}" >> $GITHUB_ENV
+            next_beta_core=$(echo "${output}" | jq -r '.nextVersions.betaCoreVersion')
+            current_beta_core=$(echo "${output}" | jq -r '.currentVersions.betaCoreVersion')
+            echo "next_beta_core=${next_beta_core}" >> $GITHUB_ENV
+            echo "current_beta_core=${current_beta_core}" >> $GITHUB_ENV
+            echo "branch=otel-release/${next_beta_core}" >> $GITHUB_ENV
+
+        - name: Commit Component Version Bump
+          if: steps.bump_component_versions.outputs.has_changes == 'true'
+          env:
+            GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          run: |
+            git switch -c ${{ env.branch }}
+            git config --global user.name '${{ env.gh_username }}'
+            git config --global user.email '${{ env.gh_username }}@users.noreply.github.com'
+
+            git add --all
+            git commit -m "feat: Bump otel component versions from ${{ env.current_beta_core }} to ${{ env.next_beta_core }}"
+            git push origin ${{ env.branch }}
+            
+        - name: Issue PR
+          if: ${{ !env.ACT && steps.bump_component_versions.outputs.has_changes == 'true' }}
+          env:
+            GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          run: |
+            gh pr create --title "Bump OTEL beta core to ${{ env.next_beta_core }}" \
+            --body "Updates the version of the otel beta core from ${{ env.current_beta_core }} to ${{ env.next_beta_core }}." \
+            --repo ${{ github.event.repository.name }} \
+            --base main --head ${{ github.event.repository.name }}:${{ env.branch }}

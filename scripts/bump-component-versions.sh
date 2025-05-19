@@ -45,9 +45,8 @@ next_beta_core=${next_beta_core#v}
 
 #  If the current beta core version is not equal to the next beta core version, update the Makefile
 if [[ "$current_beta_core" != "$next_beta_core" ]]; then
-  echo "Updating Makefile from $current_beta_core to $next_beta_core"
   # Update Makefile OCB version
   sed_inplace "s/OTELCOL_BUILDER_VERSION ?= $escaped_current_beta_core/OTELCOL_BUILDER_VERSION ?= $next_beta_core/" Makefile
-else
-  echo "No update needed for the Makefile."
 fi
+
+echo $OUTPUT
