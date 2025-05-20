@@ -58,8 +58,12 @@ jobs:
               echo "has_changes=true" >> $GITHUB_OUTPUT
               next_beta_core=$(echo "${output}" | jq -r '.nextVersions.betaCoreVersion')
               current_beta_core=$(echo "${output}" | jq -r '.currentVersions.betaCoreVersion')
+              next_beta_contrib=$(echo "${output}" | jq -r '.nextVersions.betaContribVersion')
+              current_beta_contrib=$(echo "${output}" | jq -r '.currentVersions.betaContribVersion')
               echo "next_beta_core=${next_beta_core}" >> $GITHUB_ENV
               echo "current_beta_core=${current_beta_core}" >> $GITHUB_ENV
+              echo "next_beta_contrib=${next_beta_contrib}" >> $GITHUB_ENV
+              echo "current_beta_contrib=${current_beta_contrib}" >> $GITHUB_ENV
               echo "branch=otel-release/${next_beta_core}" >> $GITHUB_ENV
             fi
 
@@ -68,23 +72,14 @@ jobs:
           run: |
             # Check if branch exists remotely
             if git ls-remote --heads origin ${{ env.branch }} | grep -q ${{ env.branch }}; then
-              echo "Branch ${{ env.branch }} already exists, will be updated with local changes"
-              git fetch origin ${{ env.branch }}:refs/remotes/origin/${{ env.branch }}
-              
-              # Create new branch from current changes
-              git switch -c temp-branch
-              
-              # Force reset the existing branch to match main
-              git checkout ${{ env.branch }} || git checkout -b ${{ env.branch }}
-              git reset --hard origin/main
-              
-              # Apply our changes from temp branch (like a rebase)
-              git checkout temp-branch -- .
+              echo "Branch ${{ env.branch }} already exists, will be recreated from main"
+              # Create new branch from main - no need to fetch existing branch
+              git checkout -b ${{ env.branch }} origin/main
             else
               echo "Creating new branch ${{ env.branch }}"
               git switch -c ${{ env.branch }}
             fi
-            
+                        
             # Continue with commit and push
             git add --all
             git commit -S -m "feat: Bump otel component versions from ${{ env.current_beta_core }} to ${{ env.next_beta_core }}"
@@ -96,7 +91,11 @@ jobs:
             GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
           run: |
             pr_title="feat: Bump OTEL beta core to ${{ env.next_beta_core }}"
-            pr_body="Updates the version of the otel beta core from ${{ env.current_beta_core }} to ${{ env.next_beta_core }}"
+            pr_body="Updates the version of the otel beta core from ${{ env.current_beta_core }} to ${{ env.next_beta_core }}
+            ## Changes
+              - Beta Core: [${{ env.current_beta_core}}...${{ env.next_beta_core}}](https://github.com/open-telemetry/opentelemetry-collector-contrib/compare/${{ env.current_beta_core}}...${{ env.next_beta_core}})
+              - Beta Contrib: [${{ env.current_beta_contrib}}...${{ env.next_beta_contrib}}](https://github.com/open-telemetry/opentelemetry-collector/compare/${{ env.current_beta_contrib}}...${{ env.next_beta_contrib}})
+            "
             
             # Find all open PRs with branches matching the pattern 'otel-release/v0*'
             echo "Searching for existing upgrade PRs to close..."
