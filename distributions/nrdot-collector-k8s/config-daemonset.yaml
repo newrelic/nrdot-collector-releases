@@ -105,67 +105,11 @@ receivers:
       - /var/log/container/otel-collector-daemonset/*.log
       - /var/log/container/otel-collector-deployment/*.log
       - /var/log/containers/*-exec.log
-    start_at: beginning
     include_file_path: true
     include_file_name: true
     operators:
-      - type: router
-        id: get-format
-        routes:
-          - output: parser-docker
-            expr: 'body matches "^\\{"'
-          - output: parser-crio
-            expr: 'body matches "^[^ Z]+ "'
-          - output: parser-containerd
-            expr: 'body matches "^[^ Z]+Z"'
-      - type: regex_parser
-        id: parser-crio
-        regex: '^(?P<time>[^ Z]+) (?P<stream>stdout|stderr) (?P<logtag>[^ ]*) ?(?P<log>.*)$'
-        output: extract_metadata_from_filepath
-        timestamp:
-          parse_from: attributes.time
-          layout_type: gotime
-          layout: '2006-01-02T15:04:05.999999999Z07:00'
-      - type: regex_parser
-        id: parser-containerd
-        regex: '^(?P<time>[^ ^Z]+Z) (?P<stream>stdout|stderr) (?P<logtag>[^ ]*) ?(?P<log>.*)$'
-        output: extract_metadata_from_filepath
-        timestamp:
-          parse_from: attributes.time
-          layout: '%Y-%m-%dT%H:%M:%S.%LZ'
-      - type: json_parser
-        id: parser-docker
-        output: extract_metadata_from_filepath
-        timestamp:
-          parse_from: attributes.time
-          layout: '%Y-%m-%dT%H:%M:%S.%LZ'
-      - type: move
-        from: attributes.log
-        to: body
-      - type: regex_parser
-        id: extract_metadata_from_filepath
-        regex: '^.*\/(?P<namespace>[^_]+)_(?P<pod_name>[^_]+)_(?P<uid>[a-f0-9\-]{36})\/(?P<container_name>[^\._]+)\/(?P<restart_count>\d+)\.log$'
-        parse_from: attributes["log.file.path"]
-        cache:
-          size: 128
-      - type: move
-        from: attributes.stream
-        to: attributes["log.iostream"]
-      - type: move
-        from: attributes.container_name
-        to: resource["k8s.container.name"]
-      - type: move
-        from: attributes.namespace
-        to: resource["k8s.namespace.name"]
-      - type: move
-        from: attributes.pod_name
-        to: resource["k8s.pod.name"]
-      - type: move
-        from: attributes.restart_count
-        to: resource["k8s.container.restart_count"]
-      - type: move
-        from: attributes.uid
-        to: resource["k8s.pod.uid"]
+      - id: container-parser
+        type: container
 processors:
   metricstransform/ldm:
     transforms:
@@ -392,10 +336,22 @@ processors:
     actions:
       - key: type
         action: delete
+  resourcedetection/env:
+    detectors: ["env", "system"]
+    override: false
+    system:
+      hostname_sources: ["os"]
+      resource_attributes:
+        host.id:
+          enabled: true
   resourcedetection/cloudproviders:
-    detectors: [gcp, eks, ec2, aks, azure]
+    detectors: [gcp, eks, azure, aks, ec2]
     timeout: 2s
     override: false
+    ec2:
+      resource_attributes:
+        host.name:
+          enabled: false
   resource:
     attributes:
       - key: k8s.cluster.name
@@ -541,13 +497,47 @@ exporters:
     endpoint: ${env:OTEL_EXPORTER_OTLP_ENDPOINT:-https://otlp.nr-data.net}
     headers:
       api-key: ${env:NEW_RELIC_LICENSE_KEY}
+connectors:
+  routing/nr_pipelines:
+    default_pipelines: [metrics/default]
+    error_mode: propagate
+    table:
+      - context: metric
+        condition: instrumentation_scope.name == "github.com/open-telemetry/opentelemetry-collector-contrib/receiver/hostmetricsreceiver/internal/scraper/networkscraper"
+        pipelines: [metrics/nr]
+      - context: metric
+        condition: instrumentation_scope.name == "github.com/open-telemetry/opentelemetry-collector-contrib/receiver/hostmetricsreceiver/internal/scraper/loadscraper"
+        pipelines: [metrics/nr]
+      - context: metric
+        condition: instrumentation_scope.name == "github.com/open-telemetry/opentelemetry-collector-contrib/receiver/hostmetricsreceiver/internal/scraper/diskscraper"
+        pipelines: [metrics/nr]
+      - context: metric
+        condition: instrumentation_scope.name == "github.com/open-telemetry/opentelemetry-collector-contrib/receiver/hostmetricsreceiver/internal/scraper/memoryscraper"
+        pipelines: [metrics/nr]
+      - context: metric
+        condition: instrumentation_scope.name == "github.com/open-telemetry/opentelemetry-collector-contrib/receiver/hostmetricsreceiver/internal/scraper/cpuscraper"
+        pipelines: [metrics/nr]
+      - context: metric
+        condition: instrumentation_scope.name == "github.com/open-telemetry/opentelemetry-collector-contrib/receiver/hostmetricsreceiver/internal/scraper/filesystemscraper"
+        pipelines: [metrics/nr]
+      - context: metric
+        condition: instrumentation_scope.name == "github.com/open-telemetry/opentelemetry-collector-contrib/receiver/prometheusreceiver"
+        pipelines: [metrics/nr]
+      - context: metric
+        condition: instrumentation_scope.name == "github.com/open-telemetry/opentelemetry-collector-contrib/receiver/kubeletstatsreceiver"
+        pipelines: [metrics/nr]
 service:
   pipelines:
-    metrics:
+    metrics/all_receivers:
       receivers:
         - hostmetrics
         - kubeletstats
         - prometheus
+      exporters:
+        - routing/nr_pipelines
+    metrics/nr:
+      receivers:
+        - routing/nr_pipelines
       processors:
         - memory_limiter
         - metricstransform/hostmetrics_cpu
@@ -562,11 +552,20 @@ service:
         - filter/exclude_system_paging
         - filter/exclude_network
         - attributes/exclude_system_paging
+        - resourcedetection/env
         - resourcedetection/cloudproviders
         - resource
         - attributes/self
         - k8sattributes
         - cumulativetodelta
+        - batch
+      exporters:
+        - otlphttp/newrelic
+    metrics/default:
+      receivers:
+        - routing/nr_pipelines
+      processors:
+        - memory_limiter
         - batch
       exporters:
         - otlphttp/newrelic
