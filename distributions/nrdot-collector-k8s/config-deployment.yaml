@@ -331,16 +331,7 @@ processors:
             value_actions:
               - value: 'false'
                 new_value: 'true'
-      - include: kube_pod_(owner|created|info|status_(phase|ready|ready_time|scheduled|scheduled_time)|start_time)
-        action: update
-        match_type: regexp
-        operations:
-          - action: update_label
-            label: low.data.mode
-            value_actions:
-              - value: 'false'
-                new_value: 'true'
-      - include: kube_service_(annotations|created|info|labels|spec_type|status_load_balancer_ingress)
+      - include: ^kube_pod_(owner|created|info|status_(phase|ready|scheduled)|start_time)$$
         action: update
         match_type: regexp
         operations:
@@ -412,10 +403,21 @@ processors:
     metrics:
       datapoint:
         - metric.name == "kube_pod_status_phase" and value_double < 0.5
-        - metric.name == "kube_pod_status_scheduled" and value_double < 0.5
-        - metric.name == "kube_pod_container_status_phase" and value_double < 0.5
         - metric.name == "kube_pod_status_ready" and value_double < 0.5
+        - metric.name == "kube_pod_status_scheduled" and value_double < 0.5
+        - metric.name == "kube_pod_container_status_ready" and value_double < 0.5
+        - metric.name == "kube_pod_container_status_phase" and value_double < 0.5
+        - metric.name == "kube_pod_container_status_restarts_total" and value_double < 0.5
         - metric.name == "kube_deployment_status_condition" and value_double < 0.5
+        - metric.name == "kube_pod_container_status_waiting_reason" and value_double < 0.5
+  filter/nr_exclude_zero_value_kube_jobs:
+    metrics:
+      datapoint:
+        - metric.name == "kube_job_complete" and value_double < 0.5
+        - metric.name == "kube_job_spec_parallelism" and value_double < 0.5
+        - metric.name == "kube_job_status_failed" and value_double < 0.5
+        - metric.name == "kube_job_status_active" and value_double < 0.5
+        - metric.name == "kube_job_status_succeeded" and value_double < 0.5
   resourcedetection/env:
     detectors: ["env", "system"]
     override: false
@@ -479,6 +481,10 @@ processors:
       - key: net.host.name
         action: delete
       - key: net.host.port
+        action: delete
+      - key: url.scheme
+        action: delete
+      - key: server.address
         action: delete
   cumulativetodelta:
   k8sattributes/ksm:
@@ -637,6 +643,7 @@ service:
         - groupbyattrs
         - transform/ksm
         - k8sattributes/ksm
+        - cumulativetodelta
         - batch
       exporters:
         - otlphttp/newrelic
