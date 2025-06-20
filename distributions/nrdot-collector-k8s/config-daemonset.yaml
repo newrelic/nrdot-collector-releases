@@ -199,7 +199,7 @@ processors:
             new_value: 'false'
   metricstransform/kubeletstats:
     transforms:
-      - include: container\.(cpu\.usage|filesystem\.(capacity|usage)|memory\.usage)
+      - include: container\.(cpu\.usage|filesystem\.(available|capacity|usage)|memory\.usage)
         action: update
         match_type: regexp
         operations:
@@ -238,6 +238,15 @@ processors:
               - value: 'false'
                 new_value: 'true'
       - include: container_memory_working_set_bytes
+        action: update
+        match_type: regexp
+        operations:
+          - action: update_label
+            label: low.data.mode
+            value_actions:
+              - value: 'false'
+                new_value: 'true'
+      - include: container_memory_mapped_file
         action: update
         match_type: regexp
         operations:
