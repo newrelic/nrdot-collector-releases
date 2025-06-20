@@ -30,9 +30,6 @@ function extract_config_with_overwritable_defaults() {
     } | {
       # remove configuration requiring mounted host filesystem
       yq 'del(.receivers.hostmetrics.root_path)'
-      } | {
-      # temporarily remove unused debug exporter until fixed upstream
-      yq 'del(.exporters.debug)'
     } | {
       # expose ingest endpoint via env var to align with other distros
       sed 's/"https:\/\/otlp.nr-data.net"/${env:OTEL_EXPORTER_OTLP_ENDPOINT:-https:\/\/otlp.nr-data.net}/g'
@@ -50,6 +47,18 @@ function extract_config_with_overwritable_defaults() {
 extract_config_with_overwritable_defaults 'daemonset'
 extract_config_with_overwritable_defaults 'deployment'
 
-
-
-
+# Document last synced version in the following line
+# last synced version: 0.8.26
+chart_version=$(helm show chart newrelic/nr-k8s-otel-collector | yq .version)
+# Determine the OS and set the sed -i command accordingly
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  # macOS
+  function sed_inplace {
+  	sed -i '' "$@"
+  }
+else
+  function sed_inplace {
+    	sed -i'' "$@"
+  }
+fi
+sed_inplace -E "s/^# last synced version: .*/# last synced version: ${chart_version}/" "$0"
