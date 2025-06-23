@@ -48,7 +48,7 @@ extract_config_with_overwritable_defaults 'daemonset'
 extract_config_with_overwritable_defaults 'deployment'
 
 # Document last synced version in the following line
-# last synced version: 0.8.26
+# last synced version: 0.8.28
 chart_version=$(helm show chart newrelic/nr-k8s-otel-collector | yq .version)
 # Determine the OS and set the sed -i command accordingly
 if [[ "$OSTYPE" == "darwin"* ]]; then
