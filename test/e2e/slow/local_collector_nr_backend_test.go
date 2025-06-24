@@ -23,7 +23,7 @@ var (
 	testChart      chart.NrBackendChart
 )
 
-func TestSlow(t *testing.T) {
+func TestLocalCollectorWithNrBackend(t *testing.T) {
 	testutil.TagAsSlowTest(t)
 	testSpec := spec.LoadTestSpec()
 

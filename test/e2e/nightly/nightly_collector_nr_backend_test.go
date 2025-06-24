@@ -27,7 +27,7 @@ var k8sNode = spec.NightlySystemUnderTest{
 	HostNamePattern: testutil.NewNrQueryHostNamePattern("nightly", testutil.Wildcard, "k8s_node"),
 }
 
-func TestNightly(t *testing.T) {
+func TestNightlyCollectorWithNrBackend(t *testing.T) {
 	testutil.TagAsNightlyTest(t)
 	testSpec := spec.LoadTestSpec()
 

@@ -1,4 +1,4 @@
-package hostmetrics
+package fast
 
 import (
 	"crypto/tls"
@@ -31,7 +31,7 @@ type ValidationPayload struct {
 	Transactions     uint32 `json:"transactions"`
 }
 
-func TestFast(t *testing.T) {
+func TestLocalCollectorWithLocalBackend(t *testing.T) {
 	testutil.TagAsFastTest(t)
 	kubectlOptions = k8sutil.NewKubectlOptions(TestNamespace)
 	testChart = chart.NewMockedBackendChart()
