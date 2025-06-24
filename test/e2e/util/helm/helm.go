@@ -9,8 +9,9 @@ import (
 	"testing"
 )
 
-func NewHelmOptions(kubectlOptions *k8s.KubectlOptions, chartValues map[string]string) *helm.Options {
+func NewHelmOptions(kubectlOptions *k8s.KubectlOptions, chartVersion string, chartValues map[string]string) *helm.Options {
 	installArg := []string{
+		"--version", chartVersion,
 		"--namespace", kubectlOptions.Namespace,
 		"--create-namespace",
 		"--dependency-update",
@@ -28,10 +29,15 @@ func NewHelmOptions(kubectlOptions *k8s.KubectlOptions, chartValues map[string]s
 	}
 }
 
-func ApplyChart(t *testing.T, kubectlOptions *k8s.KubectlOptions, chart chart.Chart, releaseNameSuffix string, testId string) {
+func ApplyChart(t *testing.T, kubectlOptions *k8s.KubectlOptions, chartToInstall chart.Chart, releaseNameSuffix string, testId string) {
 	releaseName := fmt.Sprintf("%s-%s", releaseNameSuffix, testId)
-	helmOptions := NewHelmOptions(kubectlOptions, chart.RequiredChartValues())
-	helm.Install(t, helmOptions, chart.Meta().ChartPath(), releaseName)
+	version := chartToInstall.Version()
+	values := chartToInstall.RequiredChartValues(testId)
+	fqn := chartToInstall.Meta().FullyQualifiedChartName()
+	helmOptions := NewHelmOptions(kubectlOptions, version, values)
+	helm.AddRepo(t, helmOptions, chart.NrRepoName, chart.NrRepoUrl)
+	t.Logf("Installing chart %s:%s with release name %s", fqn, version, releaseName)
+	helm.Install(t, helmOptions, fqn, releaseName)
 	t.Cleanup(func() {
 		t.Log("Cleanup 'ApplyChart': delete helm chart")
 		helm.Delete(t, helmOptions, releaseName, true)

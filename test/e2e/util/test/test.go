@@ -15,21 +15,24 @@ const (
 
 var onlyModes = []string{fastOnly, slowOnly, nightlyOnly}
 
-func TagAsFastTest(t *testing.T) {
+func TagAsFastTest(t *testing.T, enabledInSpec bool) {
 	if isAnyModeOf(allOnlyModesExcept(fastOnly)) {
-		t.Skip("Skipping fast test: ", t.Name())
+		t.Skip("Fast test skipped due to test mode: ", t.Name())
+	}
+	if !enabledInSpec {
+		t.Skip("Fast test skipped due to test spec: ", t.Name())
 	}
 }
 
 func TagAsSlowTest(t *testing.T) {
 	if isAnyModeOf(allOnlyModesExcept(slowOnly)) {
-		t.Skip("Skipping slow test: ", t.Name())
+		t.Skip("Slow test skipped due to test mode: ", t.Name())
 	}
 }
 
 func TagAsNightlyTest(t *testing.T) {
 	if isAnyModeOf(allOnlyModesExcept(nightlyOnly)) {
-		t.Skip("Skipping nightly test: ", t.Name())
+		t.Skip("Nightly test skipped due to test mode: ", t.Name())
 	}
 }
 

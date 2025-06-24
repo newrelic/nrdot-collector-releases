@@ -1,57 +1,52 @@
 package chart
 
 import (
-	"fmt"
-	"log"
-	osuser "os/user"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	envutil "test/e2e/util/env"
-	testutil "test/e2e/util/test"
+	"test/e2e/util/nr"
+)
+
+const (
+	nrBackendChartShortName = "nr_backend"
 )
 
 type NrBackendChart struct {
-	collectorHostNamePrefix string
-	NrQueryHostNamePattern  string
-	namespace               string
+	version string
 }
 
-func NewNrBackendChart(testId string) NrBackendChart {
-	var environmentName string
-	if envutil.IsContinuousIntegration() {
-		environmentName = "ci"
-	} else {
-		user, err := osuser.Current()
-		if err != nil {
-			log.Panicf("Couldn't determine current user: %v", err)
-		}
-		environmentName = fmt.Sprintf("local_%s", user.Username)
-	}
-	hostNamePrefix := testutil.NewHostNamePrefix(environmentName, testId, "k8s_node")
-	hostNamePattern := testutil.NewNrQueryHostNamePattern(environmentName, testId, "k8s_node")
-
+func newNrBackendChart(version string) Chart {
 	return NrBackendChart{
-		collectorHostNamePrefix: hostNamePrefix,
-		NrQueryHostNamePattern:  hostNamePattern,
+		version: version,
 	}
 }
 
-func (m *NrBackendChart) AsChart() Chart {
-	var chart Chart = m
-	return chart
-}
-
-func (m *NrBackendChart) Meta() Meta {
+func (m NrBackendChart) Meta() Meta {
 	return Meta{
-		name: "nr_backend",
+		name: "test/charts/nr_backend",
 	}
 }
 
-func (m *NrBackendChart) RequiredChartValues() map[string]string {
+func (m NrBackendChart) RequiredChartValues(testId string) map[string]string {
 	return map[string]string{
 		"image.repository":     envutil.GetImageRepo(),
 		"image.tag":            envutil.GetImageTag(),
 		"secrets.nrBackendUrl": envutil.GetNrBackendUrl(),
 		"secrets.nrIngestKey":  envutil.GetNrIngestKey(),
-		"collector.hostname":   m.collectorHostNamePrefix,
+		"collector.hostname":   nr.GetHostNamePrefix(testId),
 		"clusterName":          envutil.GetK8sContextName(),
 	}
+}
+
+func (m NrBackendChart) Version() string {
+	return m.version
+}
+
+func (m NrBackendChart) WaitUntilPodReadySelector() metav1.ListOptions {
+	return metav1.ListOptions{
+		LabelSelector: "app=nrdot-collector-daemonset",
+	}
+}
+
+func (m NrBackendChart) CollectorContainerName() string {
+	return "nrdot-collector-daemonset"
 }
