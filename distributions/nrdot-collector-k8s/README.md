@@ -6,19 +6,13 @@
 | Stability | `preview`                                                                           |
 | Artifacts | [Docker images on DockerHub](https://hub.docker.com/r/newrelic/nrdot-collector-k8s) |
 
-A distribution of the NRDOT collector focused on gathering metrics in a kubernetes environment with two different configs:
-- [config-daemonset.yaml](./config-daemonset.yaml) (default): Typically deployed as a `DaemonSet`. Collects node-level metrics via `hostmetricsreceiver`, `filelogreceiver`, `kubeletstatsreceiver` and `prometheusreceiver` (`cAdvisor`, `kubelet`).
-- [config-deployment.yaml](./config-deployment.yaml): Typically deployed as a `Deployment`. Collects cluster-level metrics via `k8seventsreceiver`,  `prometheusreceiver` (`kube-state-metrics`, `apiserver`, `controller-manager`, `scheduler`). Can be enabled by overriding the default docker `CMD`, i.e. `--config /etc/nrdot-collector-k8s/config-deployment.yaml`.
+A distribution of the NRDOT collector focused on gathering metrics in a kubernetes environment.
 
 Note: See [general README](../README.md) for information that applies to all distributions.
 
 ## Installation
-The distribution's main purpose is to be a building block for the [nr-k8s-otel-collector](https://github.com/newrelic/helm-charts/tree/master/charts/nr-k8s-otel-collector) helm chart which we recommend using. The helm chart takes care of a lot of configuration required to ensure a smooth operation of the collector and drive the NR Kubernetes experience.
-If you choose not to use the helm chart, you'll have to follow the [general installation](../README.md#installation) and provide the necessary permissions for the collector to access the k8s APIs yourself, see also our [troubleshooting guide](./TROUBLESHOOTING.md).
-
-### Dependencies
-- Most k8s APIs scraped by the various receivers require additional permissions setup which are provided by the [nr-k8s-otel-collector](https://github.com/newrelic/helm-charts/tree/master/charts/nr-k8s-otel-collector) chart out of the box in the form of a service account. If you wish to add those permissions by hand, please refer to the chart itself.
-- [kube-state-metrics](https://github.com/kubernetes/kube-state-metrics) is required to be running in your cluster. The metrics emitted by this add-on are used to create NR entities for various k8s resources.
+The distribution's primary purpose is to be a building block for the [nr-k8s-otel-collector](https://github.com/newrelic/helm-charts/tree/master/charts/nr-k8s-otel-collector) helm chart which we recommend using. The helm chart takes care of all the configuration required to ensure a smooth operation of the collector and drive the NR Kubernetes experience, including but not limited to: deploying collector as daemonset and deployment with different configurations for node vs cluster-level metrics, wiring up necessary permissions via service accounts, adding [kube-state-metrics](https://github.com/kubernetes/kube-state-metrics) for additional scrapeable metrics etc. 
+While you can use the `nrdot-collector-k8s` image directly, we do not provide support for this use case.
 
 ## Configuration
 
