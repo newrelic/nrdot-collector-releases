@@ -144,7 +144,6 @@ jobs:
           make -f ./test/e2e/Makefile ci_test-fast
 
       - name: Run slow local tests
-        if: ${{ inputs.nightly }}
         env:
           KIND_CLUSTER_NAME: ${{ inputs.test_cluster_name }}
           IMAGE_TAG: ${{ env.image_tag }}
