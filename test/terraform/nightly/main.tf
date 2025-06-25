@@ -1,5 +1,8 @@
 locals {
   test_spec                                       = yamldecode(file("${path.module}/../../../distributions/${var.distro}/test-spec.yaml"))
+  ec2_enabled                                     = local.test_spec.nightly.ec2.enabled
+  chart_name                                      = local.test_spec.nightly.collectorChart.name
+  chart_version                                   = local.test_spec.nightly.collectorChart.version
   releases_bucket_name                            = "nr-releases"
   required_permissions_boundary_arn_for_new_roles = "arn:aws:iam::${var.aws_account_id}:policy/resource-provisioner-boundary"
   k8s_namespace                                   = "nightly-${var.distro}"
@@ -15,9 +18,11 @@ data "aws_ecr_repository" "ecr_repo" {
   name = var.distro
 }
 
-resource "helm_release" "ci_e2e_nightly" {
-  name  = "ci-e2etest-nightly-${var.distro}"
-  chart = "../../charts/nr_backend"
+resource "helm_release" "ci_e2e_nightly_nr_backend" {
+  count   = local.chart_name == "nr_backend" ? 1 : 0
+  name    = "ci-e2etest-nightly-${var.distro}"
+  chart   = "../../charts/nr_backend"
+  version = local.chart_version
 
   create_namespace  = true
   namespace         = local.k8s_namespace
@@ -54,18 +59,60 @@ resource "helm_release" "ci_e2e_nightly" {
   }
 
   set {
-    name = "clusterName"
+    name  = "clusterName"
     value = data.aws_eks_cluster.eks_cluster.name
   }
 
   set {
-    name = "demoService.enabled"
+    name  = "demoService.enabled"
     value = "true"
   }
 }
 
+resource "helm_release" "ci_e2e_nightly_nr_k8s_otel_collector" {
+  count      = local.chart_name == "newrelic/nr-k8s-otel-collector" ? 1 : 0
+  name       = "ci-e2etest-nightly-${var.distro}"
+  repository = "https://helm-charts.newrelic.com"
+  chart      = "newrelic/nr-k8s-otel-collector"
+  version    = local.chart_version
+
+  create_namespace  = true
+  namespace         = local.k8s_namespace
+  dependency_update = true
+
+  set {
+    name  = "image.repository"
+    value = data.aws_ecr_repository.ecr_repo.repository_url
+  }
+
+  set {
+    name  = "image.tag"
+    value = "nightly@${var.nightly_docker_manifest_sha}"
+  }
+
+  set {
+    name  = "nrStaging"
+    value = strcontains(var.nr_backend_url, "staging") ? "true" : "false"
+  }
+
+  set {
+    name  = "licenseKey"
+    value = var.nr_ingest_key
+  }
+
+  set {
+    name  = "cluster"
+    value = data.aws_eks_cluster.eks_cluster.name
+  }
+
+  set {
+    name  = "lowDataMode"
+    value = "false"
+  }
+}
+
 module "ci_e2e_ec2" {
-  count                = local.test_spec.nightly.ec2.enabled ? 1 : 0
+  count                = local.ec2_enabled ? 1 : 0
   source               = "../modules/ec2"
   releases_bucket_name = local.releases_bucket_name
   collector_distro     = var.distro
