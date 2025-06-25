@@ -14,11 +14,7 @@ spec:
       labels:
         app: *app
     spec:
-      {{- if .Values.image.repository | hasSuffix "k8s" }}
-      serviceAccountName: read-k8s-api-account
-      {{- end }}
       containers:
-        {{- if and (not (.Values.image.repository | hasSuffix "k8s")) .Values.demoService.enabled}}
         - name: adservice
           image: otel/demo:2.0.2-ad
           env:
@@ -30,7 +26,6 @@ spec:
               value: adservice
           ports:
             - containerPort: 8080
-        {{- end }}
         - name: *app
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: "{{ .Values.image.pullPolicy }}"
@@ -56,7 +51,3 @@ spec:
                   fieldPath: spec.nodeName
             - name: OTEL_RESOURCE_ATTRIBUTES
               value: "host.name={{ .Values.collector.hostname }}-$(KUBE_NODE_NAME)"
-            {{- if .Values.image.repository | hasSuffix "k8s" }}
-            - name: K8S_CLUSTER_NAME
-              value: {{ .Values.clusterName }}
-            {{- end }}
