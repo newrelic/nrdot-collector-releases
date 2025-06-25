@@ -5,7 +5,7 @@ whereClause:
 
 # TODO: add more, just one example test case to ensure the overall setup works
 testCases:
-  host_receiver_cpu.utilization_user:
+  k8s_pod_cpu_usage:
     metric:
       name: k8s.pod.cpu.usage
     assertions:
