@@ -20,7 +20,7 @@ data "aws_ecr_repository" "ecr_repo" {
 
 resource "helm_release" "ci_e2e_nightly_nr_backend" {
   count   = local.chart_name == "nr_backend" ? 1 : 0
-  name    = "ci-e2etest-nightly-${var.distro}"
+  name    = "nightly-nr-backend-${var.distro}"
   chart   = "../../charts/nr_backend"
   version = local.chart_version
 
@@ -71,9 +71,9 @@ resource "helm_release" "ci_e2e_nightly_nr_backend" {
 
 resource "helm_release" "ci_e2e_nightly_nr_k8s_otel_collector" {
   count      = local.chart_name == "newrelic/nr-k8s-otel-collector" ? 1 : 0
-  name       = "ci-e2etest-nightly-${var.distro}"
+  name       = "nightly-nr-k8s-otel-${var.distro}"
   repository = "https://helm-charts.newrelic.com"
-  chart      = "newrelic/nr-k8s-otel-collector"
+  chart      = "nr-k8s-otel-collector"
   version    = local.chart_version
 
   create_namespace  = true
