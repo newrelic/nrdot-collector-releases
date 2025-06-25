@@ -15,32 +15,33 @@ import (
 )
 
 const (
-	TestNamespace = "nr-hostmetrics"
+	TestNamespace = "e2e-slow"
 )
 
 var (
 	kubectlOptions *k8s.KubectlOptions
-	testChart      chart.NrBackendChart
+	testChart      chart.Chart
 )
 
-func TestSlow(t *testing.T) {
+func TestLocalCollectorWithNrBackend(t *testing.T) {
 	testutil.TagAsSlowTest(t)
 	testSpec := spec.LoadTestSpec()
 
 	kubectlOptions = k8sutil.NewKubectlOptions(TestNamespace)
 	testId := testutil.NewTestId()
-	testChart = chart.NewNrBackendChart(testId)
+	testChart = chart.GetSlowTestChart(testSpec, testId)
 
-	t.Logf("hostname used for test: %s", testChart.NrQueryHostNamePattern)
-	helmutil.ApplyChart(t, kubectlOptions, testChart.AsChart(), "hostmetrics-startup", testId)
-	k8sutil.WaitForCollectorReady(t, kubectlOptions)
+	hostnamePattern := nr.GetHostNamePattern(testId)
+	t.Logf("hostname used for test: %s", hostnamePattern)
+	helmutil.ApplyChart(t, kubectlOptions, testChart, "slow", testId)
+	k8sutil.WaitForCollectorReady(t, kubectlOptions, testChart.WaitUntilPodReadySelector(), testChart.CollectorContainerName())
 	// wait for at least one default metric harvest cycle (60s) and some buffer to allow NR ingest to process data
 	time.Sleep(70 * time.Second)
 	client := nr.NewClient()
 
 	testEnvironment := map[string]string{
 		"clusterName": kubectlOptions.ContextName,
-		"hostName":    testChart.NrQueryHostNamePattern,
+		"hostName":    hostnamePattern,
 	}
 	for _, testCaseSpecName := range testSpec.Slow.TestCaseSpecs {
 		testCaseSpec := spec.LoadTestCaseSpec(testCaseSpecName)
@@ -53,7 +54,6 @@ func TestSlow(t *testing.T) {
 		whereClause := testCaseSpec.RenderWhereClause(testEnvironment)
 		t.Logf("test case spec where clause: %s", whereClause)
 
-		counter := 0
 		for caseName, testCase := range testCaseSpec.TestCases {
 			t.Run(fmt.Sprintf("%s/%s", testCaseSpecName, caseName), func(t *testing.T) {
 				t.Parallel()
@@ -64,7 +64,6 @@ func TestSlow(t *testing.T) {
 				assertion := assertionFactory.NewNrMetricAssertion(testCase.Metric, testCase.Assertions)
 				assertion.ExecuteWithRetries(t, client, 24, 5*time.Second)
 			})
-			counter += 1
 		}
 	}
 }

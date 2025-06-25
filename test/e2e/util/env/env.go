@@ -2,7 +2,9 @@ package env
 
 import (
 	"fmt"
+	"log"
 	"os"
+	osuser "os/user"
 	"strconv"
 )
 
@@ -75,4 +77,18 @@ func GetNrApiBaseUrl() string {
 
 func IsContinuousIntegration() bool {
 	return os.Getenv(CI) == "true"
+}
+
+func GetEnvironmentName() string {
+	var environmentName string
+	if IsContinuousIntegration() {
+		environmentName = "ci"
+	} else {
+		user, err := osuser.Current()
+		if err != nil {
+			log.Panicf("Couldn't determine current user: %v", err)
+		}
+		environmentName = fmt.Sprintf("local_%s", user.Username)
+	}
+	return environmentName
 }

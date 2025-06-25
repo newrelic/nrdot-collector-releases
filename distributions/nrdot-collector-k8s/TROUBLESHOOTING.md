@@ -1,7 +1,7 @@
 # Troubleshooting for nrdot-collector-k8s
 
 For general NRDOT troubleshooting, see [this guide](../TROUBLESHOOTING.md). This document assumes you are familiar with
-the troubleshooting tools mentioned.
+the troubleshooting tools mentioned. The following list of issues is provided for reference only and without any guarantee. For official support, please refer to the [nr-k8s-otel-collector](https://github.com/newrelic/helm-charts/tree/master/charts/nr-k8s-otel-collector) helm chart which addresses these issues out-of-the-box.
 
 ## Known issues
 

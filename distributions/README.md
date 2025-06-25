@@ -14,7 +14,7 @@ In order to run the collector via docker, you'll have to supply the required env
 docker run -e NEW_RELIC_LICENSE_KEY='your-ingest-license-key' newrelic/nrdot-collector-host
 ```
 
-### Linux packages and Archives
+### Linux packages and Archives 
 All linux packages and archives are available under [Releases](https://github.com/newrelic/opentelemetry-collector-releases/releases), including checksums and signatures.
 
 #### Verifying Signatures
@@ -116,7 +116,7 @@ NEW_RELIC_LICENSE_KEY="${license_key}" ./nrdot-collector-host --config ./config.
 ## Configuration
 
 ### Customize Default Configuration
-The default configuration exposes some options via environment variables:
+If the distribution provides a default configuration, some options are exposed via environment variables:
 
 | Environment Variable | Description | Default |
 |---|---|---|
@@ -131,7 +131,7 @@ We recommend using the default configuration, but you can always supply your own
 ## Additional Notes
 
 ### Healthcheck
-Each NRDOT distribution enables the [healthcheckextension](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/extension/healthcheckextension/README.md) which is exposed at `localhost:13133` by default:
+Each NRDOT distribution enables the [healthcheckextension](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/extension/healthcheckextension/README.md) which the default configuration exposes at `localhost:13133`:
 ```
 # curl localhost:13133
 {"status":"Server available","upSince":"2025-01-01T23:46:56.653164293Z","uptime":"15.241689299s"}

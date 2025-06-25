@@ -1,4 +1,4 @@
-package hostmetrics
+package fast
 
 import (
 	"crypto/tls"
@@ -10,18 +10,19 @@ import (
 	"test/e2e/util/chart"
 	helmutil "test/e2e/util/helm"
 	k8sutil "test/e2e/util/k8s"
+	"test/e2e/util/spec"
 	testutil "test/e2e/util/test"
 	"testing"
 	"time"
 )
 
 const (
-	TestNamespace = "mock-hostmetrics"
+	TestNamespace = "e2e-fast"
 )
 
 var (
 	kubectlOptions *k8s.KubectlOptions
-	testChart      chart.MockedBackendChart
+	testChart      chart.Chart
 	testId         string
 )
 
@@ -31,15 +32,17 @@ type ValidationPayload struct {
 	Transactions     uint32 `json:"transactions"`
 }
 
-func TestFast(t *testing.T) {
-	testutil.TagAsFastTest(t)
+func TestLocalCollectorWithLocalBackend(t *testing.T) {
+	testSpec := spec.LoadTestSpec()
+	testutil.TagAsFastTest(t, testSpec.Fast.Enabled)
+
 	kubectlOptions = k8sutil.NewKubectlOptions(TestNamespace)
-	testChart = chart.NewMockedBackendChart()
 	testId = testutil.NewTestId()
-	helmutil.ApplyChart(t, kubectlOptions, testChart.AsChart(), "hostmetrics-startup", testId)
+	testChart = chart.GetFastTestChart(testSpec)
+	helmutil.ApplyChart(t, kubectlOptions, testChart, "fast", testId)
 
 	t.Run("healthcheck succeeds", func(t *testing.T) {
-		collectorPod := k8sutil.WaitForCollectorReady(t, kubectlOptions)
+		collectorPod := k8sutil.WaitForCollectorReady(t, kubectlOptions, testChart.WaitUntilPodReadySelector(), testChart.CollectorContainerName())
 
 		tunnel := k8s.NewTunnel(kubectlOptions, k8s.ResourceTypePod, collectorPod.Name, 13133, 13133)
 		t.Cleanup(tunnel.Close)
@@ -54,7 +57,7 @@ func TestFast(t *testing.T) {
 	})
 
 	t.Run("validation-backend logs indicate processed metrics", func(t *testing.T) {
-		k8sutil.WaitForCollectorReady(t, kubectlOptions)
+		k8sutil.WaitForCollectorReady(t, kubectlOptions, testChart.WaitUntilPodReadySelector(), testChart.CollectorContainerName())
 		tunnel := k8s.NewTunnel(kubectlOptions, k8s.ResourceTypeService, "validation-backend", 8080, 8080)
 		t.Cleanup(tunnel.Close)
 		tunnel.ForwardPort(t)

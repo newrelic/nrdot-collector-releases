@@ -16,7 +16,8 @@ func TestLoadTestSpecWithWhereClause(t *testing.T) {
 			},
 		},
 		Slow: struct {
-			TestCaseSpecs []string `yaml:"testCaseSpecs"`
+			CollectorChart CollectorChart `yaml:"collectorChart"`
+			TestCaseSpecs  []string       `yaml:"testCaseSpecs"`
 		}{
 			TestCaseSpecs: []string{"test1", "test2"},
 		},
@@ -53,7 +54,8 @@ func TestLoadTestSpecWithWhereClause(t *testing.T) {
 func TestLoadTestSpecWithoutWhereClause(t *testing.T) {
 	expectedSpec := &TestSpec{
 		Slow: struct {
-			TestCaseSpecs []string `yaml:"testCaseSpecs"`
+			CollectorChart CollectorChart `yaml:"collectorChart"`
+			TestCaseSpecs  []string       `yaml:"testCaseSpecs"`
 		}{
 			TestCaseSpecs: []string{"test1", "test2"},
 		},

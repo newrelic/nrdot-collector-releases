@@ -8,10 +8,19 @@ import (
 	testutil "test/e2e/util/test"
 )
 
+type CollectorChart struct {
+	Name    string `yaml:"name"`
+	Version string `yaml:"version"`
+}
 type TestSpec struct {
 	WhereClause map[string]RenderableTemplate `yaml:"whereClause"`
-	Slow        struct {
-		TestCaseSpecs []string `yaml:"testCaseSpecs"`
+	Fast        struct {
+		CollectorChart CollectorChart `yaml:"collectorChart"`
+		Enabled        bool           `yaml:"enabled"`
+	} `yaml:"fast"`
+	Slow struct {
+		CollectorChart CollectorChart `yaml:"collectorChart"`
+		TestCaseSpecs  []string       `yaml:"testCaseSpecs"`
 	} `yaml:"slow"`
 	Nightly struct {
 		EC2 struct {

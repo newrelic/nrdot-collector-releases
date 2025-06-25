@@ -27,7 +27,7 @@ var k8sNode = spec.NightlySystemUnderTest{
 	HostNamePattern: testutil.NewNrQueryHostNamePattern("nightly", testutil.Wildcard, "k8s_node"),
 }
 
-func TestNightly(t *testing.T) {
+func TestNightlyCollectorWithNrBackend(t *testing.T) {
 	testutil.TagAsNightlyTest(t)
 	testSpec := spec.LoadTestSpec()
 
@@ -51,7 +51,6 @@ func TestNightly(t *testing.T) {
 			}
 
 			whereClause := testCaseSpec.RenderWhereClause(testEnvironment)
-			counter := 0
 			for caseName, testCase := range testCaseSpec.GetTestCasesWithout(sut.ExcludedMetrics) {
 				t.Run(fmt.Sprintf("%s/%s/%s", sut.HostNamePattern, testCaseSpecName, caseName), func(t *testing.T) {
 					t.Parallel()
@@ -62,7 +61,6 @@ func TestNightly(t *testing.T) {
 					assertion := assertionFactory.NewNrMetricAssertion(testCase.Metric, testCase.Assertions)
 					assertion.ExecuteWithRetries(t, client, 24, 5*time.Second)
 				})
-				counter += 1
 			}
 		}
 	}

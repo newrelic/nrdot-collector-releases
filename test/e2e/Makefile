@@ -77,7 +77,7 @@ ci_test: assert_require-binary
 ################
 #### LOCAL #####
 ################
-MOST_RECENT_IMAGE_TAG := $(shell docker images -a --filter 'reference=newrelic/${DISTRO}' '--format={{.CreatedAt}} {{.Tag}}' | sort -r | grep 'arm64' | head -n1 | awk '{print $$NF}')
+MOST_RECENT_IMAGE_TAG := $(shell docker images -a --filter 'reference=${IMAGE_REPO}' '--format={{.CreatedAt}} {{.Tag}}' | sort -r | grep 'arm64' | head -n1 | awk '{print $$NF}')
 
 .PHONY: local_create-cluster-if-not-exists
 local_create-cluster-if-not-exists:
