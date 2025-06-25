@@ -29,6 +29,11 @@ jobs:
       gpg_private_key: ${{ secrets.OTELCOMM_GPG_PRIVATE_KEY_BASE64 }}
       gpg_passphrase: ${{ secrets.OTELCOMM_GPG_PASSPHRASE }}
       registry: 'newrelic'
+      nr_backend_url: ${{ secrets.NR_STAGING_BACKEND_URL }}
+      nr_ingest_key: ${{ secrets.OTELCOMM_NR_INGEST_KEY }}
+      nr_account_id: ${{ secrets.OTELCOMM_NR_TEST_ACCOUNT_ID }}
+      nr_api_base_url: ${{ secrets.NR_STAGING_API_BASE_URL }}
+      nr_api_key: ${{ secrets.OTELCOMM_NR_API_KEY }}
 
   terraform:
     uses: ./.github/workflows/terraform.yaml
