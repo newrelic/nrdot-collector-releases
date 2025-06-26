@@ -9,14 +9,14 @@ fast:
 slow:
   collectorChart:
     name: newrelic/nr-k8s-otel-collector
-    version: 0.8.27
+    version: 0.8.28
   testCaseSpecs:
     - k8s
     - host
 nightly:
   collectorChart:
     name: newrelic/nr-k8s-otel-collector
-    version: 0.8.27
+    version: 0.8.28
   ec2:
     enabled: false
   testCaseSpecs:
