@@ -8,7 +8,7 @@
         "(^|/)test-spec.yaml$"
       ],
       "matchStringsStrategy": "combination",
-      "matchString": [
+      "matchStrings": [
         "(?<registryUrl>newrelic)\\/(?<depName>nr-k8s-otel-collector)\\s+version:\\s+(?<currentValue>[\\d\\.]+)",
       ],
       "datasourceTemplate": "helm",
