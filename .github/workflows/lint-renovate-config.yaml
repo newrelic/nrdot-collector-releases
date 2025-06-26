@@ -1,4 +1,4 @@
-name: Test Renovate configuration
+name: 🔄 Lint | Renovate
 
 on: pull_request
 
