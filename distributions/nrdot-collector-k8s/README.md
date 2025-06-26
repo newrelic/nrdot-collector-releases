@@ -3,7 +3,7 @@
 | Status    |                                                                                     |
 |-----------|-------------------------------------------------------------------------------------|
 | Distro    | `nrdot-collector-k8s`                                                               |
-| Stability | `preview`                                                                           |
+| Stability | `public`                                                                           |
 | Artifacts | [Docker images on DockerHub](https://hub.docker.com/r/newrelic/nrdot-collector-k8s) |
 
 A distribution of the NRDOT collector focused on gathering metrics in a kubernetes environment.
