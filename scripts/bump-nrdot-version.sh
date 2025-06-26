@@ -1,7 +1,7 @@
 #!/bin/bash
 # Simple script to bump versions for new release to document all places that need to be updated
 set -e
-old_version=2.0.0
+old_version=1.1.0
 new_version=1.1.1
 
 REPO_DIR="$( cd "$(dirname "$( dirname "${BASH_SOURCE[0]}" )")" &> /dev/null && pwd )"
