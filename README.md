@@ -23,6 +23,12 @@ Our goal is to work with customers and internal teams to iteratively create new 
 
 Please note that while the set of distributions is still limited, we encourage you to also explore the distributions provided by the [OpenTelemetry community](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions). In particular the `contrib` distribution can be helpful as a stopgap solution as it includes all core and contrib components.
 
+## Versioning
+- We follow [semantic versioning](https://semver.org/) for our releases.
+- The repository is versioned as a whole, meaning that all distributions share a version number. A major version bump indicates that at least one distribution had a breaking change but not necessarily all of them, same applies for minor and patch. Please refer to the [Changelog](https://github.com/newrelic/nrdot-collector-releases/releases/tag/1.1.0) which is published with each release.
+- When we bump NRDOT dependencies, e.g. contrib components referenced in a distribution's manifest, we determine the new version based on our supported use cases. This means if a bundled contrib component has a breaking change to a feature NRDOT does NOT rely on, NRDOT will not have a major version bump. This also mean if you run a custom configuration that goes beyond a component's functionality leveraged by NRDOT, you will need to check the changelog of the upstream components yourself to rule out any breaking changes that might affect your configuration.
+- Before a distribution has the `Stability` (see each distribution's README) set to `public`, we reserve the right to make breaking changes without a major version bump.
+
 ## Support
 
 New Relic hosts and moderates an online forum where customers can interact with New Relic employees as well as other customers to get help and share best practices. You can find this project's topic/threads here: [New Relic Community](https://forum.newrelic.com).
