@@ -1,6 +1,10 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "automerge": false,
+  "semanticCommits": "enabled",
+  "semanticCommitType": "chore",
+  "semanticCommitScope": "deps",
+  "enabledManagers": ["custom.regex"],
   "customManagers": [
     {
       "customType": "regex",
@@ -9,8 +13,9 @@
       ],
       "matchStringsStrategy": "combination",
       "matchStrings": [
-        "(?<registryUrl>newrelic)\\/(?<depName>nr-k8s-otel-collector)\\s+version:\\s+(?<currentValue>[\\d\\.]+)",
+        ".*newrelic/(?<depName>nr-k8s-otel-collector)\\s+version:\\s+(?<currentValue>[\\d\\.]+)",
       ],
+      "registryUrlTemplate": "https://helm-charts.newrelic.com",
       "datasourceTemplate": "helm",
       "versioningTemplate": "semver"
     }
