@@ -16,7 +16,7 @@ slow:
 nightly:
   collectorChart:
     name: newrelic/nr-k8s-otel-collector
-    version: 0.8.28
+    version: 0.8.31
   ec2:
     enabled: false
   testCaseSpecs:
