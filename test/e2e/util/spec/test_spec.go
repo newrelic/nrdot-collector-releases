@@ -14,11 +14,7 @@ type CollectorChart struct {
 }
 type TestSpec struct {
 	WhereClause map[string]RenderableTemplate `yaml:"whereClause"`
-	Fast        struct {
-		CollectorChart CollectorChart `yaml:"collectorChart"`
-		Enabled        bool           `yaml:"enabled"`
-	} `yaml:"fast"`
-	Slow struct {
+	Slow        struct {
 		CollectorChart CollectorChart `yaml:"collectorChart"`
 		TestCaseSpecs  []string       `yaml:"testCaseSpecs"`
 	} `yaml:"slow"`

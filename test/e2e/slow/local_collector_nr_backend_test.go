@@ -29,7 +29,7 @@ func TestLocalCollectorWithNrBackend(t *testing.T) {
 
 	kubectlOptions = k8sutil.NewKubectlOptions(TestNamespace)
 	testId := testutil.NewTestId()
-	testChart = chart.GetSlowTestChart(testSpec, testId)
+	testChart = chart.GetSlowTestChart(testSpec)
 
 	hostnamePattern := nr.GetHostNamePattern(testId)
 	t.Logf("hostname used for test: %s", hostnamePattern)

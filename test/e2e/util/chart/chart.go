@@ -27,17 +27,11 @@ func (m Meta) FullyQualifiedChartName() string {
 }
 
 var shortNameToFactory = map[string]func(version string) Chart{
-	mockedBackendChartShortName:      newMockedBackendChart,
 	nrBackendChartShortName:          newNrBackendChart,
 	nrK8sOtelCollectorChartShortName: newNrK8sOtelCollector,
 }
 
-func GetFastTestChart(spec *spec.TestSpec) Chart {
-	factory := shortNameToFactory[spec.Fast.CollectorChart.Name]
-	return factory(spec.Fast.CollectorChart.Version)
-}
-
-func GetSlowTestChart(spec *spec.TestSpec, testId string) Chart {
+func GetSlowTestChart(spec *spec.TestSpec) Chart {
 	factory := shortNameToFactory[spec.Slow.CollectorChart.Name]
-	return factory(spec.Fast.CollectorChart.Version)
+	return factory(spec.Slow.CollectorChart.Version)
 }

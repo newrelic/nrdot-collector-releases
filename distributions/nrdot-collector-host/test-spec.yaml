@@ -1,8 +1,3 @@
-fast:
-  collectorChart:
-    name: mocked_backend
-    version: 0.1.0
-  enabled: true
 slow:
   collectorChart:
     name: nr_backend
