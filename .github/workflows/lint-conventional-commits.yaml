@@ -18,7 +18,7 @@ jobs:
         run: |
           pr_title_json=$(gh pr --repo ${{ github.repository }} view ${{ github.event.number }} --json title)
           echo "${pr_title_json}" |
-          jq --args '.title | test("\\w+: \\w+")' -e 1 || {
+          jq --args '.title | test("\\w+(\\(\\w+\\))?: \\w+")' -e 1 || {
             pr_title=$(echo "${pr_title_json}" | jq -r '.title')
             gh pr --repo ${{ github.repository }} comment ${{ github.event.number }} \
               --body "PR title '${pr_title}' does not adhere to conventional commits. Change PR title to ensure that the suggested squash commit follows the conventions and thus ends up in the changelog."
