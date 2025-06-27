@@ -13,7 +13,7 @@
       ],
       "matchStringsStrategy": "combination",
       "matchStrings": [
-        ".*newrelic/(?<depName>nr-k8s-otel-collector)\\s+version:\\s+(?<currentValue>[\\d\\.]+)",
+        ".*# renovatebot.*\\s*name:\\s+newrelic\/(?<depName>nr-k8s-otel-collector)\\s+version:\\s+&k8s_chart_version\\s+(?<currentValue>[\\d\\.]+)",
       ],
       "registryUrlTemplate": "https://helm-charts.newrelic.com",
       "datasourceTemplate": "helm",
