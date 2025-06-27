@@ -8,15 +8,16 @@ fast:
   enabled: false
 slow:
   collectorChart:
+    # renovatebot (matched by regex - verify it still matches when modifying)
     name: newrelic/nr-k8s-otel-collector
-    version: 0.8.28
+    version: &k8s_chart_version 0.8.28
   testCaseSpecs:
     - k8s
     - host
 nightly:
   collectorChart:
     name: newrelic/nr-k8s-otel-collector
-    version: 0.8.31
+    version: *k8s_chart_version
   ec2:
     enabled: false
   testCaseSpecs:
