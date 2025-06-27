@@ -4,8 +4,6 @@ whereClause:
     template: "WHERE k8s.cluster.name='{{ .clusterName }}'"
     vars:
       - clusterName
-fast:
-  enabled: false
 slow:
   collectorChart:
     name: newrelic/nr-k8s-otel-collector

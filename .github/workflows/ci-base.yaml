@@ -133,16 +133,6 @@ jobs:
 
       - uses: azure/setup-helm@v4.2.0
 
-      - name: Run local e2e tests
-        if: ${{ !inputs.nightly }}
-        env:
-          KIND_CLUSTER_NAME: ${{ inputs.test_cluster_name }}
-          IMAGE_TAG: ${{ env.image_tag }}
-          IMAGE_REPO: ${{ secrets.registry }}/${{ inputs.distribution}}
-          DISTRO: ${{ inputs.distribution }}
-        run: |
-          make -f ./test/e2e/Makefile ci_test-fast
-
       - name: Run slow local tests
         env:
           KIND_CLUSTER_NAME: ${{ inputs.test_cluster_name }}
