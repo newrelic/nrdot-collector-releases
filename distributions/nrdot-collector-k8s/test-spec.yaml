@@ -22,3 +22,5 @@ nightly:
   testCaseSpecs:
     - k8s
     - host
+expectedWarnLogs:
+  - 'host id not found in: /etc/machine-id or /var/lib/dbus/machine-id'

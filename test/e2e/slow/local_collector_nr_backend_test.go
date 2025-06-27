@@ -35,14 +35,20 @@ func TestLocalCollectorWithNrBackend(t *testing.T) {
 	t.Logf("hostname used for test: %s", hostnamePattern)
 	helmutil.ApplyChart(t, kubectlOptions, testChart, "slow", testId)
 	k8sutil.WaitForCollectorReady(t, kubectlOptions, testChart.WaitUntilPodReadySelector(), testChart.CollectorContainerName())
-	// wait for at least one default metric harvest cycle (60s) and some buffer to allow NR ingest to process data
-	time.Sleep(70 * time.Second)
-	client := nr.NewClient()
+	// wait a bit for collector startup sequence to complete and check for warn logs (in case log buffer is filled up by end of test)
+	time.Sleep(10 * time.Second)
+	k8sutil.FailOnUnexpectedWarningLogs(t, kubectlOptions, testChart.WaitUntilPodReadySelector(), testChart.CollectorContainerName(), testSpec)
+	t.Cleanup(func() {
+		k8sutil.FailOnUnexpectedWarningLogs(t, kubectlOptions, testChart.WaitUntilPodReadySelector(), testChart.CollectorContainerName(), testSpec)
+	})
+	time.Sleep(60 * time.Second)
 
+	client := nr.NewClient()
 	testEnvironment := map[string]string{
 		"clusterName": kubectlOptions.ContextName,
 		"hostName":    hostnamePattern,
 	}
+
 	for _, testCaseSpecName := range testSpec.Slow.TestCaseSpecs {
 		testCaseSpec := spec.LoadTestCaseSpec(testCaseSpecName)
 

@@ -51,3 +51,23 @@ spec:
                   fieldPath: spec.nodeName
             - name: OTEL_RESOURCE_ATTRIBUTES
               value: "host.name={{ .Values.collector.hostname }}-$(KUBE_NODE_NAME)"
+          volumeMounts:
+            - name: dummy-logs
+              mountPath: /var/log
+        - name: log-churner
+          image: busybox
+          command: [ "/bin/sh", "-c" ]
+          args:
+            - |
+              file='/var/log/yum.log'
+              while true; do
+                sleep 5;
+                echo "$(date)" > ${file};
+              done
+          volumeMounts:
+            - name: dummy-logs
+              mountPath: /var/log
+      volumes:
+        - name: dummy-logs
+          emptyDir: {}
+
