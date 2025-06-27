@@ -13,8 +13,9 @@ type CollectorChart struct {
 	Version string `yaml:"version"`
 }
 type TestSpec struct {
-	WhereClause map[string]RenderableTemplate `yaml:"whereClause"`
-	Fast        struct {
+	WhereClause      map[string]RenderableTemplate `yaml:"whereClause"`
+	ExpectedWarnLogs []string                      `yaml:"expectedWarnLogs"`
+	Fast             struct {
 		CollectorChart CollectorChart `yaml:"collectorChart"`
 		Enabled        bool           `yaml:"enabled"`
 	} `yaml:"fast"`

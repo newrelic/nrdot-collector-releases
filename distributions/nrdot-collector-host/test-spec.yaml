@@ -17,3 +17,6 @@ nightly:
     enabled: true
   testCaseSpecs:
     - host
+expectedWarnLogs:
+  - 'host id not found in: /etc/machine-id or /var/lib/dbus/machine-id'
+  - 'No `root_path` config set when running in docker environment'
