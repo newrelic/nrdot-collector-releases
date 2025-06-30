@@ -10,7 +10,7 @@ slow:
   collectorChart:
     # renovatebot (matched by regex - verify it still matches when modifying)
     name: newrelic/nr-k8s-otel-collector
-    version: &k8s_chart_version 0.8.31
+    version: &k8s_chart_version 0.8.32
   testCaseSpecs:
     - k8s
     - host
