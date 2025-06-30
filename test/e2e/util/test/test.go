@@ -8,21 +8,11 @@ import (
 )
 
 const (
-	fastOnly    = "fastOnly"
 	slowOnly    = "slowOnly"
 	nightlyOnly = "nightlyOnly"
 )
 
-var onlyModes = []string{fastOnly, slowOnly, nightlyOnly}
-
-func TagAsFastTest(t *testing.T, enabledInSpec bool) {
-	if isAnyModeOf(allOnlyModesExcept(fastOnly)) {
-		t.Skip("Fast test skipped due to test mode: ", t.Name())
-	}
-	if !enabledInSpec {
-		t.Skip("Fast test skipped due to test spec: ", t.Name())
-	}
-}
+var onlyModes = []string{slowOnly, nightlyOnly}
 
 func TagAsSlowTest(t *testing.T) {
 	if isAnyModeOf(allOnlyModesExcept(slowOnly)) {
