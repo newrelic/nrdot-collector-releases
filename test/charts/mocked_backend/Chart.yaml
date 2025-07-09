@@ -1,5 +1,0 @@
-apiVersion: v2
-name: nrdot-mocked-backend
-description: A Helm chart for deploying an nrdot collector as a DaemonSet writing to a Mock Backend for assertions in tests
-version: 0.1.0
-appVersion: "1.0"
