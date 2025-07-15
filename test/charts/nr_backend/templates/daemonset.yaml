@@ -15,17 +15,6 @@ spec:
         app: *app
     spec:
       containers:
-        - name: adservice
-          image: otel/demo:2.0.2-ad
-          env:
-            - name: AD_PORT
-              value: "8080"
-            - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: http://localhost:4318
-            - name: OTEL_SERVICE_NAME
-              value: adservice
-          ports:
-            - containerPort: 8080
         - name: *app
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: "{{ .Values.image.pullPolicy }}"
