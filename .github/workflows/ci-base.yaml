@@ -146,7 +146,7 @@ jobs:
         uses: newrelic/newrelic-integration-e2e-action@v1
         env:
           NR_BACKEND_URL: ${{ secrets.nr_backend_url }}
-          IMAGE_TAG: latest
+          IMAGE_TAG: ${{ env.image_tag }}
           IMAGE_REPO: ${{ secrets.registry }}/${{ inputs.distribution}}
         with:
           verbose: true
