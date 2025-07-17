@@ -1,0 +1,39 @@
+description: nrdot-collector-host E2E Test
+
+# scoping is achieved via an implicit attribute `testKey=${SCENARIO_TAG}` expected on all tested telemetry
+
+scenarios:
+  - description: receiver-based + internal Telemetry
+    before:
+      - pwd
+      - kubectl create ns nr-${SCENARIO_TAG}
+      - cp ../../../examples/internal-telemetry-config.yaml ./relay
+      - kubectl create configmap 'collector-config' --from-file=relay --namespace=nr-${SCENARIO_TAG}
+      - |
+        kubectl create secret generic 'collector-secrets' --namespace=nr-${SCENARIO_TAG} \
+        --from-literal="nrIngestKey=${LICENSE_KEY}" --from-literal="nrBackendUrl=${NR_BACKEND_URL}" \
+        --from-literal="serviceName=${SCENARIO_TAG}-collector" --from-literal="scenarioTag=${SCENARIO_TAG}"
+      - "helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts || echo 'skipping repo add: open-telemetry repo already exists'"
+      - |
+        helm upgrade --install ${SCENARIO_TAG} open-telemetry/opentelemetry-collector \
+        --namespace nr-${SCENARIO_TAG} --version 0.129.0 \
+        --values ./collector-values.yaml \
+        --set image.tag=${IMAGE_TAG} \
+        --set image.repository=${IMAGE_REPO}
+    after:
+      - helm uninstall ${SCENARIO_TAG} --namespace nr-${SCENARIO_TAG}
+      - kubectl delete namespace nr-${SCENARIO_TAG}
+    tests:
+      nrqls:
+        - query: FROM Metric SELECT max(system.cpu.utilization) WHERE state='user'
+          # TODO: remove?
+          error_expected: false
+          expected_results:
+            # IMPORTANT: key is based on what NerdGraph returns in the `results` field (not `rawResponse`)
+            - key: max.system.cpu.utilization
+              lowerBoundedValue: 0
+        # all metrics with a where clause, rest can be tested via the `metrics` section
+        # TODO: log count query
+        # TODO: span count query
+      metrics:
+        - source: "expected-metrics-internal.yaml"

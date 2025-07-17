@@ -1,0 +1,29 @@
+name: 🔄 CI | Local E2E Tests
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build & Validate
+    strategy:
+      matrix:
+        distribution:
+          - nrdot-collector-host
+    uses: ./.github/workflows/ci-base.yaml
+    with:
+      debug_e2e: true
+      distribution: ${{ matrix.distribution }}
+      test_cluster_name: '${{ matrix.distribution }}-${{ github.run_id }}-${{ github.run_attempt }}'
+    secrets:
+      docker_hub_username: ${{ secrets.OTELCOMM_DOCKER_HUB_USERNAME }}
+      docker_hub_password: ${{ secrets.OTELCOMM_DOCKER_HUB_PASSWORD }}
+      gpg_private_key: ${{ secrets.OTELCOMM_GPG_PRIVATE_KEY_BASE64 }}
+      gpg_passphrase: ${{ secrets.OTELCOMM_GPG_PASSPHRASE }}
+      registry: 'newrelic'
+      nr_backend_url: ${{ secrets.NR_STAGING_BACKEND_URL }}
+      nr_ingest_key: ${{ secrets.OTELCOMM_NR_INGEST_KEY }}
+      nr_account_id: ${{ secrets.OTELCOMM_NR_TEST_ACCOUNT_ID }}
+      nr_api_base_url: ${{ secrets.NR_STAGING_API_BASE_URL }}
+      nr_api_key: ${{ secrets.OTELCOMM_NR_API_KEY }}
+

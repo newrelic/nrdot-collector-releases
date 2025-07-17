@@ -10,6 +10,11 @@ on:
         required: false
         type: boolean
         default: false
+      # TODO: temporary input until workflow is validated to work in github actions
+      debug_e2e:
+        required: false
+        type: boolean
+        default: false
       test_cluster_name:
         required: false
         type: string
@@ -133,7 +138,26 @@ jobs:
 
       - uses: azure/setup-helm@v4.2.0
 
+      - name: Run local e2e tests
+        if: ${{ inputs.debug_e2e }}
+        uses: newrelic/newrelic-integration-e2e-action@v1
+        env:
+          NR_BACKEND_URL: ${{ secrets.nr_backend_url }}
+          IMAGE_TAG: latest
+          IMAGE_REPO: ${{ secrets.registry }}/${{ inputs.distribution}}
+        with:
+          verbose: true
+          retry_seconds: 10
+          retry_attempts: 10
+          agent_enabled: false
+          spec_path: distributions/${{ inputs.distribution}}/test/spec-local.yaml
+          account_id: ${{ secrets.nr_account_id }}
+          api_key: ${{ secrets.nr_api_key }}
+          license_key: ${{ secrets.nr_ingest_key }}
+          region: 'US'
+
       - name: Run slow local tests
+        if: ${{ !inputs.debug_e2e }}
         env:
           KIND_CLUSTER_NAME: ${{ inputs.test_cluster_name }}
           IMAGE_TAG: ${{ env.image_tag }}
@@ -148,7 +172,7 @@ jobs:
           make -f ./test/e2e/Makefile ci_test-slow
 
       - name: Trivy security check
-        if: ${{ !inputs.nightly }}
+        if: ${{ !inputs.nightly && !inputs.debug_e2e }}
         uses: aquasecurity/trivy-action@0.29.0
         with:
           image-ref: "${{ secrets.registry }}/${{ inputs.distribution}}:${{ env.image_tag }}"

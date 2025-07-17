@@ -1,0 +1,45 @@
+mode: daemonset
+
+configMap:
+  create: false
+  existingName: collector-config
+
+command:
+  extraArgs:
+    - "--config=/etc/nrdot-collector-host/config.yaml"
+    - '"--config=yaml:service::telemetry::resource::testKey: ${env:SCENARIO_TAG}"'
+    # configure liveliness probe according to chart's expectations
+    - '"--config=yaml:extensions::health_check::endpoint: ${env:MY_POD_IP}:13133"'
+extraEnvs:
+  - name: OTEL_EXPORTER_OTLP_ENDPOINT
+    valueFrom:
+      secretKeyRef:
+        name: collector-secrets
+        key: nrBackendUrl
+  - name: INTERNAL_TELEMETRY_OTLP_ENDPOINT
+    valueFrom:
+      secretKeyRef:
+        name: collector-secrets
+        key: nrBackendUrl
+  - name: NEW_RELIC_LICENSE_KEY
+    valueFrom:
+      secretKeyRef:
+        name: collector-secrets
+        key: nrIngestKey
+  - name: INTERNAL_TELEMETRY_NEW_RELIC_LICENSE_KEY
+    valueFrom:
+      secretKeyRef:
+        name: collector-secrets
+        key: nrIngestKey
+  - name: INTERNAL_TELEMETRY_SERVICE_NAME
+    valueFrom:
+      secretKeyRef:
+        name: collector-secrets
+        key: serviceName
+  - name: SCENARIO_TAG
+    valueFrom:
+      secretKeyRef:
+        name: collector-secrets
+        key: scenarioTag
+  - name: OTEL_RESOURCE_ATTRIBUTES
+    value: "testKey=$(SCENARIO_TAG)"
