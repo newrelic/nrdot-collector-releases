@@ -1,4 +1,50 @@
 entities:
   - entityType: EXT-SERVICE
     metrics:
+      # Exporters
+      - name: otelcol_exporter_queue_capacity
+      - name: otelcol_exporter_queue_size
+      - name: otelcol_exporter_sent_log_records
+      - name: otelcol_exporter_sent_metric_points
+      - name: otelcol_exporter_sent_spans
+      # Process
+      - name: otelcol_process_cpu_seconds
+      - name: otelcol_process_memory_rss
+      - name: otelcol_process_runtime_heap_alloc_bytes
+      - name: otelcol_process_runtime_total_alloc_bytes
+      - name: otelcol_process_runtime_total_sys_memory_bytes
       - name: otelcol_process_uptime
+      # Processors
+      - name: otelcol_processor_batch_batch_send_size
+      - name: otelcol_processor_batch_batch_send_size_bytes
+      - name: otelcol_processor_batch_batch_size_trigger_send
+      - name: otelcol_processor_batch_metadata_cardinality
+      - name: otelcol_processor_batch_timeout_trigger_send
+      - name: otelcol_processor_incoming_items
+      - name: otelcol_processor_outgoing_items
+      # Receivers
+      - name: otelcol_receiver_accepted_log_records
+      - name: otelcol_receiver_accepted_metric_points
+      - name: otelcol_receiver_accepted_spans
+      # HTTP
+      - name: http.client.request.duration
+      - name: http.client.request.size
+      - name: http.server.duration
+      - name: http.server.request.size
+      # gRPC
+      - name: rpc.client.request. duration
+      - name: rpc.client.request.size
+      - name: rpc.server.duration
+      - name: rpc.server.request.size
+      # Failure metrics expected by UI we can't simulate reliably yet
+      #      - name: otelcol_exporter_enqueue_failed_log_records
+      #      - name: otelcol_exporter_enqueue_failed_metric_points
+      #      - name: otelcol_exporter_enqueue_failed_spans
+      #      - name: otelcol_exporter_send_failed_log_records
+      #      - name: otelcol_exporter_send_failed_metric_points
+      #      - name: otelcol_exporter_send_failed_spans
+      #      - name: otelcol_receiver_refused_log_records
+      #      - name: otelcol_receiver_refused_metric_points
+      #      - name: otelcol_receiver_refused_spans
+
+

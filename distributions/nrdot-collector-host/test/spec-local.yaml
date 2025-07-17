@@ -25,9 +25,8 @@ scenarios:
       - kubectl delete namespace nr-${SCENARIO_TAG}
     tests:
       nrqls:
+        # TODO: add remininag queries from host.yaml
         - query: FROM Metric SELECT max(system.cpu.utilization) WHERE state='user'
-          # TODO: remove?
-          error_expected: false
           expected_results:
             # IMPORTANT: key is based on what NerdGraph returns in the `results` field (not `rawResponse`)
             - key: max.system.cpu.utilization

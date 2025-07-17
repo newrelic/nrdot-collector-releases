@@ -6,10 +6,13 @@ configMap:
 
 command:
   extraArgs:
-    - "--config=/etc/nrdot-collector-host/config.yaml"
+    - --config=/etc/nrdot-collector-host/config.yaml
     - '"--config=yaml:service::telemetry::resource::testKey: ${env:SCENARIO_TAG}"'
     # configure liveliness probe according to chart's expectations
     - '"--config=yaml:extensions::health_check::endpoint: ${env:MY_POD_IP}:13133"'
+    # export logs via grpc to force collector to emit rpc client metrics
+    - '"--config=yaml:exporters::otlp: { endpoint: \"${env:INTERNAL_TELEMETRY_OTLP_ENDPOINT}:443\", headers: { api-key: \"${env:INTERNAL_TELEMETRY_NEW_RELIC_LICENSE_KEY}\" } }"'
+#    - '"--config=yaml:service::pipelines::logs::exporters: [otlp]"'
 extraEnvs:
   - name: OTEL_EXPORTER_OTLP_ENDPOINT
     valueFrom:
@@ -43,3 +46,23 @@ extraEnvs:
         key: scenarioTag
   - name: OTEL_RESOURCE_ATTRIBUTES
     value: "testKey=$(SCENARIO_TAG)"
+extraContainers:
+  - name: adservice
+    image: otel/demo:2.0.2-ad
+    env:
+      - name: AD_PORT
+        value: "8080"
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://localhost:4318
+        # route logs via grpc to force collector to emit rpc server metrics
+      - name: OTEL_EXPORTER_OTLP_LOGS_ENDPOINT
+        value: http://localhost:4317
+      - name: OTEL_EXPORTER_OTLP_LOGS_PROTOCOL
+        value: grpc
+      - name: SCENARIO_TAG
+        valueFrom:
+          secretKeyRef:
+            name: collector-secrets
+            key: scenarioTag
+      - name: OTEL_SERVICE_NAME
+        value: "nrdot-adservice-$(SCENARIO_TAG)"
