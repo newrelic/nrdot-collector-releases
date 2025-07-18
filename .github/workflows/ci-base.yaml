@@ -149,9 +149,8 @@ jobs:
           IMAGE_TAG: ${{ env.image_tag }}
           IMAGE_REPO: ${{ secrets.registry }}/${{ inputs.distribution}}
         with:
-          verbose: true
-          retry_seconds: 10
-          retry_attempts: 10
+          retry_seconds: 15
+          retry_attempts: 20
           agent_enabled: false
           spec_path: distributions/${{ inputs.distribution}}/test/spec-local.yaml
           account_id: ${{ secrets.nr_account_id }}
