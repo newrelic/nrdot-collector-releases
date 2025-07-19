@@ -11,16 +11,15 @@ command:
     # configure liveliness probe according to chart's expectations
     - '"--config=yaml:extensions::health_check::endpoint: ${env:MY_POD_IP}:13133"'
     ### Modified OTLP pipelines to force production of missing metrics
-    - '"--config=yaml:service::pipelines::metrics::exporters: [otlp/enqueue_failure]"'
+    - '"--config=yaml:service::pipelines::metrics: { receivers: [otlp], processors: [batch/size_trigger], exporters: [otlp, otlp/enqueue_failure] }"'
     - '"--config=yaml:service::pipelines::logs: { receivers: [otlp], processors: [batch/size_trigger], exporters: [otlp, otlp/enqueue_failure] }"'
-    - '"--config=yaml:service::pipelines::traces::exporters: [otlp/enqueue_failure]"'
+    - '"--config=yaml:service::pipelines::traces: { receivers: [otlp], processors: [], exporters: [otlp, otlp/enqueue_failure] }"'
     # otelcol_exporter_enqueue_failed_%
     - '"--config=yaml:exporters::otlp/enqueue_failure: { endpoint: \"${env:INTERNAL_TELEMETRY_OTLP_ENDPOINT}:443\", headers: { api-key: \"${env:INTERNAL_TELEMETRY_NEW_RELIC_LICENSE_KEY}\" }, sending_queue: { queue_size: 1, num_consumers: 1, sizer: items } }"'
     # rpc.client.%
     - '"--config=yaml:exporters::otlp: { endpoint: \"${env:INTERNAL_TELEMETRY_OTLP_ENDPOINT}:443\", headers: { api-key: \"${env:INTERNAL_TELEMETRY_NEW_RELIC_LICENSE_KEY}\" } }"'
     # otelcol_processor_batch_batch_size_trigger_send
     - '"--config=yaml:processors::batch/size_trigger: {send_batch_size: 1, send_batch_max_size: 1}"'
-    # incorporate all modified/new components into log OTLP log pipeline
 extraEnvs:
   - name: OTEL_EXPORTER_OTLP_ENDPOINT
     valueFrom:
@@ -52,8 +51,6 @@ extraEnvs:
       secretKeyRef:
         name: collector-secrets
         key: scenarioTag
-  - name: OTEL_RESOURCE_ATTRIBUTES
-    value: "testKey=$(SCENARIO_TAG)"
 extraContainers:
   - name: telemetrygen-metrics
     image: ghcr.io/open-telemetry/opentelemetry-collector-contrib/telemetrygen:v0.130.0
@@ -70,8 +67,8 @@ extraContainers:
     args:
       - logs
       - --otlp-insecure
-      - --otlp-http
-      - "--otlp-endpoint=localhost:4318"
+      # rpc.server.%
+      - "--otlp-endpoint=localhost:4317"
       - "--otlp-attributes=service.name=\"telemetrygen-logs\""
       - --rate=10
       - --duration=5m
@@ -81,8 +78,8 @@ extraContainers:
     args:
       - traces
       - --otlp-insecure
-      # rpc.server.%
-      - "--otlp-endpoint=localhost:4317"
+      - --otlp-http
+      - "--otlp-endpoint=localhost:4318"
       - "--otlp-attributes=service.name=\"telemetrygen-traces\""
-      - --rate=10
+      - --rate=5
       - --duration=5m
