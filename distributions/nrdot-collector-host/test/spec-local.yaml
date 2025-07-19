@@ -24,15 +24,93 @@ scenarios:
       - helm uninstall ${SCENARIO_TAG} --namespace nr-${SCENARIO_TAG}
       - kubectl delete namespace nr-${SCENARIO_TAG}
     tests:
-      nrqls:
-        # TODO: add remininag queries from host.yaml
-        - query: FROM Metric SELECT max(system.cpu.utilization) WHERE state='user'
-          expected_results:
-            # IMPORTANT: key is based on what NerdGraph returns in the `results` field (not `rawResponse`)
-            - key: max.system.cpu.utilization
-              lowerBoundedValue: 0
-        # all metrics with a where clause, rest can be tested via the `metrics` section
-        # TODO: log count query
-        # TODO: span count query
+      # Tests for existence of metrics
       metrics:
         - source: "expected-metrics-internal.yaml"
+      # Tests for existence of signal + specific attributes
+      nrqls:
+        # Logs
+        - query: FROM Log SELECT count(*) as logs_all
+          expected_results:
+            - key: logs_all
+              lowerBoundedValue: 1
+        - query: FROM Log SELECT filter(count(*), otelcol.pipeline.id is not null) as logs_pipeline
+          expected_results:
+              - key: logs_pipeline
+                lowerBoundedValue: 1
+        - query: FROM Log SELECT filter(count(*), otelcol.signal is not null) as logs_signal
+          expected_results:
+            - key: logs_signal
+              lowerBoundedValue: 1
+        # Spans
+        - query: FROM Span SELECT count(*) as spans_all
+          expected_results:
+            - key: spans_all
+              lowerBoundedValue: 1
+        # Process metrics
+        - query: FROM Metric SELECT filter(count(*), service.instance.id is not null) as process_instance_id WHERE metricName like 'otelcol_process_%'
+          expected_results:
+            - key: process_instance_id
+              lowerBoundedValue: 1
+        # Receiver metrics
+        - query: FROM Metric SELECT filter(count(*), receiver is not null) as receiver_receiver WHERE metricName like 'otelcol_receiver_%'
+          expected_results:
+            - key: receiver_receiver
+              lowerBoundedValue: 1
+        # Processor metrics
+        - query: FROM Metric SELECT filter(count(*), processor is not null) as processor_processor WHERE metricName like 'otelcol_processor_%'
+          expected_results:
+            - key: processor_processor
+              lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), otel.signal = 'metrics') as processor_signal_metrics WHERE metricName like 'otelcol_processor_%'
+          expected_results:
+            - key: processor_signal_metrics
+              lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), otel.signal = 'logs') as processor_signal_logs WHERE metricName like 'otelcol_processor_%'
+          expected_results:
+            - key: processor_signal_logs
+              lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), otel.signal = 'traces') as processor_signal_traces WHERE metricName like 'otelcol_processor_%'
+          expected_results:
+            - key: processor_signal_traces
+              lowerBoundedValue: 1
+        # Exporter metrics
+        - query: FROM Metric SELECT filter(count(*), exporter is not null) as exporter_exporter WHERE metricName like 'otelcol_exporter_%'
+          expected_results:
+            - key: exporter_exporter
+              lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), exporter is not null) as queue_exporter WHERE metricName like 'otelcol_exporter_queue_%'
+          expected_results:
+            - key: queue_exporter
+              lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), data_type is not null) as queue_type WHERE metricName like 'otelcol_exporter_queue_%'
+          expected_results:
+            - key: queue_type
+              lowerBoundedValue: 1
+        # Batch processor metrics
+        - query: FROM Metric SELECT filter(count(*), processor is not null) as batch_processor WHERE metricName like 'otelcol_processor_batch_%'
+          expected_results:
+           - key: batch_processor
+             lowerBoundedValue: 1
+        # Http metrics
+        - query: FROM Metric SELECT filter(count(*), net.peer.name is not null) as http_peerWHERE metricName like 'http.client.%'
+          expected_results:
+            - key: http_peer
+              lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), http.status_code is not null) as http_code WHERE metricName like 'http.%'
+          expected_results:
+          - key: http_code
+            lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), net.host.port is not null) as http_port WHERE metricName like 'http.server.%'
+          expected_results:
+          - key: http_port
+            lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), rpc.grpc.status_code is not null) as rpc_code WHERE metricName like 'rpc.%'
+          expected_results:
+            - key: rpc_code
+              lowerBoundedValue: 1
+
+
+
+
+
