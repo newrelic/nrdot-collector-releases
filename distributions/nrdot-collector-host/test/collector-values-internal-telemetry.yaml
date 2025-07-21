@@ -1,3 +1,8 @@
+additionalLabels:
+  e2eTestLogSelector: nrdot-collector-host-e2e
+podLabels:
+  e2eTestLogSelector: nrdot-collector-host-e2e
+
 mode: daemonset
 
 configMap:

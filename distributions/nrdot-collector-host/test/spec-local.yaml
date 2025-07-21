@@ -16,11 +16,13 @@ scenarios:
       - "helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts || echo 'skipping repo add: open-telemetry repo already exists'"
       - |
         helm upgrade --install ${SCENARIO_TAG} open-telemetry/opentelemetry-collector \
-        --namespace nr-${SCENARIO_TAG} --version 0.129.0 \
+        --namespace nr-${SCENARIO_TAG} --version 0.128.0 \
         --values ./collector-values-internal-telemetry.yaml \
         --set image.tag=${IMAGE_TAG} \
         --set image.repository=${IMAGE_REPO}
     after:
+      - kubectl logs -l e2eTestLogSelector=nrdot-collector-host-e2e -n nr-${SCENARIO_TAG} --all-containers --prefix=true
+      - kubectl get all -o wide
       - helm uninstall ${SCENARIO_TAG} --namespace nr-${SCENARIO_TAG}
       - kubectl delete namespace nr-${SCENARIO_TAG}
     tests:
