@@ -93,19 +93,27 @@ scenarios:
            - key: batch_processor
              lowerBoundedValue: 1
         # Http metrics
-        - query: FROM Metric SELECT filter(count(*), net.peer.name is not null) as http_peerWHERE metricName like 'http.client.%'
+        - query: FROM Metric SELECT filter(count(*), server.address is not null) as http_server_address WHERE metricName like 'http.client.request.duration'
           expected_results:
-            - key: http_peer
+            - key: http_server_address
               lowerBoundedValue: 1
-        - query: FROM Metric SELECT filter(count(*), http.status_code is not null) as http_code WHERE metricName like 'http.%'
+        - query: FROM Metric SELECT filter(count(*), server.address is not null) as http_server_address WHERE metricName like 'http.client.request.body.size'
+          expected_results:
+            - key: http_server_address
+              lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), http.response.status_code is not null) as http_code WHERE metricName like 'http.client.request.duration'
           expected_results:
           - key: http_code
             lowerBoundedValue: 1
-        - query: FROM Metric SELECT filter(count(*), net.host.port is not null) as http_port WHERE metricName like 'http.server.%'
+        - query: FROM Metric SELECT filter(count(*), http.response.status_code is not null) as http_code WHERE metricName like 'http.server.request.duration'
+          expected_results:
+          - key: http_code
+            lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), server.port is not null) as http_port WHERE metricName = 'http.server.request.duration'
           expected_results:
           - key: http_port
             lowerBoundedValue: 1
-        - query: FROM Metric SELECT filter(count(*), rpc.grpc.status_code is not null) as rpc_code WHERE metricName like 'rpc.%'
+        - query: FROM Metric SELECT filter(count(*), rpc.grpc.status_code is not null) as rpc_code WHERE metricName like 'rpc.%.duration'
           expected_results:
             - key: rpc_code
               lowerBoundedValue: 1
