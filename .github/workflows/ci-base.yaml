@@ -139,6 +139,10 @@ jobs:
           cluster_name: ${{ inputs.test_cluster_name }}
           wait: 60s
 
+      - name: Load image into kind cluster
+        run: |
+          kind load docker-image "${{ secrets.registry }}/${{ inputs.distribution }}:${{ env.image_tag }}" --name ${{ inputs.test_cluster_name }}
+
       - uses: azure/setup-helm@v4.2.0
 
       - name: Run local e2e tests
