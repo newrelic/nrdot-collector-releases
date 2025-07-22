@@ -141,6 +141,7 @@ jobs:
       - uses: azure/setup-helm@v4.2.0
 
       - name: Run local e2e tests
+        if: ${{ hashFiles(format('distributions/{0}/test/spec-local.yaml', inputs.distribution)) != '' }}
         uses: newrelic/newrelic-integration-e2e-action@v1
         env:
           NR_BACKEND_URL: ${{ secrets.nr_backend_url }}
