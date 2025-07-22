@@ -36,6 +36,9 @@ on:
       nr_api_key:
         required: false
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -131,7 +134,28 @@ jobs:
           cluster_name: ${{ inputs.test_cluster_name }}
           wait: 60s
 
+      - name: Load image into kind cluster
+        run: |
+          kind load docker-image "${{ secrets.registry }}/${{ inputs.distribution }}:${{ env.image_tag }}" --name ${{ inputs.test_cluster_name }}
+
       - uses: azure/setup-helm@v4.2.0
+
+      - name: Run local e2e tests
+        if: ${{ hashFiles(format('distributions/{0}/test/spec-local.yaml', inputs.distribution)) != '' }}
+        uses: newrelic/newrelic-integration-e2e-action@v1
+        env:
+          NR_BACKEND_URL: ${{ secrets.nr_backend_url }}
+          IMAGE_TAG: ${{ env.image_tag }}
+          IMAGE_REPO: ${{ secrets.registry }}/${{ inputs.distribution}}
+        with:
+          retry_seconds: 15
+          retry_attempts: 20
+          agent_enabled: false
+          spec_path: distributions/${{ inputs.distribution}}/test/spec-local.yaml
+          account_id: ${{ secrets.nr_account_id }}
+          api_key: ${{ secrets.nr_api_key }}
+          license_key: ${{ secrets.nr_ingest_key }}
+          region: 'US'
 
       - name: Run slow local tests
         env:
