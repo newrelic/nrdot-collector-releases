@@ -29,11 +29,139 @@ scenarios:
         - source: "host-expected-metrics.yaml"
       # Tests for existence of signal + specific attributes
       nrqls:
-        # Logs
-        - query: FROM Log SELECT count(*) as logs_all
+        - query: FROM Metric SELECT filter(count(*), state='user') as state_user WHERE metricName = 'system.cpu.utilization'
           expected_results:
-            - key: logs_all
+            - key: state_user
               lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), state='user') as state_user WHERE metricName = 'system.cpu.utilization'
+          expected_results:
+            - key: state_user
+              lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), state='idle') as state_idle WHERE metricName = 'system.cpu.utilization'
+          expected_results:
+            - key: state_idle
+              lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), state='wait') as state_wait WHERE metricName = 'system.cpu.utilization'
+          expected_results:
+            - key: state_wait
+              lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), state='steal') as state_steal WHERE metricName = 'system.cpu.utilization'
+          expected_results:
+            - key: state_steal
+              lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), direction='read') as direction_read WHERE metricName = 'system.disk.io'
+          expected_results:
+            - key: direction_read
+              lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), direction='write') as direction_write WHERE metricName = 'system.disk.io'
+          expected_results:
+            - key: direction_write
+              lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), direction='read') as direction_read WHERE metricName = 'system.disk.operation_time'
+          expected_results:
+            - key: direction_read
+              lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), direction='write') as direction_write WHERE metricName = 'system.disk.operation_time'
+          expected_results:
+            - key: direction_write
+              lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), direction='read') as direction_read WHERE metricName = 'system.disk.operations'
+          expected_results:
+            - key: direction_read
+              lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), direction='write') as direction_write WHERE metricName = 'system.disk.operations'
+          expected_results:
+            - key: direction_write
+              lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), state='cached') as state_cached WHERE metricName = 'system.memory.usage'
+          expected_results:
+            - key: state_cached
+              lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), state='free') as state_free WHERE metricName = 'system.memory.usage'
+          expected_results:
+            - key: state_free
+              lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), state='slab_reclaimable') as state_slab_reclaimable WHERE metricName = 'system.memory.usage'
+          expected_results:
+            - key: state_slab_reclaimable
+              lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), state='buffered') as state_buffered WHERE metricName = 'system.memory.usage'
+          expected_results:
+            - key: state_buffered
+              lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), state='used') as state_used WHERE metricName = 'system.memory.usage'
+          expected_results:
+            - key: state_used
+              lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), state='free') as state_free WHERE metricName = 'system.memory.utilization'
+          expected_results:
+            - key: state_free
+              lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), state='used') as state_used WHERE metricName = 'system.memory.utilization'
+          expected_results:
+            - key: state_used
+              lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), direction='page_out') as direction_page_out WHERE metricName = 'system.paging.operations'
+          expected_results:
+            - key: direction_page_out
+              lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), direction='page_in') as direction_page_in WHERE metricName = 'system.paging.operations'
+          expected_results:
+            - key: direction_page_in
+              lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), state='free') as state_free WHERE metricName = 'system.filesystem.inodes.usage'
+          expected_results:
+            - key: state_free
+              lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), state='used') as state_used WHERE metricName = 'system.filesystem.inodes.usage'
+          expected_results:
+            - key: state_used
+              lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), state='used') as state_used WHERE metricName = 'system.filesystem.usage'
+          expected_results:
+            - key: state_used
+              lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), state='free') as state_free WHERE metricName = 'system.filesystem.usage'
+          expected_results:
+            - key: state_free
+              lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), type != 'squashfs') as type_not_squashfs WHERE metricName = 'system.filesystem.utilization'
+          expected_results:
+            - key: type_not_squashfs
+              lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), direction='receive') as direction_receive WHERE metricName = 'system.network.dropped'
+          expected_results:
+            - key: direction_receive
+              lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), direction='transmit') as direction_transmit WHERE metricName = 'system.network.dropped'
+          expected_results:
+            - key: direction_transmit
+              lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), direction='receive') as direction_receive WHERE metricName = 'system.network.errors'
+          expected_results:
+            - key: direction_receive
+              lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), direction='transmit') as direction_transmit WHERE metricName = 'system.network.errors'
+          expected_results:
+            - key: direction_transmit
+              lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), direction='receive') as direction_receive WHERE metricName = 'system.network.io'
+          expected_results:
+            - key: direction_receive
+              lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), direction='transmit') as direction_transmit WHERE metricName = 'system.network.io'
+          expected_results:
+            - key: direction_transmit
+              lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), direction='receive') as direction_receive WHERE metricName = 'system.network.packets'
+          expected_results:
+            - key: direction_receive
+              lowerBoundedValue: 1
+        - query: FROM Metric SELECT filter(count(*), direction='transmit') as direction_transmit WHERE metricName = 'system.network.packets'
+          expected_results:
+            - key: direction_transmit
+              lowerBoundedValue: 1
+
   - description: receiver-based + internal telemetry
     before:
       - kubectl create ns nr-${SCENARIO_TAG}
@@ -150,8 +278,4 @@ scenarios:
           expected_results:
             - key: rpc_code
               lowerBoundedValue: 1
-
-
-
-
 
