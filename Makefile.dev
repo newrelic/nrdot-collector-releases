@@ -11,6 +11,3 @@ ci_nightly_custom_matrix:
 	@# repeat --matrix arg for multiple distros
 	act schedule -W .github/workflows/ci-nightly.yaml \
 		--matrix distribution:nrdot-collector-host
-
-ci_e2e:
-	act workflow_dispatch -W .github/workflows/ci-e2e.yaml
