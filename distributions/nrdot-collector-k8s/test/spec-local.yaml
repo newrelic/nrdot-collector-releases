@@ -1,7 +1,10 @@
 description: nrdot-collector-host E2E Test
 
+# can't easily force usage of default 'testKey' as OTEL_RESOURCE_ATTRIBUTES is already used by chart
+custom_test_key: k8s.cluster.name
+
 dependencies:
-  # TODO: renovatebot
+  # renovatebot
   newrelic/nr-k8s-otel-collector: 0.8.37
 
 # scoping is achieved via an implicit attribute `testKey=${SCENARIO_TAG}` expected on all tested telemetry
@@ -21,10 +24,10 @@ scenarios:
         chart_version=$(yq '.dependencies.newrelic/nr-k8s-otel-collector' ./spec-local.yaml)
         helm upgrade --install ${SCENARIO_TAG} newrelic/nr-k8s-otel-collector \
         --namespace nr-${SCENARIO_TAG} --version ${chart_version} \
-        --values ./nr-k8s-otel-collector-values.yaml \
         --set image.tag=${IMAGE_TAG} \
         --set image.repository=${IMAGE_REPO} \
         --set licenseKey=${LICENSE_KEY} \
+        --set cluster=${SCENARIO_TAG} \
         --set nrStaging=${isStaging}
     after:
       - kubectl logs -l app.kubernetes.io/name=nr-k8s-otel-collector --all-containers --prefix=true
@@ -32,6 +35,5 @@ scenarios:
       - helm uninstall ${SCENARIO_TAG} --namespace nr-${SCENARIO_TAG}
       - kubectl delete namespace nr-${SCENARIO_TAG}
     tests:
-      # Tests for existence of metrics
       metrics:
         - source: "k8s-expected-metrics.yaml"
