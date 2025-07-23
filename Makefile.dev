@@ -5,7 +5,7 @@ ci:
 ci_custom_matrix:
 	@# repeat --matrix arg for multiple distros
 	act push -W .github/workflows/ci.yaml \
-		--matrix distribution:nrdot-collector-host
+		--matrix distribution:nrdot-collector-k8s
 
 ci_nightly_custom_matrix:
 	@# repeat --matrix arg for multiple distros

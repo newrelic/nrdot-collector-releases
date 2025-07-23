@@ -31,8 +31,6 @@ on:
         required: false
       nr_account_id:
         required: false
-      nr_api_base_url:
-        required: false
       nr_api_key:
         required: false
 
@@ -156,20 +154,6 @@ jobs:
           api_key: ${{ secrets.nr_api_key }}
           license_key: ${{ secrets.nr_ingest_key }}
           region: 'US'
-
-      - name: Run slow local tests
-        env:
-          KIND_CLUSTER_NAME: ${{ inputs.test_cluster_name }}
-          IMAGE_TAG: ${{ env.image_tag }}
-          IMAGE_REPO: ${{ secrets.registry }}/${{ inputs.distribution}}
-          DISTRO: ${{ inputs.distribution }}
-          NR_BACKEND_URL: ${{ secrets.nr_backend_url }}
-          NR_INGEST_KEY: ${{ secrets.nr_ingest_key }}
-          NR_API_KEY: ${{ secrets.nr_api_key }}
-          NR_ACCOUNT_ID: ${{ secrets.nr_account_id }}
-          NR_API_BASE_URL: ${{ secrets.nr_api_base_url }}
-        run: |
-          make -f ./test/e2e/Makefile ci_test-slow
 
       - name: Trivy security check
         if: ${{ !inputs.nightly }}

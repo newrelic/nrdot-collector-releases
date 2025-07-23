@@ -1,0 +1,39 @@
+description: nrdot-collector-host E2E Test
+
+# can't easily force usage of default 'testKey' as OTEL_RESOURCE_ATTRIBUTES is already used by chart
+custom_test_key: k8s.cluster.name
+
+dependencies:
+  # renovatebot
+  newrelic/nr-k8s-otel-collector: 0.8.37
+
+# scoping is achieved via an implicit attribute `testKey=${SCENARIO_TAG}` expected on all tested telemetry
+scenarios:
+  - description: k8s telemetry
+    before:
+      - kubectl create ns nr-${SCENARIO_TAG}
+      - |
+        kubectl create secret generic 'collector-secrets' --namespace=nr-${SCENARIO_TAG} \
+        --from-literal="scenarioTag=${SCENARIO_TAG}"
+      - "helm repo add newrelic https://helm-charts.newrelic.com || echo 'skipping repo add: newrelic repo already exists'"
+      - |
+        isStaging='false'
+        if printf '%s' "${NR_BACKEND_URL}" | grep -q 'staging'; then
+          isStaging='true'
+        fi
+        chart_version=$(yq '.dependencies.newrelic/nr-k8s-otel-collector' ./spec-local.yaml)
+        helm upgrade --install ${SCENARIO_TAG} newrelic/nr-k8s-otel-collector \
+        --namespace nr-${SCENARIO_TAG} --version ${chart_version} \
+        --set image.tag=${IMAGE_TAG} \
+        --set image.repository=${IMAGE_REPO} \
+        --set licenseKey=${LICENSE_KEY} \
+        --set cluster=${SCENARIO_TAG} \
+        --set nrStaging=${isStaging}
+    after:
+      - kubectl logs -l app.kubernetes.io/name=nr-k8s-otel-collector --all-containers --prefix=true
+      - kubectl get all -o wide
+      - helm uninstall ${SCENARIO_TAG} --namespace nr-${SCENARIO_TAG}
+      - kubectl delete namespace nr-${SCENARIO_TAG}
+    tests:
+      metrics:
+        - source: "k8s-expected-metrics.yaml"
