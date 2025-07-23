@@ -1,24 +1,16 @@
 package test
 
 import (
-	"github.com/gruntwork-io/terratest/modules/random"
 	"strings"
 	envutil "test/e2e/util/env"
 	"testing"
 )
 
 const (
-	slowOnly    = "slowOnly"
 	nightlyOnly = "nightlyOnly"
 )
 
-var onlyModes = []string{slowOnly, nightlyOnly}
-
-func TagAsSlowTest(t *testing.T) {
-	if isAnyModeOf(allOnlyModesExcept(slowOnly)) {
-		t.Skip("Slow test skipped due to test mode: ", t.Name())
-	}
-}
+var onlyModes = []string{nightlyOnly}
 
 func TagAsNightlyTest(t *testing.T) {
 	if isAnyModeOf(allOnlyModesExcept(nightlyOnly)) {
@@ -41,8 +33,4 @@ func allOnlyModesExcept(filterOut string) []string {
 		}
 	}
 	return result
-}
-
-func NewTestId() string {
-	return strings.ToLower(random.UniqueId())
 }

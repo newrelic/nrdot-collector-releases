@@ -9,7 +9,7 @@
     {
       "customType": "regex",
       "fileMatch": [
-        "(^|/)test-spec.yaml$"
+        "(^|/)spec-nightly.yaml$"
       ],
       "matchStringsStrategy": "combination",
       "matchStrings": [

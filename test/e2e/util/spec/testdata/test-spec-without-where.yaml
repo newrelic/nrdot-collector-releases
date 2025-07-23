@@ -1,7 +1,3 @@
-slow:
-  testCaseSpecs:
-    - "test1"
-    - "test2"
 nightly:
   ec2:
     enabled: true
