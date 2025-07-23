@@ -1,0 +1,15 @@
+[Unit]
+Description=NRDOT Collector Gateway
+After=network.target
+
+[Service]
+EnvironmentFile=/etc/nrdot-collector-gateway/nrdot-collector-gateway.conf
+ExecStart=/usr/bin/nrdot-collector-gateway $OTELCOL_OPTIONS
+KillMode=mixed
+Restart=on-failure
+Type=simple
+User=nrdot-collector-gateway
+Group=nrdot-collector-gateway
+
+[Install]
+WantedBy=multi-user.target
