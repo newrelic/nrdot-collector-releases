@@ -13,7 +13,20 @@
       ],
       "matchStringsStrategy": "combination",
       "matchStrings": [
-        ".*# renovatebot.*\\s*name:\\s+newrelic\/(?<depName>nr-k8s-otel-collector)\\s+version:\\s+(?:&[\\w_]+\\s+)?(?<currentValue>[\\d\\.]+)",
+        ".*# renovatebot.*\\s*name:\\s+newrelic\/(?<depName>nr-k8s-otel-collector)\\s+version:\\s+(?:&[\\w_]+\\s+)?(?<currentValue>[\\d\\.]+)"
+      ],
+      "registryUrlTemplate": "https://helm-charts.newrelic.com",
+      "datasourceTemplate": "helm",
+      "versioningTemplate": "semver"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "(^|/)spec-local.yaml$"
+      ],
+      "matchStringsStrategy": "combination",
+      "matchStrings": [
+        ".*# renovatebot.*\\s+newrelic\/(?<depName>nr-k8s-otel-collector):\\s+(?<currentValue>[\\d\\.]+)",
       ],
       "registryUrlTemplate": "https://helm-charts.newrelic.com",
       "datasourceTemplate": "helm",
