@@ -28,8 +28,9 @@ import (
 const (
 	ArmArch = "arm"
 
-	HostDistro = "nrdot-collector-host"
-	K8sDistro  = "nrdot-collector-k8s"
+	HostDistro    = "nrdot-collector-host"
+	K8sDistro     = "nrdot-collector-k8s"
+	GatewayDistro = "nrdot-collector-gateway"
 
 	EnvRegistry = "{{ .Env.REGISTRY }}"
 
@@ -44,11 +45,13 @@ var (
 		K8sDistro: true,
 	}
 	NfpmDefaultConfig = map[string]string{
-		HostDistro: "config.yaml",
+		HostDistro:    "config.yaml",
+		GatewayDistro: "config.yaml",
 		// k8s missing due to not packaged via nfpm
 	}
 	IncludedConfigs = map[string][]string{
-		HostDistro: {"config.yaml"},
+		HostDistro:    {"config.yaml"},
+		GatewayDistro: {"config.yaml"},
 	}
 	K8sDockerSkipArchs = map[string]bool{"arm": true, "386": true}
 	K8sGoos            = []string{"linux"}

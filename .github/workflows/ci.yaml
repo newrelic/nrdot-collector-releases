@@ -18,6 +18,7 @@ jobs:
         distribution:
           - nrdot-collector-host
           - nrdot-collector-k8s
+          - nrdot-collector-gateway
     uses: ./.github/workflows/ci-base.yaml
     with:
       distribution: ${{ matrix.distribution }}
