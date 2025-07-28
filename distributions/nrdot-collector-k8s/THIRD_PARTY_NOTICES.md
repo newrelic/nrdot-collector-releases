@@ -20,6 +20,14 @@ Distributed under the following license(s):
 
 
 
+## [github.com/open-telemetry/opentelemetry-collector-contrib/exporter/loadbalancingexporter](https://github.com/open-telemetry/opentelemetry-collector-contrib)
+
+Distributed under the following license(s):
+
+* Apache-2.0
+
+
+
 ## [github.com/open-telemetry/opentelemetry-collector-contrib/extension/healthcheckextension](https://github.com/open-telemetry/opentelemetry-collector-contrib)
 
 Distributed under the following license(s):
@@ -85,6 +93,14 @@ Distributed under the following license(s):
 
 
 ## [github.com/open-telemetry/opentelemetry-collector-contrib/processor/resourceprocessor](https://github.com/open-telemetry/opentelemetry-collector-contrib)
+
+Distributed under the following license(s):
+
+* Apache-2.0
+
+
+
+## [github.com/open-telemetry/opentelemetry-collector-contrib/processor/tailsamplingprocessor](https://github.com/open-telemetry/opentelemetry-collector-contrib)
 
 Distributed under the following license(s):
 
