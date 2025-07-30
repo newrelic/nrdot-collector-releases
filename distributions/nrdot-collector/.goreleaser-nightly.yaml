@@ -1,11 +1,11 @@
 version: 2
-project_name: nrdot-collector-releases
+project_name: nrdot-collector-releases-nightly
 release:
   draft: true
   use_existing_draft: true
-  disable: "false"
+  disable: "true"
 builds:
-  - id: nrdot-collector-host
+  - id: nrdot-collector
     goos:
       - linux
       - windows
@@ -16,7 +16,7 @@ builds:
       - goos: windows
         goarch: arm64
     dir: _build
-    binary: nrdot-collector-host
+    binary: nrdot-collector
     ldflags:
       - -s
       - -w
@@ -25,9 +25,9 @@ builds:
     env:
       - CGO_ENABLED=0
 archives:
-  - id: nrdot-collector-host
+  - id: nrdot-collector
     ids:
-      - nrdot-collector-host
+      - nrdot-collector
     name_template: '{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}'
     format_overrides:
       - goos: windows
@@ -37,15 +37,15 @@ archives:
       - src: config.yaml
 nfpms:
   - file_name_template: '{{ .PackageName }}_{{ .Version }}_{{ .Os }}_{{- if not (eq (filter .ConventionalFileName "\\.rpm$") "") }}{{- replace .Arch "amd64" "x86_64" }}{{- else }}{{- .Arch }}{{- end }}{{- with .Arm }}v{{ . }}{{- end }}{{- with .Mips }}_{{ . }}{{- end }}{{- if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{- end }}'
-    package_name: nrdot-collector-host
+    package_name: nrdot-collector
     contents:
-      - src: nrdot-collector-host.service
-        dst: /lib/systemd/system/nrdot-collector-host.service
-      - src: nrdot-collector-host.conf
-        dst: /etc/nrdot-collector-host/nrdot-collector-host.conf
+      - src: nrdot-collector.service
+        dst: /lib/systemd/system/nrdot-collector.service
+      - src: nrdot-collector.conf
+        dst: /etc/nrdot-collector/nrdot-collector.conf
         type: config|noreplace
       - src: config.yaml
-        dst: /etc/nrdot-collector-host/config.yaml
+        dst: /etc/nrdot-collector/config.yaml
         type: config
     scripts:
       preinstall: preinstall.sh
@@ -61,14 +61,14 @@ nfpms:
       rpm:
         dependencies:
           - /bin/sh
-    id: nrdot-collector-host
+    id: nrdot-collector
     ids:
-      - nrdot-collector-host
+      - nrdot-collector
     formats:
       - deb
       - rpm
     maintainer: New Relic <caos-team@newrelic.com>
-    description: NRDOT Collector - nrdot-collector-host
+    description: NRDOT Collector - nrdot-collector
     license: Apache 2.0
 snapshot:
   version_template: '{{ incpatch .Version }}-SNAPSHOT-{{.ShortCommit}}'
@@ -81,10 +81,8 @@ dockers:
     goarch: amd64
     dockerfile: Dockerfile
     image_templates:
-      - '{{ .Env.REGISTRY }}/nrdot-collector-host:{{ .Version }}-amd64'
-      - '{{ .Env.REGISTRY }}/nrdot-collector-host:latest-amd64'
-    extra_files:
-      - config.yaml
+      - '{{ .Env.REGISTRY }}/nrdot-collector-host:{{ .Version }}-nightly-amd64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-host:nightly-amd64'
     build_flag_templates:
       - --pull
       - --platform=linux/amd64
@@ -99,10 +97,8 @@ dockers:
     goarch: arm64
     dockerfile: Dockerfile
     image_templates:
-      - '{{ .Env.REGISTRY }}/nrdot-collector-host:{{ .Version }}-arm64'
-      - '{{ .Env.REGISTRY }}/nrdot-collector-host:latest-arm64'
-    extra_files:
-      - config.yaml
+      - '{{ .Env.REGISTRY }}/nrdot-collector-host:{{ .Version }}-nightly-arm64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-host:nightly-arm64'
     build_flag_templates:
       - --pull
       - --platform=linux/arm64
@@ -114,19 +110,15 @@ dockers:
       - --label=org.opencontainers.image.licenses=Apache-2.0
     use: buildx
 docker_manifests:
-  - name_template: '{{ .Env.REGISTRY }}/nrdot-collector-host:{{ .Version }}'
+  - name_template: '{{ .Env.REGISTRY }}/nrdot-collector-host:nightly'
     image_templates:
-      - '{{ .Env.REGISTRY }}/nrdot-collector-host:{{ .Version }}-amd64'
-      - '{{ .Env.REGISTRY }}/nrdot-collector-host:{{ .Version }}-arm64'
-  - name_template: '{{ .Env.REGISTRY }}/nrdot-collector-host:latest'
-    image_templates:
-      - '{{ .Env.REGISTRY }}/nrdot-collector-host:latest-amd64'
-      - '{{ .Env.REGISTRY }}/nrdot-collector-host:latest-arm64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-host:nightly-amd64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-host:nightly-arm64'
 blobs:
   - bucket: nr-releases
     provider: s3
     region: us-east-1
-    directory: nrdot-collector-releases/nrdot-collector-host/{{ .Version }}
+    directory: nrdot-collector-releases/nrdot-collector/nightly
 changelog:
   disable: "true"
 signs:

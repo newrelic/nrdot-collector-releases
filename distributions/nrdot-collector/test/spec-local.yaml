@@ -1,4 +1,4 @@
-description: nrdot-collector-host E2E Test
+description: nrdot-collector E2E Test
 
 # scoping is achieved via an implicit attribute `testKey=${SCENARIO_TAG}` expected on all tested telemetry
 
@@ -9,7 +9,7 @@ scenarios:
       - |
         kubectl create secret generic 'collector-secrets' --namespace=nr-${SCENARIO_TAG} \
         --from-literal="nrIngestKey=${LICENSE_KEY}" --from-literal="nrBackendUrl=${NR_BACKEND_URL}" \
-        --from-literal="serviceName=nrdot-collector-host-e2e-host" --from-literal="scenarioTag=${SCENARIO_TAG}"
+        --from-literal="serviceName=nrdot-collector-e2e-host" --from-literal="scenarioTag=${SCENARIO_TAG}"
       - "helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts || echo 'skipping repo add: open-telemetry repo already exists'"
       - |
         chart_version=$(../../../scripts/get-otel-collector-chart-version.sh)
@@ -19,7 +19,7 @@ scenarios:
         --set image.tag=${IMAGE_TAG} \
         --set image.repository=${IMAGE_REPO}
     after:
-      - kubectl logs -l e2eTestLogSelector=nrdot-collector-host-e2e -n nr-${SCENARIO_TAG} --all-containers --prefix=true
+      - kubectl logs -l e2eTestLogSelector=nrdot-collector-e2e -n nr-${SCENARIO_TAG} --all-containers --prefix=true
       - kubectl get all -o wide
       - helm uninstall ${SCENARIO_TAG} --namespace nr-${SCENARIO_TAG}
       - kubectl delete namespace nr-${SCENARIO_TAG}
@@ -170,7 +170,7 @@ scenarios:
       - |
         kubectl create secret generic 'collector-secrets' --namespace=nr-${SCENARIO_TAG} \
         --from-literal="nrIngestKey=${LICENSE_KEY}" --from-literal="nrBackendUrl=${NR_BACKEND_URL}" \
-        --from-literal="serviceName=nrdot-collector-host-e2e-internal" --from-literal="scenarioTag=${SCENARIO_TAG}"
+        --from-literal="serviceName=nrdot-collector-e2e-internal" --from-literal="scenarioTag=${SCENARIO_TAG}"
       - "helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts || echo 'skipping repo add: open-telemetry repo already exists'"
       - |
         chart_version=$(../../../scripts/get-otel-collector-chart-version.sh)
@@ -180,7 +180,7 @@ scenarios:
         --set image.tag=${IMAGE_TAG} \
         --set image.repository=${IMAGE_REPO}
     after:
-      - kubectl logs -l e2eTestLogSelector=nrdot-collector-host-e2e -n nr-${SCENARIO_TAG} --all-containers --prefix=true
+      - kubectl logs -l e2eTestLogSelector=nrdot-collector-e2e -n nr-${SCENARIO_TAG} --all-containers --prefix=true
       - kubectl get all -o wide
       - helm uninstall ${SCENARIO_TAG} --namespace nr-${SCENARIO_TAG}
       - kubectl delete namespace nr-${SCENARIO_TAG}
@@ -197,8 +197,8 @@ scenarios:
               lowerBoundedValue: 1
         - query: FROM Log SELECT filter(count(*), otelcol.pipeline.id is not null) as logs_pipeline
           expected_results:
-              - key: logs_pipeline
-                lowerBoundedValue: 1
+            - key: logs_pipeline
+              lowerBoundedValue: 1
         - query: FROM Log SELECT filter(count(*), otelcol.signal is not null) as logs_signal
           expected_results:
             - key: logs_signal
@@ -251,8 +251,8 @@ scenarios:
         # Batch processor metrics
         - query: FROM Metric SELECT filter(count(*), processor is not null) as batch_processor WHERE metricName like 'otelcol_processor_batch_%'
           expected_results:
-           - key: batch_processor
-             lowerBoundedValue: 1
+            - key: batch_processor
+              lowerBoundedValue: 1
         # Http metrics
         - query: FROM Metric SELECT filter(count(*), server.address is not null) as http_server_address WHERE metricName like 'http.client.request.duration'
           expected_results:
@@ -264,18 +264,17 @@ scenarios:
               lowerBoundedValue: 1
         - query: FROM Metric SELECT filter(count(*), http.response.status_code is not null) as http_code WHERE metricName like 'http.client.request.duration'
           expected_results:
-          - key: http_code
-            lowerBoundedValue: 1
+            - key: http_code
+              lowerBoundedValue: 1
         - query: FROM Metric SELECT filter(count(*), http.response.status_code is not null) as http_code WHERE metricName like 'http.server.request.duration'
           expected_results:
-          - key: http_code
-            lowerBoundedValue: 1
+            - key: http_code
+              lowerBoundedValue: 1
         - query: FROM Metric SELECT filter(count(*), server.port is not null) as http_port WHERE metricName = 'http.server.request.duration'
           expected_results:
-          - key: http_port
-            lowerBoundedValue: 1
+            - key: http_port
+              lowerBoundedValue: 1
         - query: FROM Metric SELECT filter(count(*), rpc.grpc.status_code is not null) as rpc_code WHERE metricName like 'rpc.%.duration'
           expected_results:
             - key: rpc_code
               lowerBoundedValue: 1
-

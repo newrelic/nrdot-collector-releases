@@ -28,7 +28,8 @@ import (
 const (
 	ArmArch = "arm"
 
-	HostDistro = "nrdot-collector-host"
+	CoreDistro = "nrdot-collector"
+	LegacyHostDistro = "nrdot-collector-host"
 	K8sDistro  = "nrdot-collector-k8s"
 
 	EnvRegistry = "{{ .Env.REGISTRY }}"
@@ -44,11 +45,11 @@ var (
 		K8sDistro: true,
 	}
 	NfpmDefaultConfig = map[string]string{
-		HostDistro: "config.yaml",
+		CoreDistro: "config.yaml",
 		// k8s missing due to not packaged via nfpm
 	}
 	IncludedConfigs = map[string][]string{
-		HostDistro: {"config.yaml"},
+		CoreDistro: {"config.yaml"},
 	}
 	K8sDockerSkipArchs = map[string]bool{"arm": true, "386": true}
 	K8sGoos            = []string{"linux"}
@@ -266,6 +267,13 @@ func Package(dist string) config.NFPM {
 
 func DockerImages(dist string, nightly bool) []config.Docker {
 	var r []config.Docker
+	
+	// First phase of migration: if dist is CoreDistro then we set it to LegacyHostDistro until we're ready to switch over.
+	// This ensures that we don't break existing tags while we transition.
+	if dist == CoreDistro {
+		dist = LegacyHostDistro
+	}
+	
 	for _, arch := range Architectures {
 		if dist == K8sDistro && K8sDockerSkipArchs[arch] {
 			continue
@@ -304,6 +312,15 @@ func DockerImage(dist string, nightly bool, arch string, armVersion string) conf
 			fmt.Sprintf(prefixFormat, prefix, imageName(dist), dockerArchTag),
 			fmt.Sprintf(latestPrefixFormat, prefix, imageName(dist), dockerArchTag),
 		)
+
+		if dist == CoreDistro {
+			// Add legacy tags for core distro until we switch over.
+			imageTemplates = append(
+				imageTemplates,
+				fmt.Sprintf(prefixFormat, prefix, imageName(LegacyHostDistro), dockerArchTag),
+				fmt.Sprintf(latestPrefixFormat, prefix, imageName(LegacyHostDistro), dockerArchTag),
+			)
+		}
 	}
 
 	label := func(name, template string) string {
@@ -340,6 +357,12 @@ func DockerImage(dist string, nightly bool, arch string, armVersion string) conf
 func DockerManifests(dist string, nightly bool) []config.DockerManifest {
 	r := make([]config.DockerManifest, 0)
 
+	// First phase of migration: if dist is CoreDistro then we set it to LegacyHostDistro until we're ready to switch over.
+	// This ensures that we don't break existing tags while we transition.
+	if dist == CoreDistro {
+		dist = LegacyHostDistro
+	}
+
 	imagePrefixes := ImagePrefixes
 
 	for _, prefix := range imagePrefixes {
@@ -348,6 +371,14 @@ func DockerManifests(dist string, nightly bool) []config.DockerManifest {
 		} else {
 			r = append(r, DockerManifest(prefix, `{{ .Version }}`, dist, nightly))
 			r = append(r, DockerManifest(prefix, "latest", dist, nightly))
+
+			// Second phase of migration will include legacy tags for core distro until we switch over.
+			// This is to ensure that both tags exist for a while before we switch over completely
+			if dist == CoreDistro {
+				// Add legacy tags for core distro until we switch over.
+				r = append(r, DockerManifest(prefix, `{{ .Version }}`, LegacyHostDistro, nightly))
+				r = append(r, DockerManifest(prefix, "latest", LegacyHostDistro, nightly))
+			}
 		}
 	}
 	return r

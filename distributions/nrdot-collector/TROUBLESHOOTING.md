@@ -1,4 +1,4 @@
-# Troubleshooting for nrdot-collector-host
+# Troubleshooting for nrdot-collector
 
 For general NRDOT troubleshooting, see [this guide](../TROUBLESHOOTING.md). This document assumes you are familiar with
 the troubleshooting tools mentioned.
@@ -23,7 +23,7 @@ The `hostmetricsreceiver` auto-detects the files to scrape system metrics from. 
 In order to resolve this, make sure to follow the [receiver's docs](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/hostmetricsreceiver/README.md#collecting-host-metrics-from-inside-a-container-linux-only) to mount the host file system into the container at the `root_path` and configure the `root_path` accordingly, e.g.
 ```bash
 docker run -v /:/hostfs \
--e NEW_RELIC_LICENSE_KEY='license-key' newrelic/nrdot-collector-host \
---config /etc/nrdot-collector-host/config.yaml \
+-e NEW_RELIC_LICENSE_KEY='license-key' newrelic/nrdot-collector \
+--config /etc/nrdot-collector/config.yaml \
 --config 'yaml:receivers::hostmetrics::root_path: /hostfs'
 ```

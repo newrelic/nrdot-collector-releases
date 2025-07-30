@@ -31,7 +31,7 @@ const response = await octokit.request("GET /repos/{owner}/{repo}/releases", {
 });
 
 // Generate regex from distributions to match the asset name and parts
-// Example: {nrdot-collector-host}_{1.0.0}_{linux}_{amd64}.{tar.gz}
+// Example: {nrdot-collector}_{1.0.0}_{linux}_{amd64}.{tar.gz}
 const regex = new RegExp(`^(${distributions.join("|")})_([0-9]+\.[0-9]+\.[0-9]+)_([a-z]+)_([a-z0-9_]+)\.([a-z0-9\.]+)$`);
 
 const currentTime = new Date().getTime();

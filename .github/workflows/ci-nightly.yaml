@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         distribution:
-          - nrdot-collector-host
+          - nrdot-collector
           - nrdot-collector-k8s
     uses: ./.github/workflows/ci-base.yaml
     with:
@@ -41,7 +41,7 @@ jobs:
     strategy:
       matrix:
         distribution:
-          - nrdot-collector-host
+          - nrdot-collector
           - nrdot-collector-k8s
     steps:
       - name: Checkout
@@ -137,7 +137,7 @@ jobs:
     strategy:
       matrix:
         distribution:
-          - nrdot-collector-host
+          - nrdot-collector
           - nrdot-collector-k8s
     concurrency:
       # concurrency limit of 1 b/c failed tf job cancelling each other causes tf state and locks to corrupt
@@ -164,7 +164,7 @@ jobs:
     strategy:
       matrix:
         distribution:
-          - nrdot-collector-host
+          - nrdot-collector
           - nrdot-collector-k8s
     steps:
       - name: Checkout

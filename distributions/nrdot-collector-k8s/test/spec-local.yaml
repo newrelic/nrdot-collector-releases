@@ -1,4 +1,4 @@
-description: nrdot-collector-host E2E Test
+description: nrdot-collector E2E Test
 
 # can't easily force usage of default 'testKey' as OTEL_RESOURCE_ATTRIBUTES is already used by chart
 custom_test_key: k8s.cluster.name

@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-if command -v systemctl >/dev/null 2>&1; then
-    systemctl stop nrdot-collector-host.service
-    systemctl disable nrdot-collector-host.service
+# Create the user if NRDOT_MODE is not set to root
+if [ "${NRDOT_MODE}" != "ROOT" ]; then
+  getent passwd nrdot-collector >/dev/null || useradd --system --user-group --no-create-home --shell /sbin/nologin nrdot-collector
 fi

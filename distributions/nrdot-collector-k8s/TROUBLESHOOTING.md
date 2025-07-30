@@ -6,7 +6,7 @@ the troubleshooting tools mentioned. The following list of issues is provided fo
 ## Known issues
 
 ### No `root_path` in containerized environments
-Same solution as in the [nrdot-collector-host troubleshooting guide](../nrdot-collector-host/TROUBLESHOOTING.md#no-root_path-in-containerized-environments) applies.
+Same solution as in the [nrdot-collector troubleshooting guide](../nrdot-collector/TROUBLESHOOTING.md#no-root_path-in-containerized-environments) applies.
 
 ### Missing permissions
 There are many variations of this error due to all the different APIs the k8s components scrape. This is a log example indicating this issue:

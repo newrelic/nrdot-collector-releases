@@ -1,7 +1,7 @@
 dist:
-  module: github.com/newrelic/nrdot-collector-releases/nrdot-collector-host
-  name: nrdot-collector-host
-  description: NRDOT Collector Host
+  module: github.com/newrelic/nrdot-collector-releases/nrdot-collector
+  name: nrdot-collector
+  description: NRDOT Collector
   version: 1.2.0
   output_path: ./_build
 receivers:

@@ -16,7 +16,7 @@ jobs:
     strategy:
       matrix:
         distribution:
-          - nrdot-collector-host
+          - nrdot-collector
           - nrdot-collector-k8s
     uses: ./.github/workflows/ci-base.yaml
     with:

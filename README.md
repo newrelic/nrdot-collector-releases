@@ -8,7 +8,7 @@ Generated assets are available in the corresponding Github release page and as d
 
 Current list of distributions:
 
-- [nrdot-collector-host](./distributions/nrdot-collector-host/): distribution focused on monitoring host metrics and logs
+- [nrdot-collector](./distributions/nrdot-collector/): distribution focused on monitoring host metrics and logs
 - [nrdot-collector-k8s](./distributions/nrdot-collector-k8s/): distribution focused on monitoring a Kubernetes cluster
 
 Please refer to [this README](./distributions/README.md) for documentation.

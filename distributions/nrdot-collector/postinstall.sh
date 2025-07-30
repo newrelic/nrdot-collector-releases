@@ -14,7 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Create the user if NRDOT_MODE is not set to root
-if [ "${NRDOT_MODE}" != "ROOT" ]; then
-  getent passwd nrdot-collector-host >/dev/null || useradd --system --user-group --no-create-home --shell /sbin/nologin nrdot-collector-host
+if command -v systemctl >/dev/null 2>&1; then
+    if [ "${NRDOT_MODE}" = "ROOT" ]; then
+        sed -i "/User=nrdot-collector/d" /lib/systemd/system/nrdot-collector.service
+        sed -i "/Group=nrdot-collector/d" /lib/systemd/system/nrdot-collector.service
+    fi
+    systemctl enable nrdot-collector.service
+    if [ -f /etc/nrdot-collector/config.yaml ]; then
+        systemctl start nrdot-collector.service
+    fi
 fi

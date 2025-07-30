@@ -15,12 +15,6 @@
 # limitations under the License.
 
 if command -v systemctl >/dev/null 2>&1; then
-    if [ "${NRDOT_MODE}" = "ROOT" ]; then
-        sed -i "/User=nrdot-collector-host/d" /lib/systemd/system/nrdot-collector-host.service
-        sed -i "/Group=nrdot-collector-host/d" /lib/systemd/system/nrdot-collector-host.service
-    fi
-    systemctl enable nrdot-collector-host.service
-    if [ -f /etc/nrdot-collector-host/config.yaml ]; then
-        systemctl start nrdot-collector-host.service
-    fi
+    systemctl stop nrdot-collector.service
+    systemctl disable nrdot-collector.service
 fi

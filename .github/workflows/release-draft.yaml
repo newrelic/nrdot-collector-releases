@@ -38,7 +38,7 @@ jobs:
     strategy:
       matrix:
         distribution:
-          - nrdot-collector-host
+          - nrdot-collector
           - nrdot-collector-k8s
     steps:
       - name: Checkout

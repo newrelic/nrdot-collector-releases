@@ -17,9 +17,9 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Assert nrdot-collector-host invariants
+      - name: Assert nrdot-collector invariants
         run: |
-          make -f ./distributions/nrdot-collector-host/Makefile assert-config-invariants
+          make -f ./distributions/nrdot-collector/Makefile assert-config-invariants
 
   notify-drift:
     needs: host-config-drift

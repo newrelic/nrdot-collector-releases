@@ -33,10 +33,10 @@ yq -e '.processors.resourcedetection.system.resource_attributes["host.id"].enabl
 goreleaser_yamls=('.goreleaser.yaml' '.goreleaser-nightly.yaml')
 for goreleaser_yaml in "${goreleaser_yamls[@]}"; do
   echo "Checking ${goreleaser_yaml}"
-  yq -e '.builds[].binary == "nrdot-collector-host"' "${host_distro_dir}/${goreleaser_yaml}" ||
-    { echo "expected binary name 'nrdot-collector-host' in ${goreleaser_yaml}"; exit 1; }
-  yq -e '.nfpms[].package_name == "nrdot-collector-host"' "${host_distro_dir}/${goreleaser_yaml}" ||
-    { echo "expected package_name 'nrdot-collector-host' in ${goreleaser_yaml}"; exit 1; }
+  yq -e '.builds[].binary == "nrdot-collector"' "${host_distro_dir}/${goreleaser_yaml}" ||
+    { echo "expected binary name 'nrdot-collector' in ${goreleaser_yaml}"; exit 1; }
+  yq -e '.nfpms[].package_name == "nrdot-collector"' "${host_distro_dir}/${goreleaser_yaml}" ||
+    { echo "expected package_name 'nrdot-collector' in ${goreleaser_yaml}"; exit 1; }
 done
 
 

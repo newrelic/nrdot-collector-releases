@@ -1,10 +1,10 @@
-# nrdot-collector-host
+# nrdot-collector
 
 | Status    |                                                                                                                                                                                                             |
 |-----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Distro    | `nrdot-collector-host`                                                                                                                                                                                      |
+| Distro    | `nrdot-collector`                                                                                                                                                                                      |
 | Stability | `public`                                                                                                                                                                                                    |
-| Artifacts | [Docker images on DockerHub](https://hub.docker.com/r/newrelic/nrdot-collector-host)<br> [Linux packages and archives under GitHub Releases](https://github.com/newrelic/nrdot-collector-releases/releases) |
+| Artifacts | [Docker images on DockerHub](https://hub.docker.com/r/newrelic/nrdot-collector)<br> [Linux packages and archives under GitHub Releases](https://github.com/newrelic/nrdot-collector-releases/releases) |
 
 A distribution of the NRDOT collector focused on
 - monitoring the host the collector is deployed on via `hostmetricsreceiver` and `filelogreceiver`
@@ -35,7 +35,7 @@ Note: See [general README](../README.md) for information that applies to all dis
 #### Enable process metrics
 Process metrics are disabled by default as they are quite noisy. If you want to enable them, you can do so by reconfiguring the `hostmetricsreceiver`, see also [receiver docs](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/hostmetricsreceiver#getting-started). Note that there is a [processesscraper (`system.processes.*` metrics)](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/hostmetricsreceiver/internal/scraper/processesscraper/documentation.md) and a [processscraper (`process.*` metrics)](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/hostmetricsreceiver/internal/scraper/processscraper/documentation.md) with separate options. An example configuration would look like this:
 ```shell
-newrelic/nrdot-collector-host --config /etc/nrdot-collector-host/config.yaml \
+newrelic/nrdot-collector --config /etc/nrdot-collector/config.yaml \
 --config='yaml:receivers::hostmetrics::scrapers::processes: ' \
 --config='yaml:receivers::hostmetrics::scrapers::process: { metrics: { process.cpu.utilization: { enabled: true }, process.cpu.time: { enabled: false } } }'
 ```

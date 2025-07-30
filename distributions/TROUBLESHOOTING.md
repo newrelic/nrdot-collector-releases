@@ -3,7 +3,7 @@ Please make sure to consult the [README](./README.md) first to ensure that you h
 The collector is extremely powerful but therefore also easily misconfigured. As we cannot cover all the customization possibilities, we recommend consulting the [OTel Collector troubleshooting documentation](https://opentelemetry.io/docs/collector/troubleshooting/) if this guide does not help you resolve your issue. At its core, NRDOT is a [custom distribution](https://opentelemetry.io/docs/collector/custom-collector/), so many of the same steps will apply.
 
 This guide covers general collector troubleshooting tools and common issues. Distribution-specific troubleshooting is available here:
-- [nrdot-collector-host](./nrdot-collector-host/TROUBLESHOOTING.md)
+- [nrdot-collector](./nrdot-collector/TROUBLESHOOTING.md)
 - [nrdot-collector-k8s](./nrdot-collector-k8s/TROUBLESHOOTING.md)
 
 However, note that those guides assume you are familiar with the tools mentioned in this guide.
@@ -24,31 +24,31 @@ There are different types of input you can use, each enabled by its own [provide
 
 #### Binary
 ```bash
-/usr/bin/nrdot-collector --config=/etc/nrdot-collector-host/config.yaml --config 'yaml:service::telemetry::logs::level: WARN'"
+/usr/bin/nrdot-collector --config=/etc/nrdot-collector/config.yaml --config 'yaml:service::telemetry::logs::level: WARN'"
 ```
 
 #### Docker
 ```bash
-# docker without override implicitly adding `--config /etc/nrdot-collector-host/config.yaml` via CMD directive
-docker run newrelic/nrdot-collector-host
+# docker without override implicitly adding `--config /etc/nrdot-collector/config.yaml` via CMD directive
+docker run newrelic/nrdot-collector
 # docker with config override
-docker run newrelic/nrdot-collector-host --config /etc/nrdot-collector-host/config.yaml --config 'yaml:service::telemetry::logs::level: WARN'
+docker run newrelic/nrdot-collector --config /etc/nrdot-collector/config.yaml --config 'yaml:service::telemetry::logs::level: WARN'
 ```
 
 #### Kubernetes
 ```yaml
-image: newrelic/nrdot-collector-host
+image: newrelic/nrdot-collector
 # args can be fully omitted if no override as `CMD` directive supplies the default config
-args: [ "--config", "/etc/nrdot-collector-host/config.yaml", "--config", "yaml:service::telemetry::logs::level: WARN" ]
+args: [ "--config", "/etc/nrdot-collector/config.yaml", "--config", "yaml:service::telemetry::logs::level: WARN" ]
 ```
 
 #### Linux packages
 Our linux packages (if available for the distro) are started as a `systemd` service, so you'd have to edit the `OTELCOL_OPTIONS` environment variable in the `.conf` file and restart the service via `systemctl` The exact location of this file and the default configuration is distribution-specific, but can be looked up in the `nfpms` section of the `goreleaser.yaml` in the respective distribution directory.
 ```
-# edit and save /etc/nrdot-collector-host/nrdot-collector-host.conf
-OTELCOL_OPTIONS="--config=/etc/nrdot-collector-host/config.yaml --config 'yaml:service::telemetry::logs::level: WARN'"
+# edit and save /etc/nrdot-collector/nrdot-collector.conf
+OTELCOL_OPTIONS="--config=/etc/nrdot-collector/config.yaml --config 'yaml:service::telemetry::logs::level: WARN'"
 # restart NRDOT
-systemctl reload-or-restart nrdot-collector-host.service
+systemctl reload-or-restart nrdot-collector.service
 ```
 
 
@@ -74,7 +74,7 @@ having to wait for data being ingested by New Relic.
 All NRDOT collector distributions include the `debugexporter` but disable it by default due to its verbosity and performance overhead. In order to enable it, you'll have to add it as a component and use it in the pipeline you're trying to debug.
 ```
 # Configure debugexporter (empty config is valid) and use it in pipeline 'metrics'
---config /etc/nrdot-collector-host/config.yaml --config 'yaml:exporters::debug: ' --config 'yaml:service::pipelines::metrics::exporters: [otlphttp, debug]'
+--config /etc/nrdot-collector/config.yaml --config 'yaml:exporters::debug: ' --config 'yaml:service::pipelines::metrics::exporters: [otlphttp, debug]'
 ```
 Additional configuration options to increase verbosity or enable sampling are available in the [exporter's docs](https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/debugexporter/README.md#getting-started).
 

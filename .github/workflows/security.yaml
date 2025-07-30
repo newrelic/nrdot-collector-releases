@@ -18,7 +18,7 @@ jobs:
     strategy:
       matrix:
         image:
-          - nrdot-collector-host
+          - nrdot-collector
           - nrdot-collector-k8s
     steps:
       - name: Run Trivy image vulnerability scanner

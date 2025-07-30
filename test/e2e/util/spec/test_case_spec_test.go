@@ -1,3 +1,5 @@
+// Copyright 2020 New Relic Corporation. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
 package spec
 
 import (
@@ -7,9 +9,9 @@ import (
 func TestRenderWhereClause(t *testing.T) {
 	testCaseSpec := LoadTestCaseSpec("host")
 	actual := testCaseSpec.RenderWhereClause(map[string]string{
-		"hostName": "nrdot-collector-host-foobar",
+		"hostName": "nrdot-collector-foobar",
 	})
-	if actual != "WHERE host.name like 'nrdot-collector-host-foobar'" {
+	if actual != "WHERE host.name like 'nrdot-collector-foobar'" {
 		t.Fatalf("unexpected where clause: %s", actual)
 	}
 }
@@ -22,7 +24,7 @@ func TestRenderWhereClauseFailsIfExpectedVarMissing(t *testing.T) {
 		}
 	}()
 	testCaseSpec.RenderWhereClause(map[string]string{
-		"hostName1": "nrdot-collector-host-foobar",
+		"hostName1": "nrdot-collector-foobar",
 	})
 
 }

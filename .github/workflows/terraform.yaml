@@ -45,7 +45,7 @@ on:
         description: "List of distributions to test"
         type: string
         required: false
-        default: "nrdot-collector-host"
+        default: "nrdot-collector"
       nightly_docker_manifest_sha_artifact_name:
         description: "artifact name containing SHA256 to identify nightly docker manifest to use"
         type: string

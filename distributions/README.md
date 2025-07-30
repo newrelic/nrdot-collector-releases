@@ -1,7 +1,7 @@
 # Collector Distributions
 
 This README covers topics that apply to all distributions. For distribution-specific information please refer to:
-- [nrdot-collector-host](./nrdot-collector-host/README.md)
+- [nrdot-collector](./nrdot-collector/README.md)
 - [nrdot-collector-k8s](./nrdot-collector-k8s/README.md)
 
 ## Installation
@@ -11,7 +11,7 @@ Each distribution is available as a Docker image under the [newrelic](https://hu
 
 In order to run the collector via docker, you'll have to supply the required environment variables, see also [Configuration](#configuration). Using the `host` distribution as an example:
 ```bash
-docker run -e NEW_RELIC_LICENSE_KEY='your-ingest-license-key' newrelic/nrdot-collector-host
+docker run -e NEW_RELIC_LICENSE_KEY='your-ingest-license-key' newrelic/nrdot-collector
 ```
 
 ### Linux packages and Archives 
@@ -77,7 +77,7 @@ If a distribution provides linux packages (refer to its README), you can follow 
 
 ##### DEB Installation
 ```bash
-export collector_distro="nrdot-collector-host"
+export collector_distro="nrdot-collector"
 export collector_version="1.2.0"
 export collector_arch="amd64" # or arm64
 export license_key="YOUR_LICENSE_KEY"
@@ -90,7 +90,7 @@ sudo systemctl reload-or-restart "${collector_distro}.service"
 
 ### RPM Installation
 ```bash
-export collector_distro="nrdot-collector-host"
+export collector_distro="nrdot-collector"
 export collector_version="1.2.0"
 export collector_arch="x86_64" # or arm64
 export license_key="YOUR_LICENSE_KEY"
@@ -104,13 +104,13 @@ sudo systemctl reload-or-restart "${collector_distro}.service"
 ### Archives
 Archives contain the binary and the default configuration which is usually `config.yaml` unless the distro packages multiple defaults, e.g. `nrdot-collector-k8s`.
 ```bash
-export collector_distro="nrdot-collector-host"
+export collector_distro="nrdot-collector"
 export collector_version="1.2.0"
 export collector_arch="amd64" # or arm64
 export license_key="YOUR_LICENSE_KEY"
 curl "https://github.com/newrelic/nrdot-collector-releases/releases/download/${collector_version}/${collector_distro}_${collector_version}_linux_${collector_arch}.tar.gz" --location --output collector.tar.gz
 tar -xzf collector.tar.gz
-NEW_RELIC_LICENSE_KEY="${license_key}" ./nrdot-collector-host --config ./config.yaml 
+NEW_RELIC_LICENSE_KEY="${license_key}" ./nrdot-collector --config ./config.yaml 
 ```
 
 ## Configuration
