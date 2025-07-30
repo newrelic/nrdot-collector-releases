@@ -24,6 +24,9 @@ check: ensure-goreleaser-up-to-date
 build: go ocb
 	@./scripts/build.sh -d "${DISTRIBUTIONS}" -b ${OTELCOL_BUILDER}
 
+build-fips: go ocb
+	@./scripts/build.sh -d "${DISTRIBUTIONS}" -b ${OTELCOL_BUILDER} -s true -f true
+
 generate: generate-sources generate-goreleaser
 
 generate-goreleaser: go

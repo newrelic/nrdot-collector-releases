@@ -6,14 +6,16 @@ BUILDER=''
 # default values
 skipcompilation=false
 validate=true
+fips=false
 
-while getopts d:s:b: flag
+while getopts d:s:b:f: flag
 do
     case "${flag}" in
         d) distributions=${OPTARG};;
         s) skipcompilation=${OPTARG};;
         l) validate=${OPTARG};;
         b) BUILDER=${OPTARG};;
+        f) fips=${OPTARG};;
         *) exit 1;;
     esac
 done
@@ -50,6 +52,13 @@ do
         cat _build/build.log
         echo "----------------------"
         exit 1
+    fi
+
+    if [[ "$skipcompilation" = true && "$fips" = true ]]; then
+      echo "Copying fips.go into _build."
+      cp ../fips.go ./_build
+      echo "Compiling binary."
+      goreleaser build --snapshot --clean
     fi
 
     popd > /dev/null || exit
