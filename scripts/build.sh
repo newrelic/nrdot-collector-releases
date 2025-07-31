@@ -4,10 +4,10 @@ REPO_DIR="$( cd "$(dirname "$( dirname "${BASH_SOURCE[0]}" )")" &> /dev/null && 
 BUILDER=''
 
 # default values
-skipcompilation=false
+skipcompilation=true
 validate=true
 
-while getopts d:s:b: flag
+while getopts d:s:b:f: flag
 do
     case "${flag}" in
         d) distributions=${OPTARG};;
@@ -48,6 +48,26 @@ do
         echo "🪵 Build logs for '${distribution}'"
         echo "----------------------"
         cat _build/build.log
+        echo "----------------------"
+        exit 1
+    fi
+
+    mkdir -p _build-fips
+
+    echo "Building: $distribution-fips"
+    echo "Using Builder: $(command -v "$BUILDER")"
+    echo "Using Go: $(command -v go)"
+
+    if "$BUILDER" --skip-compilation="${skipcompilation}" --config manifest-fips.yaml > _build-fips/build.log 2>&1; then
+        echo "Copying fips.go into _build-fips."
+        cp ../../fips/fips.go ./_build-fips
+        echo "Compiling binary."
+        echo "✅ SUCCESS: distribution '${distribution}-fips' built."
+    else
+        echo "❌ ERROR: failed to build the distribution '${distribution}-fips'."
+        echo "🪵 Build logs for '${distribution}-fips'"
+        echo "----------------------"
+        cat _build-fips/build.log
         echo "----------------------"
         exit 1
     fi

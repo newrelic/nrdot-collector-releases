@@ -5,6 +5,25 @@ release:
   use_existing_draft: true
   disable: "false"
 builds:
+  - id: nrdot-collector-host-fips
+    goos:
+      - linux
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ignore:
+      - goos: windows
+        goarch: arm64
+    dir: _build-fips
+    binary: nrdot-collector-host-fips
+    ldflags:
+      - -s
+      - -w
+    flags:
+      - -trimpath
+    env:
+      - CGO_ENABLED=1
   - id: nrdot-collector-host
     goos:
       - linux
@@ -25,6 +44,16 @@ builds:
     env:
       - CGO_ENABLED=0
 archives:
+  - id: nrdot-collector-host-fips
+    ids:
+      - nrdot-collector-host-fips
+    name_template: '{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}'
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
+    files:
+      - src: config.yaml
   - id: nrdot-collector-host
     ids:
       - nrdot-collector-host
@@ -81,6 +110,8 @@ dockers:
     goarch: amd64
     dockerfile: Dockerfile
     image_templates:
+      - '{{ .Env.REGISTRY }}/nrdot-collector-host-fips:{{ .Version }}-amd64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-host-fips:latest-amd64'
       - '{{ .Env.REGISTRY }}/nrdot-collector-host:{{ .Version }}-amd64'
       - '{{ .Env.REGISTRY }}/nrdot-collector-host:latest-amd64'
     extra_files:
@@ -99,6 +130,8 @@ dockers:
     goarch: arm64
     dockerfile: Dockerfile
     image_templates:
+      - '{{ .Env.REGISTRY }}/nrdot-collector-host-fips:{{ .Version }}-amd64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-host-fips:latest-amd64'
       - '{{ .Env.REGISTRY }}/nrdot-collector-host:{{ .Version }}-arm64'
       - '{{ .Env.REGISTRY }}/nrdot-collector-host:latest-arm64'
     extra_files:
@@ -114,6 +147,14 @@ dockers:
       - --label=org.opencontainers.image.licenses=Apache-2.0
     use: buildx
 docker_manifests:
+  - name_template: '{{ .Env.REGISTRY }}/nrdot-collector-host-fips:{{ .Version }}'
+    image_templates:
+      - '{{ .Env.REGISTRY }}/nrdot-collector-host-fips:{{ .Version }}-amd64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-host-fips:{{ .Version }}-arm64'
+  - name_template: '{{ .Env.REGISTRY }}/nrdot-collector-host-fips:latest'
+    image_templates:
+      - '{{ .Env.REGISTRY }}/nrdot-collector-host-fips:latest-amd64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-host-fips:latest-arm64'
   - name_template: '{{ .Env.REGISTRY }}/nrdot-collector-host:{{ .Version }}'
     image_templates:
       - '{{ .Env.REGISTRY }}/nrdot-collector-host:{{ .Version }}-amd64'
