@@ -1,9 +1,9 @@
-//go:build goexperiment.boringcrypto || goexperiment.cngcrypto
+//go:build goexperiment.boringcrypto
 
-package distributions
+package fips
 
 import (
-"log"
+	"log"
 
 "crypto/boring"
 _ "crypto/tls/fipsonly"
