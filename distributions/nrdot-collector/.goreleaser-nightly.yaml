@@ -67,7 +67,7 @@ nfpms:
     formats:
       - deb
       - rpm
-    maintainer: New Relic <caos-team@newrelic.com>
+    maintainer: New Relic <otelcomm-team@newrelic.com>
     description: NRDOT Collector - nrdot-collector
     license: Apache 2.0
 snapshot:
