@@ -230,7 +230,7 @@ func Package(dist string) config.NFPM {
 		Formats:     []string{"deb", "rpm"},
 		License:     "Apache 2.0",
 		Description: fmt.Sprintf("NRDOT Collector - %s", dist),
-		Maintainer:  "New Relic <caos-team@newrelic.com>",
+		Maintainer:  "New Relic <otelcomm-team@newrelic.com>",
 		Overrides: map[string]config.NFPMOverridables{
 			"rpm": {
 				Dependencies: []string{"/bin/sh"},

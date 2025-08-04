@@ -8,7 +8,6 @@ dist/
 .vscode
 ci/terraform/terraform.backend.tf
 inventory
-ci/terraform/caos.auto.tfvars
 # Local .terraform directories
 **/.terraform/
 # .tfstate files

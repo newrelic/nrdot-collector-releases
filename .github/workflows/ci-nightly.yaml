@@ -31,7 +31,6 @@ jobs:
       nr_backend_url: ${{ secrets.NR_STAGING_BACKEND_URL }}
       nr_ingest_key: ${{ secrets.OTELCOMM_NR_INGEST_KEY }}
       nr_account_id: ${{ secrets.OTELCOMM_NR_TEST_ACCOUNT_ID }}
-      nr_api_base_url: ${{ secrets.NR_STAGING_API_BASE_URL }}
       nr_api_key: ${{ secrets.OTELCOMM_NR_API_KEY }}
 
   publish:
