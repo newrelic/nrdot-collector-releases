@@ -4,14 +4,12 @@ REPO_DIR="$( cd "$(dirname "$( dirname "${BASH_SOURCE[0]}" )")" &> /dev/null && 
 BUILDER=''
 
 # default values
-skipcompilation=true
 validate=true
 
 while getopts d:s:b:f: flag
 do
     case "${flag}" in
         d) distributions=${OPTARG};;
-        s) skipcompilation=${OPTARG};;
         l) validate=${OPTARG};;
         b) BUILDER=${OPTARG};;
         *) exit 1;;
@@ -26,28 +24,27 @@ if [[ -z $distributions ]]; then
     exit 1
 fi
 
-if [[ "$skipcompilation" = true ]]; then
-    echo "Skipping the compilation, we'll only generate the sources."
-fi
-
-echo "Distributions to build: $distributions";
+echo "Skipping the compilation, we'll only generate the sources."
 
 for distribution in $(echo "$distributions" | tr "," "\n")
 do
     pushd "${REPO_DIR}/distributions/${distribution}" > /dev/null || exit
-    mkdir -p _build
+    mkdir -p _build-fips
 
-    echo "Building: $distribution"
+    echo "Building: $distribution-fips"
     echo "Using Builder: $(command -v "$BUILDER")"
     echo "Using Go: $(command -v go)"
 
-    if "$BUILDER" --skip-compilation="${skipcompilation}" --config manifest.yaml > _build/build.log 2>&1; then
-        echo "✅ SUCCESS: distribution '${distribution}' built."
+    if "$BUILDER" --skip-compilation="true" --config manifest-fips.yaml > _build-fips/build.log 2>&1; then
+        echo "Copying fips.go into _build-fips."
+        cp ../../fips/fips.go ./_build-fips
+        echo "Compiling binary."
+        echo "✅ SUCCESS: distribution '${distribution}-fips' built."
     else
-        echo "❌ ERROR: failed to build the distribution '${distribution}'."
-        echo "🪵 Build logs for '${distribution}'"
+        echo "❌ ERROR: failed to build the distribution '${distribution}-fips'."
+        echo "🪵 Build logs for '${distribution}-fips'"
         echo "----------------------"
-        cat _build/build.log
+        cat _build-fips/build.log
         echo "----------------------"
         exit 1
     fi

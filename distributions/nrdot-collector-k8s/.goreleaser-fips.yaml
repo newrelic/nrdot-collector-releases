@@ -5,14 +5,14 @@ release:
   use_existing_draft: true
   disable: "false"
 builds:
-  - id: nrdot-collector-k8s
+  - id: nrdot-collector-k8s-fips
     goos:
       - linux
     goarch:
 #      - amd64
       - arm64
-    dir: _build
-    binary: nrdot-collector-k8s
+    dir: _build-fips
+    binary: nrdot-collector-k8s-fips
     ldflags:
       - -s
       - -w
@@ -21,9 +21,9 @@ builds:
     env:
       - CGO_ENABLED=0
 archives:
-  - id: nrdot-collector-k8s
+  - id: nrdot-collector-k8s-fips
     ids:
-      - nrdot-collector-k8s
+      - nrdot-collector-k8s-fips
     name_template: '{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}'
     format_overrides:
       - goos: windows
@@ -40,8 +40,8 @@ dockers:
     goarch: amd64
     dockerfile: Dockerfile
     image_templates:
-      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:{{ .Version }}-amd64'
-      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:latest-amd64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s-fips:{{ .Version }}-amd64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s-fips:latest-amd64'
     build_flag_templates:
       - --pull
       - --platform=linux/amd64
@@ -56,8 +56,8 @@ dockers:
     goarch: arm64
     dockerfile: Dockerfile
     image_templates:
-      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:{{ .Version }}-arm64'
-      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:latest-arm64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s-fips:{{ .Version }}-arm64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s-fips:latest-arm64'
     build_flag_templates:
       - --pull
       - --platform=linux/arm64
@@ -69,14 +69,14 @@ dockers:
       - --label=org.opencontainers.image.licenses=Apache-2.0
     use: buildx
 docker_manifests:
-  - name_template: '{{ .Env.REGISTRY }}/nrdot-collector-k8s:{{ .Version }}'
+  - name_template: '{{ .Env.REGISTRY }}/nrdot-collector-k8s-fips:{{ .Version }}'
     image_templates:
-      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:{{ .Version }}-amd64'
-      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:{{ .Version }}-arm64'
-  - name_template: '{{ .Env.REGISTRY }}/nrdot-collector-k8s:latest'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s-fips:{{ .Version }}-amd64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s-fips:{{ .Version }}-arm64'
+  - name_template: '{{ .Env.REGISTRY }}/nrdot-collector-k8s-fips:latest'
     image_templates:
-      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:latest-amd64'
-      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:latest-arm64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s-fips:latest-amd64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s-fips:latest-arm64'
 changelog:
   disable: "true"
 signs:
