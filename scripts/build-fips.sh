@@ -1,7 +1,7 @@
 #!/bin/bash
 
 REPO_DIR="$( cd "$(dirname "$( dirname "${BASH_SOURCE[0]}" )")" &> /dev/null && pwd )"
-BUILDER=''
+DIRECTORY="_build"
 
 # default values
 validate=true
@@ -11,12 +11,9 @@ do
     case "${flag}" in
         d) distributions=${OPTARG};;
         l) validate=${OPTARG};;
-        b) BUILDER=${OPTARG};;
         *) exit 1;;
     esac
 done
-
-[[ -n "$BUILDER" ]] || BUILDER='ocb'
 
 if [[ -z $distributions ]]; then
     echo "List of distributions to build not provided. Use '-d' to specify the names of the distributions to build. Ex.:"
@@ -32,10 +29,11 @@ do
     mkdir -p _build-fips
 
     echo "Building: $distribution-fips"
-    echo "Using Builder: $(command -v "$BUILDER")"
-    echo "Using Go: $(command -v go)"
 
-    if "$BUILDER" --skip-compilation="true" --config manifest-fips.yaml > _build-fips/build.log 2>&1; then
+    if [ -d "$DIRECTORY" ]; then
+        echo "Copying _build into _build-fips."
+        cp -R _build/. ./_build-fips
+
         echo "Copying fips.go into _build-fips."
         cp ../../fips/fips.go ./_build-fips
         echo "Compiling binary."
