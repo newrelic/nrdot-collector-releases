@@ -1,7 +1,7 @@
 dist:
   module: github.com/newrelic/nrdot-collector-releases/nrdot-collector-host
-  name: nrdot-collector-host
-  description: NRDOT Collector Host
+  name: nrdot-collector-host-fips
+  description: NRDOT Collector Host FIPS
   version: 1.2.0
   output_path: ./_build-fips
 receivers:

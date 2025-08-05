@@ -31,6 +31,9 @@ const (
 	HostDistro = "nrdot-collector-host"
 	K8sDistro  = "nrdot-collector-k8s"
 
+	HostDistroFips = "nrdot-collector-host-fips"
+	K8sDistroFips  = "nrdot-collector-k8s-fips"
+
 	EnvRegistry = "{{ .Env.REGISTRY }}"
 
 	BinaryNamePrefix = "nrdot-collector"
@@ -42,13 +45,16 @@ var (
 	Architectures = []string{"amd64", "arm64"}
 	SkipBinaries  = map[string]bool{
 		K8sDistro: true,
+		K8sDistroFips: true,
 	}
 	NfpmDefaultConfig = map[string]string{
 		HostDistro: "config.yaml",
+		HostDistroFips: "config.yaml",
 		// k8s missing due to not packaged via nfpm
 	}
 	IncludedConfigs = map[string][]string{
 		HostDistro: {"config.yaml"},
+		HostDistroFips: {"config.yaml"},
 	}
 	K8sDockerSkipArchs = map[string]bool{"arm": true, "386": true}
 	K8sGoos            = []string{"linux"}
@@ -75,8 +81,8 @@ func Generate(dist string, nightly bool) config.Project {
 		Builds:          Builds(dist),
 		Archives:        Archives(dist),
 		NFPMs:           Packages(dist),
-		Dockers:         DockerImages(dist, nightly),
-		DockerManifests: DockerManifests(dist, nightly),
+		Dockers:         DockerImagesPerDistro(dist, nightly),
+		DockerManifests: DockerManifestsPerDistro(dist, nightly),
 		Signs:           Sign(),
 		Version:         2,
 		Changelog:       config.Changelog{Disable: "true"},
@@ -110,12 +116,19 @@ func Blobs(dist string, nightly bool) []config.Blob {
 			Bucket:    "nr-releases",
 			Directory: fmt.Sprintf("nrdot-collector-releases/%s/%s", dist, version),
 		},
+		{
+			Provider:  "s3",
+			Region:    "us-east-1",
+			Bucket:    "nr-releases",
+			Directory: fmt.Sprintf("nrdot-collector-releases/%s-fips/%s", dist, version),
+		},
 	}
 }
 
 func Builds(dist string) []config.Build {
 	return []config.Build{
 		Build(dist),
+		Build(fmt.Sprint(dist, "-fips")),
 	}
 }
 
@@ -125,9 +138,25 @@ func Build(dist string) config.Build {
 	goos := []string{"linux", "windows"}
 	archs := Architectures
 
-	if dist == K8sDistro {
+	if dist == K8sDistro || dist == K8sDistroFips {
 		goos = K8sGoos
 		archs = K8sArchs
+	}
+
+	if dist == K8sDistroFips || dist == HostDistroFips {
+		return config.Build{
+			ID:     dist,
+			Dir:    "_build-fips",
+			Binary: dist,
+			BuildDetails: config.BuildDetails{
+				Env:     []string{"CGO_ENABLED=1"},
+				Flags:   []string{"-trimpath"},
+				Ldflags: []string{"-s", "-w"},
+			},
+			Goos:   goos,
+			Goarch: archs,
+			Ignore: IgnoreBuildCombinations(dist),
+		}
 	}
 
 	return config.Build{
@@ -146,7 +175,7 @@ func Build(dist string) config.Build {
 }
 
 func IgnoreBuildCombinations(dist string) []config.IgnoredBuild {
-	if dist == K8sDistro {
+	if dist == K8sDistro || dist == K8sDistroFips {
 		return nil
 	}
 	return []config.IgnoredBuild{
@@ -155,7 +184,7 @@ func IgnoreBuildCombinations(dist string) []config.IgnoredBuild {
 }
 
 func ArmVersions(dist string) []string {
-	if dist == K8sDistro {
+	if dist == K8sDistro || dist == K8sDistroFips {
 		return nil
 	}
 	return []string{"7"}
@@ -164,6 +193,7 @@ func ArmVersions(dist string) []string {
 func Archives(dist string) []config.Archive {
 	return []config.Archive{
 		Archive(dist),
+		Archives(fmt.Sprint(dist, "-fips")),
 	}
 }
 
@@ -197,6 +227,7 @@ func Packages(dist string) []config.NFPM {
 	}
 	return []config.NFPM{
 		Package(dist),
+		Package(fmt.Sprint(dist, "-fips")),
 	}
 }
 
@@ -264,10 +295,17 @@ func Package(dist string) config.NFPM {
 	}
 }
 
-func DockerImages(dist string, nightly bool) []config.Docker {
+func DockerImagesPerDistro(dist string, nightly bool) []config.Docker {
+	return []config.Docker{
+		DockerImagePerArch(dist, nightly),
+		DockerImagePerArch(fmt.Sprint(dist, "-fips"), nightly),
+	}
+}
+
+func DockerImagePerArch(dist string, nightly bool) []config.Docker {
 	var r []config.Docker
 	for _, arch := range Architectures {
-		if dist == K8sDistro && K8sDockerSkipArchs[arch] {
+		if (dist == K8sDistro || dist == K8sDistroFips) && K8sDockerSkipArchs[arch] {
 			continue
 		}
 		switch arch {
@@ -337,7 +375,14 @@ func DockerImage(dist string, nightly bool, arch string, armVersion string) conf
 	}
 }
 
-func DockerManifests(dist string, nightly bool) []config.DockerManifest {
+func DockerManifestsPerDistro(dist string, nightly bool) []config.DockerManifest {
+	return []config.DockerManifest{
+		DockerManifestsPerPrefix(dist, nightly),
+		DockerManifestsPerPrefix(fmt.Sprint(dist, "-fips"), nightly),
+	}
+}
+
+func DockerManifestsPerPrefix(dist string, nightly bool) []config.DockerManifest {
 	r := make([]config.DockerManifest, 0)
 
 	imagePrefixes := ImagePrefixes
@@ -364,7 +409,7 @@ func DockerManifest(prefix, version, dist string, nightly bool) config.DockerMan
 	//}
 
 	for _, arch := range Architectures {
-		if dist == K8sDistro {
+		if dist == K8sDistro || dist == K8sDistroFips {
 			if _, ok := K8sDockerSkipArchs[arch]; ok {
 				continue
 			}
