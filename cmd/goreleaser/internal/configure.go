@@ -100,6 +100,13 @@ func Generate(dist string, nightly bool) config.Project {
 }
 
 func Blobs(dist string, nightly bool) []config.Blob {
+	return []config.Blob{
+		Blob(dist, nightly),
+		Blob(fmt.Sprint(dist, "-fips"), nightly),
+	}
+}
+
+func Blob(dist string, nightly bool) config.Blob {
 	if skip, ok := SkipBinaries[dist]; ok && skip {
 		return nil
 	}
@@ -109,26 +116,17 @@ func Blobs(dist string, nightly bool) []config.Blob {
 		version = "nightly"
 	}
 
-	return []config.Blob{
-		{
-			Provider:  "s3",
-			Region:    "us-east-1",
-			Bucket:    "nr-releases",
-			Directory: fmt.Sprintf("nrdot-collector-releases/%s/%s", dist, version),
-		},
-		{
-			Provider:  "s3",
-			Region:    "us-east-1",
-			Bucket:    "nr-releases",
-			Directory: fmt.Sprintf("nrdot-collector-releases/%s-fips/%s", dist, version),
-		},
+	return config.Blob{
+		Provider:  "s3",
+		Region:    "us-east-1",
+		Bucket:    "nr-releases",
+		Directory: fmt.Sprintf("nrdot-collector-releases/%s/%s", dist, version),
 	}
 }
 
 func Builds(dist string) []config.Build {
 	return []config.Build{
-		Build(dist),
-		Build(fmt.Sprint(dist, "-fips")),
+		append(Build(dist), Build(fmt.Sprint(dist, "-fips"))),
 	}
 }
 
@@ -193,7 +191,7 @@ func ArmVersions(dist string) []string {
 func Archives(dist string) []config.Archive {
 	return []config.Archive{
 		Archive(dist),
-		Archives(fmt.Sprint(dist, "-fips")),
+		Archive(fmt.Sprint(dist, "-fips")),
 	}
 }
 
@@ -297,8 +295,7 @@ func Package(dist string) config.NFPM {
 
 func DockerImagesPerDistro(dist string, nightly bool) []config.Docker {
 	return []config.Docker{
-		DockerImagePerArch(dist, nightly),
-		DockerImagePerArch(fmt.Sprint(dist, "-fips"), nightly),
+		append(DockerImagePerArch(dist, nightly), DockerImagePerArch(fmt.Sprint(dist, "-fips"), nightly)),
 	}
 }
 
@@ -377,8 +374,7 @@ func DockerImage(dist string, nightly bool, arch string, armVersion string) conf
 
 func DockerManifestsPerDistro(dist string, nightly bool) []config.DockerManifest {
 	return []config.DockerManifest{
-		DockerManifestsPerPrefix(dist, nightly),
-		DockerManifestsPerPrefix(fmt.Sprint(dist, "-fips"), nightly),
+		append(DockerManifestsPerPrefix(dist, nightly), DockerManifestsPerPrefix(fmt.Sprint(dist, "-fips"), nightly)),
 	}
 }
 
