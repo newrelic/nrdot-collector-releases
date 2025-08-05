@@ -3,10 +3,6 @@ whereClause:
     template: "WHERE var='{{ .var1 }}'"
     vars:
       - "var1"
-slow:
-  testCaseSpecs:
-    - "test1"
-    - "test2"
 nightly:
   ec2:
     enabled: true

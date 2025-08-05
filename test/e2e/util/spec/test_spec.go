@@ -14,11 +14,7 @@ type CollectorChart struct {
 }
 type TestSpec struct {
 	WhereClause map[string]RenderableTemplate `yaml:"whereClause"`
-	Slow        struct {
-		CollectorChart CollectorChart `yaml:"collectorChart"`
-		TestCaseSpecs  []string       `yaml:"testCaseSpecs"`
-	} `yaml:"slow"`
-	Nightly struct {
+	Nightly     struct {
 		EC2 struct {
 			Enabled bool `yaml:"enabled"`
 		} `yaml:"ec2"`
@@ -28,7 +24,7 @@ type TestSpec struct {
 
 func LoadTestSpec() *TestSpec {
 	distro := envutil.GetDistro()
-	testSpecFile := testutil.NewPathRelativeToRootDir("distributions/" + distro + "/test-spec.yaml")
+	testSpecFile := testutil.NewPathRelativeToRootDir("distributions/" + distro + "/test/spec-nightly.yaml")
 	testSpecData, err := os.ReadFile(testSpecFile)
 	if err != nil {
 		panic(fmt.Errorf("failed to read test spec file: %w", err))

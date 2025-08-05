@@ -1,0 +1,47 @@
+##### Example configuration for internal telemetry
+# This configuration is intended to be used in conjunction with a configuration of components and pipelines. The
+# collector supports config merging on startup.
+##### Configuration via environment variables
+# For valid values, see: https://opentelemetry.io/docs/collector/internal-telemetry/
+## Required
+# - INTERNAL_TELEMETRY_NEW_RELIC_LICENSE_KEY
+## Optional
+# - INTERNAL_TELEMETRY_SERVICE_NAME: determines entity name in New Relic
+# - INTERNAL_TELEMETRY_OTLP_ENDPOINT: defaults to https://otlp.nr-data.net (https://docs.newrelic.com/docs/opentelemetry/best-practices/opentelemetry-otlp/)
+# - INTERNAL_TELEMETRY_METRICS_LEVEL
+# - INTERNAL_TELEMETRY_LOG_LEVEL
+service:
+  telemetry:
+    metrics:
+      level: "${env:INTERNAL_TELEMETRY_METRICS_LEVEL:-detailed}"
+      readers:
+        - periodic:
+            exporter:
+              otlp:
+                protocol: http/protobuf
+                # https://docs.newrelic.com/docs/opentelemetry/best-practices/opentelemetry-otlp-troubleshooting/
+                endpoint: "${env:INTERNAL_TELEMETRY_OTLP_ENDPOINT:-https://otlp.nr-data.net}"
+                headers:
+                  api-key: "${env:INTERNAL_TELEMETRY_NEW_RELIC_LICENSE_KEY}"
+    logs:
+      level: "${env:INTERNAL_TELEMETRY_LOG_LEVEL:-INFO}"
+      processors:
+        - batch:
+            exporter:
+              otlp:
+                protocol: http/protobuf
+                endpoint: "${env:INTERNAL_TELEMETRY_OTLP_ENDPOINT:-https://otlp.nr-data.net}"
+                headers:
+                  api-key: "${env:INTERNAL_TELEMETRY_NEW_RELIC_LICENSE_KEY}"
+    traces:
+      processors:
+        - batch:
+            exporter:
+              otlp:
+                protocol: http/protobuf
+                endpoint: "${env:INTERNAL_TELEMETRY_OTLP_ENDPOINT:-https://otlp.nr-data.net}"
+                headers:
+                  api-key: "${env:INTERNAL_TELEMETRY_NEW_RELIC_LICENSE_KEY}"
+    resource:
+      newrelic.collector_telemetry.version: 0.1.0
+      service.name: "${env:INTERNAL_TELEMETRY_SERVICE_NAME:-otel-collector}"

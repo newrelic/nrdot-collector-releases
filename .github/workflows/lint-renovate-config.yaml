@@ -24,7 +24,7 @@ jobs:
           # info log shows what files and dep ach 'manager' matched
           INFO_LOG=$(LOG_LEVEL=info renovate --platform=local)
           # we currently expect exactly 1 file and 1 dep
-          if ! grep 'regex' <<< "${INFO_LOG}" | grep 'fileCount\": 1, \"depCount\": 1'; then
+          if ! grep 'regex' <<< "${INFO_LOG}" | grep 'fileCount\": 2, \"depCount\": 2'; then
             echo "renovate didn't match k8s test-spec"
             DEBUG_LOG=$(LOG_LEVEL=debug renovate --platform=local)
             echo "Debug log:\n${DEBUG_LOG}"
