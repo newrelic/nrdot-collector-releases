@@ -4,18 +4,11 @@ whereClause:
     template: "WHERE k8s.cluster.name='{{ .clusterName }}'"
     vars:
       - clusterName
-slow:
-  collectorChart:
-    # renovatebot (matched by regex - verify it still matches when modifying)
-    name: newrelic/nr-k8s-otel-collector
-    version: &k8s_chart_version 0.8.37
-  testCaseSpecs:
-    - k8s
-    - host
 nightly:
   collectorChart:
+    # renovatebot
     name: newrelic/nr-k8s-otel-collector
-    version: *k8s_chart_version
+    version: 0.8.39
   ec2:
     enabled: false
   testCaseSpecs:

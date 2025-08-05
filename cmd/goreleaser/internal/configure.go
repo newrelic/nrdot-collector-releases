@@ -30,6 +30,7 @@ const (
 
 	HostDistro = "nrdot-collector-host"
 	K8sDistro  = "nrdot-collector-k8s"
+	CoreDistro = "nrdot-collector"
 
 	HostDistroFips = "nrdot-collector-host-fips"
 	K8sDistroFips  = "nrdot-collector-k8s-fips"
@@ -50,11 +51,13 @@ var (
 	NfpmDefaultConfig = map[string]string{
 		HostDistro: "config.yaml",
 		HostDistroFips: "config.yaml",
+		CoreDistro: "config.yaml",
 		// k8s missing due to not packaged via nfpm
 	}
 	IncludedConfigs = map[string][]string{
 		HostDistro: {"config.yaml"},
 		HostDistroFips: {"config.yaml"},
+		CoreDistro: {"config.yaml"},
 	}
 	K8sDockerSkipArchs = map[string]bool{"arm": true, "386": true}
 	K8sGoos            = []string{"linux"}
@@ -258,7 +261,7 @@ func Package(dist string) config.NFPM {
 		Formats:     []string{"deb", "rpm"},
 		License:     "Apache 2.0",
 		Description: fmt.Sprintf("NRDOT Collector - %s", dist),
-		Maintainer:  "New Relic <caos-team@newrelic.com>",
+		Maintainer:  "New Relic <otelcomm-team@newrelic.com>",
 		Overrides: map[string]config.NFPMOverridables{
 			"rpm": {
 				Dependencies: []string{"/bin/sh"},

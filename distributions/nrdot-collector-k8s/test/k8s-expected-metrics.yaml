@@ -1,0 +1,9 @@
+entities:
+  - entityType: unused_placeholder
+    # One example metric from each deployed collector (daemonset and deployment)
+    # list of metrics: https://github.com/newrelic/helm-charts/tree/master/charts/nr-k8s-otel-collector/docs
+    metrics:
+      # deployment via prometheusreceiver
+      - name: apiserver_storage_objects
+      # daemonset via hostmetricsreceiver
+      - name: system.cpu.utilization

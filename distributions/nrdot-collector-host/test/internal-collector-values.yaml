@@ -1,0 +1,91 @@
+additionalLabels:
+  e2eTestLogSelector: nrdot-collector-host-e2e
+podLabels:
+  e2eTestLogSelector: nrdot-collector-host-e2e
+
+mode: daemonset
+
+configMap:
+  create: false
+  existingName: collector-config
+
+command:
+  extraArgs:
+    - --config=/etc/nrdot-collector-host/config.yaml
+    - '"--config=yaml:service::telemetry::resource::testKey: ${env:SCENARIO_TAG}"'
+    # configure liveliness probe according to chart's expectations
+    - '"--config=yaml:extensions::health_check::endpoint: ${env:MY_POD_IP}:13133"'
+    ### Modified OTLP pipelines to force production of missing metrics
+    # otelcol_processor_%: memory_limiter
+    - '"--config=yaml:service::pipelines::metrics: { receivers: [otlp], processors: [memory_limiter, batch/size_trigger], exporters: [otlp, otlp/enqueue_failure] }"'
+    - '"--config=yaml:service::pipelines::logs: { receivers: [otlp], processors: [memory_limiter, batch/size_trigger], exporters: [otlp, otlp/enqueue_failure] }"'
+    - '"--config=yaml:service::pipelines::traces: { receivers: [otlp], processors: [memory_limiter], exporters: [otlp, otlp/enqueue_failure] }"'
+    # otelcol_exporter_enqueue_failed_%
+    - '"--config=yaml:exporters::otlp/enqueue_failure: { endpoint: \"${env:INTERNAL_TELEMETRY_OTLP_ENDPOINT}:443\", headers: { api-key: \"${env:INTERNAL_TELEMETRY_NEW_RELIC_LICENSE_KEY}\" }, sending_queue: { queue_size: 1, num_consumers: 1, sizer: items } }"'
+    # rpc.client.%
+    - '"--config=yaml:exporters::otlp: { endpoint: \"${env:INTERNAL_TELEMETRY_OTLP_ENDPOINT}:443\", headers: { api-key: \"${env:INTERNAL_TELEMETRY_NEW_RELIC_LICENSE_KEY}\" } }"'
+    # otelcol_processor_batch_batch_size_trigger_send
+    - '"--config=yaml:processors::batch/size_trigger: {send_batch_size: 1, send_batch_max_size: 1}"'
+extraEnvs:
+  - name: OTEL_EXPORTER_OTLP_ENDPOINT
+    valueFrom:
+      secretKeyRef:
+        name: collector-secrets
+        key: nrBackendUrl
+  - name: INTERNAL_TELEMETRY_OTLP_ENDPOINT
+    valueFrom:
+      secretKeyRef:
+        name: collector-secrets
+        key: nrBackendUrl
+  - name: NEW_RELIC_LICENSE_KEY
+    valueFrom:
+      secretKeyRef:
+        name: collector-secrets
+        key: nrIngestKey
+  - name: INTERNAL_TELEMETRY_NEW_RELIC_LICENSE_KEY
+    valueFrom:
+      secretKeyRef:
+        name: collector-secrets
+        key: nrIngestKey
+  - name: INTERNAL_TELEMETRY_SERVICE_NAME
+    valueFrom:
+      secretKeyRef:
+        name: collector-secrets
+        key: serviceName
+  - name: SCENARIO_TAG
+    valueFrom:
+      secretKeyRef:
+        name: collector-secrets
+        key: scenarioTag
+extraContainers:
+  - name: telemetrygen-metrics
+    image: ghcr.io/open-telemetry/opentelemetry-collector-contrib/telemetrygen:v0.130.0
+    args:
+      - metrics
+      - --otlp-insecure
+      - --otlp-http
+      - "--otlp-endpoint=localhost:4318"
+      - "--otlp-attributes=service.name=\"telemetrygen-metrics\""
+      - --rate=10
+      - --duration=5m
+  - name: telemetrygen-logs
+    image: ghcr.io/open-telemetry/opentelemetry-collector-contrib/telemetrygen:v0.130.0
+    args:
+      - logs
+      - --otlp-insecure
+      # rpc.server.%
+      - "--otlp-endpoint=localhost:4317"
+      - "--otlp-attributes=service.name=\"telemetrygen-logs\""
+      - --rate=10
+      - --duration=5m
+      - "--body=\"short log\""
+  - name: telemetrygen-traces
+    image: ghcr.io/open-telemetry/opentelemetry-collector-contrib/telemetrygen:v0.130.0
+    args:
+      - traces
+      - --otlp-insecure
+      - --otlp-http
+      - "--otlp-endpoint=localhost:4318"
+      - "--otlp-attributes=service.name=\"telemetrygen-traces\""
+      - --rate=5
+      - --duration=5m
