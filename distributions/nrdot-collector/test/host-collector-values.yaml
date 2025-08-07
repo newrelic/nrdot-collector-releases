@@ -1,0 +1,34 @@
+additionalLabels:
+  e2eTestLogSelector: nrdot-collector-e2e
+podLabels:
+  e2eTestLogSelector: nrdot-collector-e2e
+
+mode: daemonset
+
+configMap:
+  create: false
+
+command:
+  extraArgs:
+    - --config=/etc/nrdot-collector/config.yaml
+    # configure liveliness probe according to chart's expectations
+    - '"--config=yaml:extensions::health_check::endpoint: ${env:MY_POD_IP}:13133"'
+
+extraEnvs:
+  - name: OTEL_EXPORTER_OTLP_ENDPOINT
+    valueFrom:
+      secretKeyRef:
+        name: collector-secrets
+        key: nrBackendUrl
+  - name: NEW_RELIC_LICENSE_KEY
+    valueFrom:
+      secretKeyRef:
+        name: collector-secrets
+        key: nrIngestKey
+  - name: SCENARIO_TAG
+    valueFrom:
+      secretKeyRef:
+        name: collector-secrets
+        key: scenarioTag
+  - name: OTEL_RESOURCE_ATTRIBUTES
+    value: "testKey=$(SCENARIO_TAG)"
