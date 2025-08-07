@@ -6,8 +6,6 @@ scenarios:
   - description: host telemetry
     before:
       - kubectl create ns nr-${SCENARIO_TAG}
-      - cp ../config-host.yaml ./relay
-      - kubectl create configmap 'collector-config' --from-file=relay --namespace=nr-${SCENARIO_TAG}
       - |
         kubectl create secret generic 'collector-secrets' --namespace=nr-${SCENARIO_TAG} \
         --from-literal="nrIngestKey=${LICENSE_KEY}" --from-literal="nrBackendUrl=${NR_BACKEND_URL}" \
