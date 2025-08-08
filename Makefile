@@ -22,6 +22,9 @@ ci: check build version-check licenses-check
 check: ensure-goreleaser-up-to-date
 
 build: go ocb
+	@./scripts/build.sh -d "${DISTRIBUTIONS}" -b ${OTELCOL_BUILDER} -s false -f false
+
+build-fips: go ocb
 	@./scripts/build.sh -d "${DISTRIBUTIONS}" -b ${OTELCOL_BUILDER}
 
 generate: generate-sources generate-goreleaser

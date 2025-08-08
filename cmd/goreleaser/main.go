@@ -25,6 +25,7 @@ import (
 
 var distFlag = flag.String("d", "", "Collector distributions to build")
 var nightlyFlag = flag.Bool("n", false, "Whether we're building a nightly config")
+var fipsFlag = flag.Bool("", false, "Whether we're building a FIPS compliant config")
 
 func main() {
 	flag.Parse()
@@ -35,7 +36,7 @@ func main() {
 
 	var project config.Project
 
-	project = internal.Generate(*distFlag, *nightlyFlag)
+	project = internal.Generate(*distFlag, *nightlyFlag, *fipsFlag)
 
 	e := yaml.NewEncoder(os.Stdout)
 	e.SetIndent(2)
