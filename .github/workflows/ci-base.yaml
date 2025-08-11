@@ -55,8 +55,20 @@ jobs:
       - name: Tidy go.mod files
         run: go mod tidy
 
-      - name: Verify build
+      - name: Cache sources
+        id: cache-sources
+        uses: actions/cache@v4
+        with:
+          path: distributions/${{ inputs.distribution }}/_build
+          key: "sources-${{ hashFiles('distributions/${{ inputs.distribution }}/manifest.yaml', 'Makefile') }}"
+
+      - name: Generate sources
+        if: steps.cache-sources.outputs.cache-hit != 'true'
         run: make ci DISTRIBUTIONS=${{ inputs.distribution }}
+
+      - name: Skip source generation (cached)
+        if: steps.cache-sources.outputs.cache-hit == 'true'
+        run: echo "✅ Source generation skipped - no source changes detected"
 
       - name: Login to Docker
         uses: docker/login-action@v3
@@ -92,14 +104,36 @@ jobs:
         run: |
           if [ ${{ inputs.nightly }} = "true" ]; then
             echo "goreleaser_args=--snapshot --clean --skip=publish,validate --timeout 2h --config .goreleaser-nightly.yaml" >> $GITHUB_ENV
-          elif [ ${{github.event.pull_request.user.login == 'dependabot[bot]' }} ]; then
-            echo "goreleaser_args=--snapshot --clean --skip=publish,validate,sign --timeout 2h" >> $GITHUB_ENV
           else
-            echo "goreleaser_args=--snapshot --clean --skip=publish,validate --timeout 2h" >> $GITHUB_ENV
+            echo "goreleaser_args=build --single-target --snapshot --clean" >> $GITHUB_ENV
           fi
+      
+      - name: Generate docker cache key
+        id: build-cache-keys
+        run: |
+          # Hash files that affect binary generation
+          BINARY_HASH="${{ hashFiles('distributions/${{ inputs.distribution }}/.goreleaser*.yaml', 'distributions/${{ inputs.distribution }}/_build/*') }}"
+          echo "binary_key=${{ inputs.distribution }}-${{ github.ref_name }}-${BINARY_HASH}" >> $GITHUB_OUTPUT
+          # Extended hash for Docker build (includes generated sources)
+          DOCKER_HASH="${{ hashFiles('distributions/${{ inputs.distribution }}/Dockerfile', 'distributions/${{ inputs.distribution }}/config*.yaml') }}"
+          echo "docker_key=${{ inputs.distribution }}-${{ github.ref_name }}-${DOCKER_HASH}-${BINARY_HASH}" >> $GITHUB_OUTPUT
+      
+      - name: Cache GoReleaser build
+        id: cache-goreleaser
+        if: ${{ !inputs.nightly }}
+        uses: actions/cache@v4
+        with:
+          path: |
+            distributions/${{ inputs.distribution }}/dist
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ steps.build-cache-keys.outputs.binary_key }}
+          restore-keys: |
+            goreleaser-build-${{ inputs.distribution }}-
 
       - name: Build binaries & packages with GoReleaser
         id: goreleaser
+        if: steps.cache-goreleaser.outputs.cache-hit != 'true'
         uses: goreleaser/goreleaser-action@v6
         env:
           NFPM_PASSPHRASE: ${{ secrets.gpg_passphrase }}
@@ -111,10 +145,29 @@ jobs:
           version: '~> v2'
           args: ${{ env.goreleaser_args }}
           workdir: distributions/${{ inputs.distribution }}
+      
+      - name: Skip GoReleaser build (cached)
+        if: steps.cache-goreleaser.outputs.cache-hit == 'true'
+        run: echo "✅ GoReleaser build skipped - using cached binaries"
 
-      - name: Extract relevant metadata
+      - name: Extract relevant metadata from GoReleaser output
         run: |
-          VERSION=$(echo '${{ steps.goreleaser.outputs.metadata }}' | jq -r '.version')
+          if [ "${{ steps.cache-goreleaser.outputs.cache-hit }}" = "true" ]; then            
+            # Try to find version from dist folder structure or metadata file
+            if [ -f "distributions/${{ inputs.distribution }}/dist/metadata.json" ]; then
+              VERSION=$(jq -r '.version' distributions/${{ inputs.distribution }}/dist/metadata.json)
+            else
+              # Fallback version
+              VERSION="cached-$(date +%Y%m%d-%H%M)"
+              echo "⚠️ Warning: No metadata found, using fallback version: $VERSION"
+            fi
+            
+            echo "Using cached version: $VERSION"
+          else
+            # Extract from fresh GoReleaser build
+            VERSION=$(echo '${{ steps.goreleaser.outputs.metadata }}' | jq -r '.version')
+            echo "Using fresh build version: $VERSION"
+          fi
           ARCH=$(echo '${{ runner.arch }}' | sed 's/X/amd/g')
           ARCH=${ARCH@L}
           echo "version=$VERSION" >> $GITHUB_ENV
@@ -124,6 +177,38 @@ jobs:
           else
             echo "image_tag=$VERSION-$ARCH" >> $GITHUB_ENV
           fi
+
+      - name: Copy GoReleaser binary to Docker context
+        if: ${{ !inputs.nightly }}
+        run: |
+          cd distributions/${{ inputs.distribution }}
+          BINARY_PATH="$(find dist -name "${{ inputs.distribution }}_linux_amd64*" -type d)/${{ inputs.distribution }}"
+          if [ ! -f "$BINARY_PATH" ]; then
+            echo "❌ Error: Binary not found at $BINARY_PATH"
+            find dist -name "*${{ inputs.distribution }}*" -type f
+            exit 1
+          fi
+          cp "$BINARY_PATH" ./${{ inputs.distribution }}
+          echo "✅ Binary copied: $(ls -la ./${{ inputs.distribution }})"
+      
+
+      - name: Build and load Docker image
+        uses: docker/build-push-action@v5
+        if: ${{ !inputs.nightly }}
+        with:
+          context: distributions/${{ inputs.distribution }}
+          platforms: linux/amd64
+          push: false
+          load: true
+          tags: |
+            ${{ secrets.registry }}/${{ inputs.distribution }}:${{ env.image_tag }}
+          cache-from: |
+            type=gha,scope=${{ steps.build-cache-keys.outputs.docker_key }}
+            type=gha,scope=${{ inputs.distribution }}-${{ github.ref_name }}
+            type=gha,scope=${{ inputs.distribution }}-main
+          cache-to: |
+            type=gha,mode=max,scope=${{ steps.build-cache-keys.outputs.docker_key }}
+            ${{ github.ref_name == 'main' && format('type=gha,mode=max,scope={0}-main', inputs.distribution) || format('type=gha,mode=max,scope={0}-{1}', inputs.distribution, github.ref_name) }}
 
       - name: Setup local kind cluster
         uses: helm/kind-action@v1
