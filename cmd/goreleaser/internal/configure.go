@@ -32,10 +32,6 @@ const (
 	K8sDistro  = "nrdot-collector-k8s"
 	CoreDistro = "nrdot-collector"
 
-	HostDistroFips = "nrdot-collector-host-fips"
-	K8sDistroFips  = "nrdot-collector-k8s-fips"
-	CoreDistroFips  = "nrdot-collector-fips"
-
 	EnvRegistry = "{{ .Env.REGISTRY }}"
 
 	BinaryNamePrefix = "nrdot-collector"
@@ -47,20 +43,15 @@ var (
 	Architectures = []string{"amd64", "arm64"}
 	SkipBinaries  = map[string]bool{
 		K8sDistro: true,
-		K8sDistroFips: true,
 	}
 	NfpmDefaultConfig = map[string]string{
 		HostDistro: "config.yaml",
-		HostDistroFips: "config.yaml",
 		CoreDistro: "config.yaml",
-		CoreDistroFips: "config.yaml",
 		// k8s missing due to not packaged via nfpm
 	}
 	IncludedConfigs = map[string][]string{
 		HostDistro: {"config.yaml"},
-		HostDistroFips: {"config.yaml"},
 		CoreDistro: {"config.yaml"},
-		CoreDistroFips: {"config.yaml"},
 	}
 	K8sDockerSkipArchs = map[string]bool{"arm": true, "386": true}
 	K8sGoos            = []string{"linux"}
@@ -110,20 +101,20 @@ func Blobs(dist string, nightly bool, fips bool) []config.Blob {
 		return nil
 	}
 
-	if fips {
-		dist = fmt.Sprint(dist, "-fips")
-	}
-
 	return []config.Blob{
-		Blob(dist, nightly),
+		Blob(dist, nightly, fips),
 	}
 }
 
-func Blob(dist string, nightly bool) config.Blob {
+func Blob(dist string, nightly bool, fips bool) config.Blob {
 	version := "{{ .Version }}"
 
 	if nightly {
 		version = "nightly"
+	}
+
+	if fips {
+		dist = fmt.Sprint(dist, "-fips")
 	}
 
 	return config.Blob{
@@ -135,59 +126,48 @@ func Blob(dist string, nightly bool) config.Blob {
 }
 
 func Builds(dist string, fips bool) []config.Build {
-	if fips {
-		dist = fmt.Sprint(dist, "-fips")
-	}
-
 	return []config.Build{
-		Build(dist),
+		Build(dist, fips),
 	}
 }
 
 // Build configures a goreleaser build.
 // https://goreleaser.com/customization/build/
-func Build(dist string) config.Build {
+func Build(dist string, fips bool) config.Build {
 	goos := []string{"linux", "windows"}
 	archs := Architectures
+	dir := "_build"
+	cgo := 0
+	ignoreBuild := IgnoreBuildCombinations(dist)
 
-	if dist == K8sDistro || dist == K8sDistroFips {
+	if dist == K8sDistro {
 		goos = K8sGoos
 		archs = K8sArchs
 	}
 
-	if dist == K8sDistroFips || dist == HostDistroFips {
-		return config.Build{
-			ID:     dist,
-			Dir:    "_build-fips",
-			Binary: dist,
-			BuildDetails: config.BuildDetails{
-				Env:     []string{"CGO_ENABLED=1"},
-				Flags:   []string{"-trimpath"},
-				Ldflags: []string{"-s", "-w"},
-			},
-			Goos:   goos,
-			Goarch: archs,
-			Ignore: IgnoreBuildCombinations(dist),
-		}
+	if fips {
+		dist = fmt.Sprint(dist, "-fips")
+		dir = fmt.Sprint(dir, "-fips")
+		cgo = 1
 	}
 
 	return config.Build{
 		ID:     dist,
-		Dir:    "_build",
+		Dir:    dir,
 		Binary: dist,
 		BuildDetails: config.BuildDetails{
-			Env:     []string{"CGO_ENABLED=0"},
+			Env:     []string{fmt.Sprint("CGO_ENABLED=", cgo)},
 			Flags:   []string{"-trimpath"},
 			Ldflags: []string{"-s", "-w"},
 		},
 		Goos:   goos,
 		Goarch: archs,
-		Ignore: IgnoreBuildCombinations(dist),
+		Ignore: ignoreBuild,
 	}
 }
 
 func IgnoreBuildCombinations(dist string) []config.IgnoredBuild {
-	if dist == K8sDistro || dist == K8sDistroFips {
+	if dist == K8sDistro {
 		return nil
 	}
 	return []config.IgnoredBuild{
@@ -196,25 +176,21 @@ func IgnoreBuildCombinations(dist string) []config.IgnoredBuild {
 }
 
 func ArmVersions(dist string) []string {
-	if dist == K8sDistro || dist == K8sDistroFips {
+	if dist == K8sDistro {
 		return nil
 	}
 	return []string{"7"}
 }
 
 func Archives(dist string, fips bool) []config.Archive {
-	if fips {
-		dist = fmt.Sprint(dist, "-fips")
-	}
-
 	return []config.Archive{
-		Archive(dist),
+		Archive(dist, fips),
 	}
 }
 
 // Archive configures a goreleaser archive (tarball).
 // https://goreleaser.com/customization/archive/
-func Archive(dist string) config.Archive {
+func Archive(dist string, fips bool) config.Archive {
 	files := make([]config.File, 0)
 	if configFiles, ok := IncludedConfigs[dist]; ok {
 		for _, configFile := range configFiles {
@@ -223,6 +199,11 @@ func Archive(dist string) config.Archive {
 			})
 		}
 	}
+
+	if fips {
+		dist = fmt.Sprint(dist, "-fips")
+	}
+
 	return config.Archive{
 		ID:           dist,
 		NameTemplate: "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}",
@@ -241,17 +222,20 @@ func Packages(dist string, fips bool) []config.NFPM {
 		return nil
 	}
 
-	if fips {
-		dist = fmt.Sprint(dist, "-fips")
-	}
 	return []config.NFPM{
-		Package(dist),
+		Package(dist, fips),
 	}
 }
 
 // Package configures goreleaser to build a system package.
 // https://goreleaser.com/customization/nfpm/
-func Package(dist string) config.NFPM {
+func Package(dist string, fips bool) config.NFPM {
+	defaultConfig, ok := NfpmDefaultConfig[dist]
+
+	if fips {
+		dist = fmt.Sprint(dist, "-fips")
+	}
+
 	nfpmContents := []config.NFPMContent{
 		{
 			Source:      fmt.Sprintf("%s.service", dist),
@@ -263,7 +247,7 @@ func Package(dist string) config.NFPM {
 			Type:        "config|noreplace",
 		},
 	}
-	if defaultConfig, ok := NfpmDefaultConfig[dist]; ok {
+	if ok {
 		nfpmContents = append(nfpmContents, config.NFPMContent{
 			Source:      defaultConfig,
 			Destination: path.Join("/etc", dist, "config.yaml"),
@@ -316,12 +300,8 @@ func Package(dist string) config.NFPM {
 func DockerImages(dist string, nightly bool, fips bool) []config.Docker {
 	var r []config.Docker
 
-	if fips {
-		dist = fmt.Sprint(dist, "-fips")
-	}
-
 	for _, arch := range Architectures {
-		if (dist == K8sDistro || dist == K8sDistroFips) && K8sDockerSkipArchs[arch] {
+		if dist == K8sDistro && K8sDockerSkipArchs[arch] {
 			continue
 		}
 		switch arch {
@@ -343,6 +323,7 @@ func DockerImage(dist string, nightly bool, arch string, armVersion string, fips
 	dockerArchName := archName(arch, armVersion)
 	imageTemplates := make([]string, 0)
 	dockerFile := "Dockerfile"
+	configFiles, ok := IncludedConfigs[dist]
 
 	imagePrefixes := ImagePrefixes
 	prefixFormat := "%s/%s:{{ .Version }}-%s"
@@ -354,7 +335,8 @@ func DockerImage(dist string, nightly bool, arch string, armVersion string, fips
 	}
 
 	if fips {
-		dockerFile = "Dockerfile-fips"
+		dist = fmt.Sprint(dist, "-fips")
+		dockerFile = fmt.Sprint(dist, "-fips")
 	}
 
 	for _, prefix := range imagePrefixes {
@@ -370,7 +352,7 @@ func DockerImage(dist string, nightly bool, arch string, armVersion string, fips
 		return fmt.Sprintf("--label=org.opencontainers.image.%s={{%s}}", name, template)
 	}
 	files := make([]string, 0)
-	if configFiles, ok := IncludedConfigs[dist]; ok {
+	if ok {
 		for _, configFile := range configFiles {
 			files = append(files, configFile)
 		}
@@ -402,16 +384,12 @@ func DockerManifests(dist string, nightly bool, fips bool) []config.DockerManife
 
 	imagePrefixes := ImagePrefixes
 
-	if fips {
-		dist = fmt.Sprint(dist, "-fips")
-	}
-
 	for _, prefix := range imagePrefixes {
 		if nightly {
-			r = append(r, DockerManifest(prefix, "nightly", dist, nightly))
+			r = append(r, DockerManifest(prefix, "nightly", dist, nightly, fips))
 		} else {
-			r = append(r, DockerManifest(prefix, `{{ .Version }}`, dist, nightly))
-			r = append(r, DockerManifest(prefix, "latest", dist, nightly))
+			r = append(r, DockerManifest(prefix, `{{ .Version }}`, dist, nightly, fips))
+			r = append(r, DockerManifest(prefix, "latest", dist, nightly, fips))
 		}
 	}
 
@@ -420,16 +398,21 @@ func DockerManifests(dist string, nightly bool, fips bool) []config.DockerManife
 
 // DockerManifest configures goreleaser to build a multi-arch container image manifest.
 // https://goreleaser.com/customization/docker_manifest/
-func DockerManifest(prefix, version, dist string, nightly bool) config.DockerManifest {
+func DockerManifest(prefix, version, dist string, nightly bool, fips bool) config.DockerManifest {
 	var imageTemplates []string
 	prefixFormat := "%s/%s:%s-%s"
+	k8sDistro := dist == K8sDistro
 
 	//if nightly {
 	//	prefixFormat = "%s/%s:%s-nightly-%s"
 	//}
 
+	if fips {
+		dist = fmt.Sprint(dist, "-fips")
+	}
+
 	for _, arch := range Architectures {
-		if dist == K8sDistro || dist == K8sDistroFips {
+		if k8sDistro {
 			if _, ok := K8sDockerSkipArchs[arch]; ok {
 				continue
 			}
