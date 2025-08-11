@@ -336,7 +336,6 @@ func DockerImage(dist string, nightly bool, arch string, armVersion string, fips
 
 	if fips {
 		dist = fmt.Sprint(dist, "-fips")
-		dockerFile = fmt.Sprint(dist, "-fips")
 	}
 
 	for _, prefix := range imagePrefixes {
@@ -371,6 +370,7 @@ func DockerImage(dist string, nightly bool, arch string, armVersion string, fips
 			label("version", ".Version"),
 			label("source", ".GitURL"),
 			"--label=org.opencontainers.image.licenses=Apache-2.0",
+			fmt.Sprint("--build-arg=DIST_NAME=", dist),
 		},
 		Files:  files,
 		Goos:   "linux",
