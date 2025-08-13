@@ -21,7 +21,7 @@ DISTRIBUTIONS ?= "nrdot-collector-host,nrdot-collector-k8s,nrdot-collector"
 ci: check build version-check licenses-check
 check: ensure-goreleaser-up-to-date
 
-build: go ocb
+build: build-fips
 	@./scripts/build.sh -d "${DISTRIBUTIONS}" -b ${OTELCOL_BUILDER} -f false
 
 build-fips: go ocb
