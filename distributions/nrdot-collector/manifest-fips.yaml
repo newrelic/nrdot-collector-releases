@@ -1,7 +1,7 @@
 dist:
   module: github.com/newrelic/nrdot-collector-releases/nrdot-collector
   name: nrdot-collector-fips
-  description: NRDOT Collector FIPS
+  description: NRDOT Collector-fips
   version: 1.2.0
   output_path: ./_build-fips
 receivers:

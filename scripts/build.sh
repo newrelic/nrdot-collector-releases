@@ -30,6 +30,10 @@ fi
 
 if [[ "$skipcompilation" = true ]]; then
     echo "Skipping the compilation, we'll only generate the sources."
+elif [[ "$fips" == true ]]; then
+    echo "❌ ERROR: FIPS requires skip compilation."
+    echo "Skip Compilation is false."
+    exit 1
 fi
 
 echo "Distributions to build: $distributions";
@@ -38,43 +42,38 @@ for distribution in $(echo "$distributions" | tr "," "\n")
 do
     pushd "${REPO_DIR}/distributions/${distribution}" > /dev/null || exit
 
+    manifest_file="manifest.yaml";
+    build_folder="_build"
+
     if [[ "$fips" == true ]]; then
-        mkdir -p _build-fips
+      yq eval '
+         .dist.name += "-fips" |
+         .dist.description += "-fips" |
+         .dist.output_path += "-fips"' manifest.yaml > manifest-fips.yaml
+      manifest_file="manifest-fips.yaml"
+      build_folder="_build-fips"
+    fi
 
-        echo "Building: $distribution-fips"
-        echo "Using Builder: $(command -v "$BUILDER")"
-        echo "Using Go: $(command -v go)"
+    mkdir -p $build_folder
 
-        if "$BUILDER" --skip-compilation="true" --config manifest-fips.yaml > _build-fips/build.log 2>&1; then
+    echo "Building: $distribution"
+    echo "Using Builder: $(command -v "$BUILDER")"
+    echo "Using Go: $(command -v go)"
+    echo "Using FIPS: ${fips}"
+
+    if "$BUILDER" --skip-compilation="${skipcompilation}" --config ${manifest_file} > ${build_folder}/build.log 2>&1; then
+        if [[ "$fips" == true ]]; then
             echo "Copying fips.go into _build-fips."
-            cp ../../fips/fips.go ./_build-fips
-            echo "Compiling binary."
-            echo "✅ SUCCESS: distribution '${distribution}-fips' built."
-        else
-            echo "❌ ERROR: failed to build the distribution '${distribution}-fips'."
-            echo "🪵 Build logs for '${distribution}-fips'"
-            echo "----------------------"
-            cat _build-fips/build.log
-            echo "----------------------"
-            exit 1
+            cp ../../fips/fips.go ./$build_folder
         fi
+        echo "✅ SUCCESS: distribution '${distribution}' built."
     else
-        mkdir -p _build
-
-        echo "Building: $distribution"
-        echo "Using Builder: $(command -v "$BUILDER")"
-        echo "Using Go: $(command -v go)"
-
-        if "$BUILDER" --skip-compilation="${skipcompilation}" --config manifest.yaml > _build/build.log 2>&1; then
-            echo "✅ SUCCESS: distribution '${distribution}' built."
-        else
-            echo "❌ ERROR: failed to build the distribution '${distribution}'."
-            echo "🪵 Build logs for '${distribution}'"
-            echo "----------------------"
-            cat _build/build.log
-            echo "----------------------"
-            exit 1
-        fi
+        echo "❌ ERROR: failed to build the distribution '${distribution}'."
+        echo "🪵 Build logs for '${distribution}'"
+        echo "----------------------"
+        cat $build_folder/build.log
+        echo "----------------------"
+        exit 1
     fi
 
     popd > /dev/null || exit

@@ -1,7 +1,7 @@
 dist:
   module: github.com/newrelic/nrdot-collector-releases/nrdot-collector-k8s
   name: nrdot-collector-k8s-fips
-  description: NRDOT Collector k8s FIPS
+  description: NRDOT Collector k8s-fips
   version: 1.2.0
   output_path: ./_build-fips
 receivers:
@@ -37,7 +37,6 @@ providers:
   - gomod: go.opentelemetry.io/collector/confmap/provider/httpprovider v1.34.0
   - gomod: go.opentelemetry.io/collector/confmap/provider/httpsprovider v1.34.0
   - gomod: go.opentelemetry.io/collector/confmap/provider/yamlprovider v1.34.0
-
 # When adding a replace, add a comment before it to document why it's needed and when it can be removed
 # replaces:
 ### Transitive deps determined via `go mod graph | grep $dep@$dep_replace_version`

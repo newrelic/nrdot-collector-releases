@@ -25,7 +25,7 @@ import (
 
 var distFlag = flag.String("d", "", "Collector distributions to build")
 var nightlyFlag = flag.Bool("n", false, "Whether we're building a nightly config")
-var fipsFlag = flag.Bool("", false, "Whether we're building a FIPS compliant config")
+var fipsFlag = flag.Bool("f", false, "Whether we're building a FIPS compliant config")
 
 func main() {
 	flag.Parse()

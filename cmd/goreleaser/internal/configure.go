@@ -138,9 +138,9 @@ func Build(dist string, fips bool) config.Build {
 	archs := Architectures
 	dir := "_build"
 	cgo := 0
-	ignoreBuild := IgnoreBuildCombinations(dist)
+	ignoreBuild := IgnoreBuildCombinations(dist, fips)
 
-	if dist == K8sDistro {
+	if dist == K8sDistro || fips {
 		goos = K8sGoos
 		archs = K8sArchs
 	}
@@ -166,8 +166,8 @@ func Build(dist string, fips bool) config.Build {
 	}
 }
 
-func IgnoreBuildCombinations(dist string) []config.IgnoredBuild {
-	if dist == K8sDistro {
+func IgnoreBuildCombinations(dist string, fips bool) []config.IgnoredBuild {
+	if dist == K8sDistro || fips {
 		return nil
 	}
 	return []config.IgnoredBuild{
@@ -175,8 +175,8 @@ func IgnoreBuildCombinations(dist string) []config.IgnoredBuild {
 	}
 }
 
-func ArmVersions(dist string) []string {
-	if dist == K8sDistro {
+func ArmVersions(dist string, fips bool) []string {
+	if dist == K8sDistro || fips {
 		return nil
 	}
 	return []string{"7"}
@@ -301,12 +301,12 @@ func DockerImages(dist string, nightly bool, fips bool) []config.Docker {
 	var r []config.Docker
 
 	for _, arch := range Architectures {
-		if dist == K8sDistro && K8sDockerSkipArchs[arch] {
+		if (dist == K8sDistro || fips) && K8sDockerSkipArchs[arch] {
 			continue
 		}
 		switch arch {
 		case ArmArch:
-			for _, vers := range ArmVersions(dist) {
+			for _, vers := range ArmVersions(dist, fips) {
 				r = append(r, DockerImage(dist, nightly, arch, vers, fips))
 			}
 		default:
@@ -412,14 +412,14 @@ func DockerManifest(prefix, version, dist string, nightly bool, fips bool) confi
 	}
 
 	for _, arch := range Architectures {
-		if k8sDistro {
+		if k8sDistro || fips {
 			if _, ok := K8sDockerSkipArchs[arch]; ok {
 				continue
 			}
 		}
 		switch arch {
 		case ArmArch:
-			for _, armVers := range ArmVersions(dist) {
+			for _, armVers := range ArmVersions(dist, fips) {
 				dockerArchTag := strings.ReplaceAll(archName(arch, armVers), "/", "")
 				imageTemplates = append(
 					imageTemplates,
