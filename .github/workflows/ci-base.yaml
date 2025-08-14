@@ -10,6 +10,10 @@ on:
         required: false
         type: boolean
         default: false
+      fips:
+        required: false
+        type: boolean
+        default: false
       test_cluster_name:
         required: false
         type: string
@@ -92,6 +96,8 @@ jobs:
         run: |
           if [ ${{ inputs.nightly }} = "true" ]; then
             echo "goreleaser_args=--snapshot --clean --skip=publish,validate --timeout 2h --config .goreleaser-nightly.yaml" >> $GITHUB_ENV
+          elif [ ${{ inputs.fips }} = "true" ]; then
+            echo "goreleaser_args=--snapshot --clean --skip=publish,validate --timeout 2h --config .goreleaser-fips.yaml" >> $GITHUB_ENV
           elif [ ${{github.event.pull_request.user.login == 'dependabot[bot]' }} ]; then
             echo "goreleaser_args=--snapshot --clean --skip=publish,validate,sign --timeout 2h" >> $GITHUB_ENV
           else
@@ -147,7 +153,7 @@ jobs:
           IMAGE_REPO: ${{ secrets.registry }}/${{ inputs.distribution}}
         with:
           retry_seconds: 15
-          retry_attempts: 20
+          retry_attempts: 100
           agent_enabled: false
           spec_path: distributions/${{ inputs.distribution}}/test/spec-local.yaml
           account_id: ${{ secrets.nr_account_id }}

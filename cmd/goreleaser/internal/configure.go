@@ -58,7 +58,7 @@ var (
 	K8sArchs           = []string{"amd64", "arm64"}
 )
 
-func Generate(dist string, nightly bool) config.Project {
+func Generate(dist string, nightly bool, fips bool) config.Project {
 
 	projectName := "nrdot-collector-releases"
 	disableRelease := "false"
@@ -75,18 +75,18 @@ func Generate(dist string, nightly bool) config.Project {
 			Split:        true,
 			Algorithm:    "sha256",
 		},
-		Builds:          Builds(dist),
-		Archives:        Archives(dist),
-		NFPMs:           Packages(dist),
-		Dockers:         DockerImages(dist, nightly),
-		DockerManifests: DockerManifests(dist, nightly),
+		Builds:          Builds(dist, fips),
+		Archives:        Archives(dist, fips),
+		NFPMs:           Packages(dist, fips),
+		Dockers:         DockerImages(dist, nightly, fips),
+		DockerManifests: DockerManifests(dist, nightly, fips),
 		Signs:           Sign(),
 		Version:         2,
 		Changelog:       config.Changelog{Disable: "true"},
 		Snapshot: config.Snapshot{
 			VersionTemplate: "{{ incpatch .Version }}-SNAPSHOT-{{.ShortCommit}}",
 		},
-		Blobs: Blobs(dist, nightly),
+		Blobs: Blobs(dist, nightly, fips),
 		Release: config.Release{
 			Disable:              disableRelease,
 			Draft:                true,
@@ -96,60 +96,78 @@ func Generate(dist string, nightly bool) config.Project {
 	}
 }
 
-func Blobs(dist string, nightly bool) []config.Blob {
+func Blobs(dist string, nightly bool, fips bool) []config.Blob {
 	if skip, ok := SkipBinaries[dist]; ok && skip {
 		return nil
 	}
+
+	return []config.Blob{
+		Blob(dist, nightly, fips),
+	}
+}
+
+func Blob(dist string, nightly bool, fips bool) config.Blob {
 	version := "{{ .Version }}"
 
 	if nightly {
 		version = "nightly"
 	}
 
-	return []config.Blob{
-		{
-			Provider:  "s3",
-			Region:    "us-east-1",
-			Bucket:    "nr-releases",
-			Directory: fmt.Sprintf("nrdot-collector-releases/%s/%s", dist, version),
-		},
+	if fips {
+		dist = fmt.Sprint(dist, "-fips")
+	}
+
+	return config.Blob{
+		Provider:  "s3",
+		Region:    "us-east-1",
+		Bucket:    "nr-releases",
+		Directory: fmt.Sprintf("nrdot-collector-releases/%s/%s", dist, version),
 	}
 }
 
-func Builds(dist string) []config.Build {
+func Builds(dist string, fips bool) []config.Build {
 	return []config.Build{
-		Build(dist),
+		Build(dist, fips),
 	}
 }
 
 // Build configures a goreleaser build.
 // https://goreleaser.com/customization/build/
-func Build(dist string) config.Build {
+func Build(dist string, fips bool) config.Build {
 	goos := []string{"linux", "windows"}
 	archs := Architectures
+	dir := "_build"
+	cgo := 0
+	ignoreBuild := IgnoreBuildCombinations(dist, fips)
 
-	if dist == K8sDistro {
+	if dist == K8sDistro || fips {
 		goos = K8sGoos
 		archs = K8sArchs
 	}
 
+	if fips {
+		dist = fmt.Sprint(dist, "-fips")
+		dir = fmt.Sprint(dir, "-fips")
+		cgo = 1
+	}
+
 	return config.Build{
 		ID:     dist,
-		Dir:    "_build",
+		Dir:    dir,
 		Binary: dist,
 		BuildDetails: config.BuildDetails{
-			Env:     []string{"CGO_ENABLED=0"},
+			Env:     []string{fmt.Sprint("CGO_ENABLED=", cgo)},
 			Flags:   []string{"-trimpath"},
 			Ldflags: []string{"-s", "-w"},
 		},
 		Goos:   goos,
 		Goarch: archs,
-		Ignore: IgnoreBuildCombinations(dist),
+		Ignore: ignoreBuild,
 	}
 }
 
-func IgnoreBuildCombinations(dist string) []config.IgnoredBuild {
-	if dist == K8sDistro {
+func IgnoreBuildCombinations(dist string, fips bool) []config.IgnoredBuild {
+	if dist == K8sDistro || fips {
 		return nil
 	}
 	return []config.IgnoredBuild{
@@ -157,22 +175,22 @@ func IgnoreBuildCombinations(dist string) []config.IgnoredBuild {
 	}
 }
 
-func ArmVersions(dist string) []string {
-	if dist == K8sDistro {
+func ArmVersions(dist string, fips bool) []string {
+	if dist == K8sDistro || fips {
 		return nil
 	}
 	return []string{"7"}
 }
 
-func Archives(dist string) []config.Archive {
+func Archives(dist string, fips bool) []config.Archive {
 	return []config.Archive{
-		Archive(dist),
+		Archive(dist, fips),
 	}
 }
 
 // Archive configures a goreleaser archive (tarball).
 // https://goreleaser.com/customization/archive/
-func Archive(dist string) config.Archive {
+func Archive(dist string, fips bool) config.Archive {
 	files := make([]config.File, 0)
 	if configFiles, ok := IncludedConfigs[dist]; ok {
 		for _, configFile := range configFiles {
@@ -181,6 +199,11 @@ func Archive(dist string) config.Archive {
 			})
 		}
 	}
+
+	if fips {
+		dist = fmt.Sprint(dist, "-fips")
+	}
+
 	return config.Archive{
 		ID:           dist,
 		NameTemplate: "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}",
@@ -194,18 +217,25 @@ func Archive(dist string) config.Archive {
 	}
 }
 
-func Packages(dist string) []config.NFPM {
+func Packages(dist string, fips bool) []config.NFPM {
 	if skip, ok := SkipBinaries[dist]; ok && skip {
 		return nil
 	}
+
 	return []config.NFPM{
-		Package(dist),
+		Package(dist, fips),
 	}
 }
 
 // Package configures goreleaser to build a system package.
 // https://goreleaser.com/customization/nfpm/
-func Package(dist string) config.NFPM {
+func Package(dist string, fips bool) config.NFPM {
+	defaultConfig, ok := NfpmDefaultConfig[dist]
+
+	if fips {
+		dist = fmt.Sprint(dist, "-fips")
+	}
+
 	nfpmContents := []config.NFPMContent{
 		{
 			Source:      fmt.Sprintf("%s.service", dist),
@@ -217,7 +247,7 @@ func Package(dist string) config.NFPM {
 			Type:        "config|noreplace",
 		},
 	}
-	if defaultConfig, ok := NfpmDefaultConfig[dist]; ok {
+	if ok {
 		nfpmContents = append(nfpmContents, config.NFPMContent{
 			Source:      defaultConfig,
 			Destination: path.Join("/etc", dist, "config.yaml"),
@@ -267,29 +297,33 @@ func Package(dist string) config.NFPM {
 	}
 }
 
-func DockerImages(dist string, nightly bool) []config.Docker {
+func DockerImages(dist string, nightly bool, fips bool) []config.Docker {
 	var r []config.Docker
+
 	for _, arch := range Architectures {
-		if dist == K8sDistro && K8sDockerSkipArchs[arch] {
+		if (dist == K8sDistro || fips) && K8sDockerSkipArchs[arch] {
 			continue
 		}
 		switch arch {
 		case ArmArch:
-			for _, vers := range ArmVersions(dist) {
-				r = append(r, DockerImage(dist, nightly, arch, vers))
+			for _, vers := range ArmVersions(dist, fips) {
+				r = append(r, DockerImage(dist, nightly, arch, vers, fips))
 			}
 		default:
-			r = append(r, DockerImage(dist, nightly, arch, ""))
+			r = append(r, DockerImage(dist, nightly, arch, "", fips))
 		}
 	}
+
 	return r
 }
 
 // DockerImage configures goreleaser to build a container image.
 // https://goreleaser.com/customization/docker/
-func DockerImage(dist string, nightly bool, arch string, armVersion string) config.Docker {
+func DockerImage(dist string, nightly bool, arch string, armVersion string, fips bool) config.Docker {
 	dockerArchName := archName(arch, armVersion)
 	imageTemplates := make([]string, 0)
+	dockerFile := "Dockerfile"
+	configFiles, ok := IncludedConfigs[dist]
 
 	imagePrefixes := ImagePrefixes
 	prefixFormat := "%s/%s:{{ .Version }}-%s"
@@ -298,6 +332,10 @@ func DockerImage(dist string, nightly bool, arch string, armVersion string) conf
 	if nightly {
 		prefixFormat = "%s/%s:{{ .Version }}-nightly-%s"
 		latestPrefixFormat = "%s/%s:nightly-%s"
+	}
+
+	if fips {
+		dist = fmt.Sprint(dist, "-fips")
 	}
 
 	for _, prefix := range imagePrefixes {
@@ -313,14 +351,14 @@ func DockerImage(dist string, nightly bool, arch string, armVersion string) conf
 		return fmt.Sprintf("--label=org.opencontainers.image.%s={{%s}}", name, template)
 	}
 	files := make([]string, 0)
-	if configFiles, ok := IncludedConfigs[dist]; ok {
+	if ok {
 		for _, configFile := range configFiles {
 			files = append(files, configFile)
 		}
 	}
 	return config.Docker{
 		ImageTemplates: imageTemplates,
-		Dockerfile:     "Dockerfile",
+		Dockerfile:     dockerFile,
 
 		Use: "buildx",
 		BuildFlagTemplates: []string{
@@ -332,6 +370,7 @@ func DockerImage(dist string, nightly bool, arch string, armVersion string) conf
 			label("version", ".Version"),
 			label("source", ".GitURL"),
 			"--label=org.opencontainers.image.licenses=Apache-2.0",
+			fmt.Sprint("--build-arg=DIST_NAME=", dist),
 		},
 		Files:  files,
 		Goos:   "linux",
@@ -340,41 +379,47 @@ func DockerImage(dist string, nightly bool, arch string, armVersion string) conf
 	}
 }
 
-func DockerManifests(dist string, nightly bool) []config.DockerManifest {
+func DockerManifests(dist string, nightly bool, fips bool) []config.DockerManifest {
 	r := make([]config.DockerManifest, 0)
 
 	imagePrefixes := ImagePrefixes
 
 	for _, prefix := range imagePrefixes {
 		if nightly {
-			r = append(r, DockerManifest(prefix, "nightly", dist, nightly))
+			r = append(r, DockerManifest(prefix, "nightly", dist, nightly, fips))
 		} else {
-			r = append(r, DockerManifest(prefix, `{{ .Version }}`, dist, nightly))
-			r = append(r, DockerManifest(prefix, "latest", dist, nightly))
+			r = append(r, DockerManifest(prefix, `{{ .Version }}`, dist, nightly, fips))
+			r = append(r, DockerManifest(prefix, "latest", dist, nightly, fips))
 		}
 	}
+
 	return r
 }
 
 // DockerManifest configures goreleaser to build a multi-arch container image manifest.
 // https://goreleaser.com/customization/docker_manifest/
-func DockerManifest(prefix, version, dist string, nightly bool) config.DockerManifest {
+func DockerManifest(prefix, version, dist string, nightly bool, fips bool) config.DockerManifest {
 	var imageTemplates []string
 	prefixFormat := "%s/%s:%s-%s"
+	k8sDistro := dist == K8sDistro
 
 	//if nightly {
 	//	prefixFormat = "%s/%s:%s-nightly-%s"
 	//}
 
+	if fips {
+		dist = fmt.Sprint(dist, "-fips")
+	}
+
 	for _, arch := range Architectures {
-		if dist == K8sDistro {
+		if k8sDistro || fips {
 			if _, ok := K8sDockerSkipArchs[arch]; ok {
 				continue
 			}
 		}
 		switch arch {
 		case ArmArch:
-			for _, armVers := range ArmVersions(dist) {
+			for _, armVers := range ArmVersions(dist, fips) {
 				dockerArchTag := strings.ReplaceAll(archName(arch, armVers), "/", "")
 				imageTemplates = append(
 					imageTemplates,
