@@ -8,6 +8,7 @@ Generated assets are available in the corresponding Github release page and as d
 
 Current list of distributions:
 
+- [nrdot-collector](./distributions/nrdot-collector/): comprehensive core distribution with full OTLP gateway capabilities, host monitoring, and Prometheus scraping.
 - [nrdot-collector-host](./distributions/nrdot-collector-host/): distribution focused on monitoring host metrics and logs
 - [nrdot-collector-k8s](./distributions/nrdot-collector-k8s/): distribution focused on monitoring a Kubernetes cluster
 
