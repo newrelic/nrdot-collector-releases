@@ -115,7 +115,7 @@ jobs:
         with:
           distribution: goreleaser
           version: '~> v2'
-          args: ${{ env.goreleaser_args }}
+          args: ${{ env.goreleaser_args }} --verbose
           workdir: distributions/${{ inputs.distribution }}
 
       - name: Extract relevant metadata

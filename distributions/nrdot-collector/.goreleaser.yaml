@@ -24,6 +24,7 @@ builds:
       - -trimpath
     env:
       - CGO_ENABLED=0
+      - GOEXPERIMENT=
 archives:
   - id: nrdot-collector
     ids:

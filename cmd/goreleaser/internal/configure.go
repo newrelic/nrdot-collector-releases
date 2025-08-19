@@ -56,6 +56,8 @@ var (
 	K8sDockerSkipArchs = map[string]bool{"arm": true, "386": true}
 	K8sGoos            = []string{"linux"}
 	K8sArchs           = []string{"amd64", "arm64"}
+	FipsLdflags		   = []string{"-w", "-linkmode external", "-extldflags '-static'"}
+	FipsGoTags		   = []string{"netgo"}
 )
 
 func Generate(dist string, nightly bool, fips bool) config.Project {
@@ -139,6 +141,9 @@ func Build(dist string, fips bool) config.Build {
 	dir := "_build"
 	cgo := 0
 	ignoreBuild := IgnoreBuildCombinations(dist, fips)
+	ldflags := []string{"-s", "-w"}
+	gotags := []string{}
+	goexperiment := ""
 
 	if dist == K8sDistro || fips {
 		goos = K8sGoos
@@ -149,6 +154,9 @@ func Build(dist string, fips bool) config.Build {
 		dist = fmt.Sprint(dist, "-fips")
 		dir = fmt.Sprint(dir, "-fips")
 		cgo = 1
+		ldflags = FipsLdflags
+		gotags = FipsGoTags
+		goexperiment = "boringcrypto"
 	}
 
 	return config.Build{
@@ -156,9 +164,10 @@ func Build(dist string, fips bool) config.Build {
 		Dir:    dir,
 		Binary: dist,
 		BuildDetails: config.BuildDetails{
-			Env:     []string{fmt.Sprint("CGO_ENABLED=", cgo)},
+			Env:     []string{fmt.Sprint("CGO_ENABLED=", cgo), fmt.Sprint("GOEXPERIMENT=", goexperiment)},
 			Flags:   []string{"-trimpath"},
-			Ldflags: []string{"-s", "-w"},
+			Ldflags: ldflags,
+			Tags: gotags,
 		},
 		Goos:   goos,
 		Goarch: archs,
@@ -192,6 +201,7 @@ func Archives(dist string, fips bool) []config.Archive {
 // https://goreleaser.com/customization/archive/
 func Archive(dist string, fips bool) config.Archive {
 	files := make([]config.File, 0)
+	goos := "windows"
 	if configFiles, ok := IncludedConfigs[dist]; ok {
 		for _, configFile := range configFiles {
 			files = append(files, config.File{
@@ -202,6 +212,7 @@ func Archive(dist string, fips bool) config.Archive {
 
 	if fips {
 		dist = fmt.Sprint(dist, "-fips")
+		goos = "linux"
 	}
 
 	return config.Archive{
@@ -211,7 +222,7 @@ func Archive(dist string, fips bool) config.Archive {
 		Files:        files,
 		FormatOverrides: []config.FormatOverride{
 			{
-				Goos: "windows", Formats: []string{"zip"},
+				Goos: goos, Formats: []string{"zip"},
 			},
 		},
 	}

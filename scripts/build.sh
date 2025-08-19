@@ -7,6 +7,7 @@ BUILDER=''
 skipcompilation=true
 validate=true
 fips=true
+cgo=0
 
 while getopts d:s:b:f: flag
 do
@@ -16,6 +17,7 @@ do
         l) validate=${OPTARG};;
         b) BUILDER=${OPTARG};;
         f) fips=${OPTARG};;
+        c) cgo=${OPTARG};;
         *) exit 1;;
     esac
 done
@@ -61,7 +63,7 @@ do
     echo "Using Go: $(command -v go)"
     echo "Using FIPS: ${fips}"
 
-    if "$BUILDER" --skip-compilation="${skipcompilation}" --config ${manifest_file} > ${build_folder}/build.log 2>&1; then
+    if CGO_ENABLED=$(cgo) "$BUILDER" --skip-compilation="${skipcompilation}" --config ${manifest_file} > ${build_folder}/build.log 2>&1; then
         if [[ "$fips" == true ]]; then
             echo "Copying fips.go into _build-fips."
             cp ../../fips/fips.go ./$build_folder
@@ -78,3 +80,5 @@ do
 
     popd > /dev/null || exit
 done
+
+make gobuilder

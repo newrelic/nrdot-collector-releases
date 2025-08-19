@@ -1,5 +1,13 @@
+include ./toolchains/Makefile
+
 GO ?= go
 GORELEASER ?= goreleaser
+GOTAGS ?=
+
+# We want to enforce go dns for all types of binaries. The FIPS binaries are built with CGO enabled and use
+# the CGO resolver. This has caused a DNS resolution error for .local domains in our K8s containers.
+# ref: https://pkg.go.dev/net#hdr-Name_Resolution
+GOTAGS := $(GOTAGS) netgo
 
 # SRC_ROOT is the top of the source tree.
 SRC_ROOT := $(shell git rev-parse --show-toplevel)
@@ -15,6 +23,7 @@ TOOLS_PKG_NAMES := $(shell grep -E $(TOOLS_MOD_REGEX) < $(TOOLS_MOD_DIR)/tools.g
 TOOLS_BIN_NAMES := $(addprefix $(TOOLS_BIN_DIR)/, $(notdir $(shell echo $(TOOLS_PKG_NAMES))))
 GO_LICENCE_DETECTOR        := $(TOOLS_BIN_DIR)/go-licence-detector
 GO_LICENCE_DETECTOR_CONFIG   := $(SRC_ROOT)/internal/assets/license/rules.json
+CGO := 0
 
 DISTRIBUTIONS ?= "nrdot-collector-host,nrdot-collector-k8s,nrdot-collector"
 
@@ -24,7 +33,8 @@ check: ensure-goreleaser-up-to-date
 build: build-fips
 	@./scripts/build.sh -d "${DISTRIBUTIONS}" -b ${OTELCOL_BUILDER} -f false
 
-build-fips: go ocb
+build-fips: docker-golang-cross-builder go
+	@$(MAKE) ocb CGO = 1
 	@./scripts/build.sh -d "${DISTRIBUTIONS}" -b ${OTELCOL_BUILDER}
 
 generate: generate-sources generate-goreleaser
@@ -56,7 +66,7 @@ ifeq (, $(shell command -v ocb 2>/dev/null))
 	[ "$${machine}" != x86_64 ] || machine=amd64 ;\
 	echo "Installing ocb ($${os}/$${machine}) at $(OTELCOL_BUILDER_DIR)";\
 	mkdir -p $(OTELCOL_BUILDER_DIR) ;\
-	CGO_ENABLED=0 go install -trimpath -ldflags="-s -w" go.opentelemetry.io/collector/cmd/builder@v$(OTELCOL_BUILDER_VERSION) ;\
+	CGO_ENABLED=$(CGO) go install -trimpath -ldflags="-s -w" go.opentelemetry.io/collector/cmd/builder@v$(OTELCOL_BUILDER_VERSION) ;\
 	mv $$(go env GOPATH)/bin/builder $(OTELCOL_BUILDER) ;\
 	}
 else
