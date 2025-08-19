@@ -9,7 +9,7 @@ validate=true
 fips=true
 cgo=0
 
-while getopts d:s:b:f: flag
+while getopts d:s:s:b:f:c: flag
 do
     case "${flag}" in
         d) distributions=${OPTARG};;
@@ -63,7 +63,7 @@ do
     echo "Using Go: $(command -v go)"
     echo "Using FIPS: ${fips}"
 
-    if CGO_ENABLED=$(cgo) "$BUILDER" --skip-compilation="${skipcompilation}" --config ${manifest_file} > ${build_folder}/build.log 2>&1; then
+    if CGO_ENABLED=${cgo} "$BUILDER" --skip-compilation="${skipcompilation}" --config ${manifest_file} > ${build_folder}/build.log 2>&1; then
         if [[ "$fips" == true ]]; then
             echo "Copying fips.go into _build-fips."
             cp ../../fips/fips.go ./$build_folder
@@ -81,4 +81,3 @@ do
     popd > /dev/null || exit
 done
 
-make gobuilder

@@ -56,8 +56,8 @@ var (
 	K8sDockerSkipArchs = map[string]bool{"arm": true, "386": true}
 	K8sGoos            = []string{"linux"}
 	K8sArchs           = []string{"amd64", "arm64"}
-	FipsLdflags		   = []string{"-w", "-linkmode external", "-extldflags '-static'"}
-	FipsGoTags		   = []string{"netgo"}
+	FipsLdflags        = []string{"-w", "-linkmode external", "-extldflags '-static'"}
+	FipsGoTags         = []string{"netgo"}
 )
 
 func Generate(dist string, nightly bool, fips bool) config.Project {
@@ -159,6 +159,33 @@ func Build(dist string, fips bool) config.Build {
 		goexperiment = "boringcrypto"
 	}
 
+	var buildDetailsOverrides []config.BuildDetailsOverride
+
+	cc := map[string]string{
+		"amd64": "x86_64-linux-gnu-gcc",
+		"arm64": "aarch64-linux-gnu-gcc",
+	}
+
+	cxx := map[string]string{
+		"amd64": "x86_64-linux-gnu-g++",
+		"arm64": "aarch64-linux-gnu-g++",
+	}
+
+	if fips {
+		for _, arch := range archs {
+			buildDetailsOverrides = append(buildDetailsOverrides, config.BuildDetailsOverride{
+				Goos:   goos[0],
+				Goarch: arch,
+				BuildDetails: config.BuildDetails{
+					Env: []string{
+						fmt.Sprint("CC=", cc[arch]),
+						fmt.Sprint("CXX=", cxx[arch]),
+					},
+				},
+			})
+		}
+	}
+
 	return config.Build{
 		ID:     dist,
 		Dir:    dir,
@@ -167,11 +194,12 @@ func Build(dist string, fips bool) config.Build {
 			Env:     []string{fmt.Sprint("CGO_ENABLED=", cgo), fmt.Sprint("GOEXPERIMENT=", goexperiment)},
 			Flags:   []string{"-trimpath"},
 			Ldflags: ldflags,
-			Tags: gotags,
+			Tags:    gotags,
 		},
-		Goos:   goos,
-		Goarch: archs,
-		Ignore: ignoreBuild,
+		BuildDetailsOverrides: buildDetailsOverrides,
+		Goos:                  goos,
+		Goarch:                archs,
+		Ignore:                ignoreBuild,
 	}
 }
 
