@@ -1,6 +1,6 @@
 //go:build goexperiment.boringcrypto
 
-package fips
+package main
 
 import (
 	"log"

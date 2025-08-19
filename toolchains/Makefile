@@ -37,8 +37,8 @@ toolchain-linux_amd64: musl-cross-make
 
 .PHONY: docker-golang-cross-builder
 docker-golang-cross-builder:
-	docker volume create $(DOCKER_CROSS_BUILDER_VOLUME)
-	docker build \
-		-t $(DOCKER_CROSS_BUILDER_NAME) \
-		-f $(TOOLCHAINS_DIR)/Dockerfile \
-		$(TOOLCHAINS_DIR)
+#	docker volume create $(DOCKER_CROSS_BUILDER_VOLUME)
+#	docker build \
+#		-t $(DOCKER_CROSS_BUILDER_NAME) \
+#		-f $(TOOLCHAINS_DIR)/Dockerfile \
+#		$(TOOLCHAINS_DIR)

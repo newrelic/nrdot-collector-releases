@@ -34,8 +34,8 @@ build: build-fips
 	@./scripts/build.sh -d "${DISTRIBUTIONS}" -b ${OTELCOL_BUILDER} -f false
 
 build-fips: docker-golang-cross-builder go
-	@$(MAKE) ocb CGO = 1
-	@./scripts/build.sh -d "${DISTRIBUTIONS}" -b ${OTELCOL_BUILDER}
+	@$(MAKE) ocb CGO=1
+	@./scripts/build.sh -d "${DISTRIBUTIONS}" -b ${OTELCOL_BUILDER} -c 1
 
 generate: generate-sources generate-goreleaser
 
