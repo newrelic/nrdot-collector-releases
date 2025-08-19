@@ -35,17 +35,3 @@ jobs:
       nr_ingest_key: ${{ secrets.OTELCOMM_NR_INGEST_KEY }}
       nr_account_id: ${{ secrets.OTELCOMM_NR_TEST_ACCOUNT_ID }}
       nr_api_key: ${{ secrets.OTELCOMM_NR_API_KEY }}
-
-  terraform:
-    uses: ./.github/workflows/terraform.yaml
-    if: ${{ !github.event.act && github.event.pull_request.user.login != 'dependabot[bot]' }}
-    with:
-      branch: ${{ github.ref }}
-      tf_work_subdir: permanent
-      execute_plan: true
-      # apply only after merge to main
-      execute_apply: ${{ github.ref_name == 'main' && github.event_name == 'push' }}
-    secrets:
-      aws_access_key_id: ${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCESS_KEY_ID }}
-      aws_secret_access_key: ${{secrets.OTELCOMM_AWS_TEST_ACC_SECRET_ACCESS_KEY}}
-      aws_account_id: ${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCOUNT_ID }}
