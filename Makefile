@@ -1,5 +1,3 @@
-include ./toolchains/Makefile
-
 GO ?= go
 GORELEASER ?= goreleaser
 GOTAGS ?=
@@ -33,7 +31,7 @@ check: ensure-goreleaser-up-to-date
 build: build-fips
 	@./scripts/build.sh -d "${DISTRIBUTIONS}" -b ${OTELCOL_BUILDER} -f false
 
-build-fips: docker-golang-cross-builder go
+build-fips: go
 	@$(MAKE) ocb CGO=1
 	@./scripts/build.sh -d "${DISTRIBUTIONS}" -b ${OTELCOL_BUILDER} -c 1
 
@@ -66,7 +64,7 @@ ifeq (, $(shell command -v ocb 2>/dev/null))
 	[ "$${machine}" != x86_64 ] || machine=amd64 ;\
 	echo "Installing ocb ($${os}/$${machine}) at $(OTELCOL_BUILDER_DIR)";\
 	mkdir -p $(OTELCOL_BUILDER_DIR) ;\
-	CGO_ENABLED=$(CGO) go install -trimpath -ldflags="-s -w" go.opentelemetry.io/collector/cmd/builder@v$(OTELCOL_BUILDER_VERSION) ;\
+	CGO_ENABLED=${CGO} go install -trimpath -ldflags="-s -w" go.opentelemetry.io/collector/cmd/builder@v$(OTELCOL_BUILDER_VERSION) ;\
 	mv $$(go env GOPATH)/bin/builder $(OTELCOL_BUILDER) ;\
 	}
 else

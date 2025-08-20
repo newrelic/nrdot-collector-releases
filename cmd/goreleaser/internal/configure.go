@@ -144,6 +144,7 @@ func Build(dist string, fips bool) config.Build {
 	ldflags := []string{"-s", "-w"}
 	gotags := []string{}
 	goexperiment := ""
+	overrides := []config.BuildDetailsOverride{}
 
 	if dist == K8sDistro || fips {
 		goos = K8sGoos
@@ -157,6 +158,28 @@ func Build(dist string, fips bool) config.Build {
 		ldflags = FipsLdflags
 		gotags = FipsGoTags
 		goexperiment = "boringcrypto"
+		overrides = []config.BuildDetailsOverride{
+			config.BuildDetailsOverride{
+				Goos: 			goos[0],
+				Goarch: 		archs[0],
+				BuildDetails: 	config.BuildDetails {
+					Env: []string{
+						"CC=x86_64-linux-gnu-gcc",
+						"CXX=x86_64-linux-gnu-g++",
+					},
+				},
+			},
+			config.BuildDetailsOverride{
+				Goos: 			goos[0],
+				Goarch: 		archs[1],
+				BuildDetails: 	config.BuildDetails {
+					Env: []string{
+						"CC=aarch64-linux-gnu-gcc",
+						"CXX=aarch64-linux-gnu-g++",
+					},
+				},
+			},
+		}
 	}
 
 	return config.Build{
@@ -172,6 +195,7 @@ func Build(dist string, fips bool) config.Build {
 		Goos:   goos,
 		Goarch: archs,
 		Ignore: ignoreBuild,
+		BuildDetailsOverrides: overrides,
 	}
 }
 
