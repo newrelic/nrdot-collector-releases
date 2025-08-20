@@ -92,8 +92,7 @@ dockers:
     goarch: amd64
     dockerfile: Dockerfile
     image_templates:
-      - '{{ .Env.REGISTRY }}/nrdot-collector-host-fips:{{ .Version }}-amd64'
-      - '{{ .Env.REGISTRY }}/nrdot-collector-host-fips:latest-amd64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-host:{{ .Version }}-fips-amd64'
     extra_files:
       - config.yaml
     build_flag_templates:
@@ -105,14 +104,13 @@ dockers:
       - --label=org.opencontainers.image.version={{.Version}}
       - --label=org.opencontainers.image.source={{.GitURL}}
       - --label=org.opencontainers.image.licenses=Apache-2.0
-      - --build-arg=DIST_NAME=nrdot-collector-host-fips
+      - --target=distro-fips
     use: buildx
   - goos: linux
     goarch: arm64
     dockerfile: Dockerfile
     image_templates:
-      - '{{ .Env.REGISTRY }}/nrdot-collector-host-fips:{{ .Version }}-arm64'
-      - '{{ .Env.REGISTRY }}/nrdot-collector-host-fips:latest-arm64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-host:{{ .Version }}-fips-arm64'
     extra_files:
       - config.yaml
     build_flag_templates:
@@ -124,17 +122,13 @@ dockers:
       - --label=org.opencontainers.image.version={{.Version}}
       - --label=org.opencontainers.image.source={{.GitURL}}
       - --label=org.opencontainers.image.licenses=Apache-2.0
-      - --build-arg=DIST_NAME=nrdot-collector-host-fips
+      - --target=distro-fips
     use: buildx
 docker_manifests:
-  - name_template: '{{ .Env.REGISTRY }}/nrdot-collector-host-fips:{{ .Version }}'
+  - name_template: '{{ .Env.REGISTRY }}/nrdot-collector-host:{{ .Version }}-fips'
     image_templates:
-      - '{{ .Env.REGISTRY }}/nrdot-collector-host-fips:{{ .Version }}-amd64'
-      - '{{ .Env.REGISTRY }}/nrdot-collector-host-fips:{{ .Version }}-arm64'
-  - name_template: '{{ .Env.REGISTRY }}/nrdot-collector-host-fips:latest'
-    image_templates:
-      - '{{ .Env.REGISTRY }}/nrdot-collector-host-fips:latest-amd64'
-      - '{{ .Env.REGISTRY }}/nrdot-collector-host-fips:latest-arm64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-host:{{ .Version }}-fips-amd64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-host:{{ .Version }}-fips-arm64'
 blobs:
   - bucket: nr-releases
     provider: s3
