@@ -131,6 +131,8 @@ jobs:
           echo "arch=$ARCH" >> $GITHUB_ENV
           if [ ${{ inputs.nightly }} = "true" ]; then
             echo "image_tag=$VERSION-nightly-$ARCH" >> $GITHUB_ENV
+          elif [ ${{ inputs.fips }} = "true" ]; then
+            echo "image_tag=$VERSION-fips-$ARCH" >> $GITHUB_ENV
           else
             echo "image_tag=$VERSION-$ARCH" >> $GITHUB_ENV
           fi

@@ -55,8 +55,7 @@ dockers:
     goarch: amd64
     dockerfile: Dockerfile
     image_templates:
-      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s-fips:{{ .Version }}-amd64'
-      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s-fips:latest-amd64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:{{ .Version }}-fips-amd64'
     build_flag_templates:
       - --pull
       - --platform=linux/amd64
@@ -72,8 +71,7 @@ dockers:
     goarch: arm64
     dockerfile: Dockerfile
     image_templates:
-      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s-fips:{{ .Version }}-arm64'
-      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s-fips:latest-arm64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:{{ .Version }}-fips-arm64'
     build_flag_templates:
       - --pull
       - --platform=linux/arm64
@@ -86,14 +84,10 @@ dockers:
       - --build-arg=DIST_NAME=nrdot-collector-k8s-fips
     use: buildx
 docker_manifests:
-  - name_template: '{{ .Env.REGISTRY }}/nrdot-collector-k8s-fips:{{ .Version }}'
+  - name_template: '{{ .Env.REGISTRY }}/nrdot-collector-k8s:{{ .Version }}-fips'
     image_templates:
-      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s-fips:{{ .Version }}-amd64'
-      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s-fips:{{ .Version }}-arm64'
-  - name_template: '{{ .Env.REGISTRY }}/nrdot-collector-k8s-fips:latest'
-    image_templates:
-      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s-fips:latest-amd64'
-      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s-fips:latest-arm64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:{{ .Version }}-fips-amd64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:{{ .Version }}-fips-arm64'
 changelog:
   disable: "true"
 signs:

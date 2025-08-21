@@ -374,7 +374,7 @@ func DockerImage(dist string, nightly bool, arch string, armVersion string, fips
 	}
 
 	if fips {
-		dist = fmt.Sprint(dist, "-fips")
+		prefixFormat = "%s/%s:{{ .Version }}-fips-%s"
 	}
 
 	for _, prefix := range imagePrefixes {
@@ -382,8 +382,14 @@ func DockerImage(dist string, nightly bool, arch string, armVersion string, fips
 		imageTemplates = append(
 			imageTemplates,
 			fmt.Sprintf(prefixFormat, prefix, imageName(dist), dockerArchTag),
-			fmt.Sprintf(latestPrefixFormat, prefix, imageName(dist), dockerArchTag),
 		)
+
+		if !fips {
+			imageTemplates = append(
+				imageTemplates,
+				fmt.Sprintf(latestPrefixFormat, prefix, imageName(dist), dockerArchTag),
+			)
+		}
 	}
 
 	label := func(name, template string) string {
@@ -395,6 +401,12 @@ func DockerImage(dist string, nightly bool, arch string, armVersion string, fips
 			files = append(files, configFile)
 		}
 	}
+
+	distName := dist
+	if fips {
+		distName = fmt.Sprintf("%s-fips", dist)
+	}
+
 	return config.Docker{
 		ImageTemplates: imageTemplates,
 		Dockerfile:     dockerFile,
@@ -409,7 +421,7 @@ func DockerImage(dist string, nightly bool, arch string, armVersion string, fips
 			label("version", ".Version"),
 			label("source", ".GitURL"),
 			"--label=org.opencontainers.image.licenses=Apache-2.0",
-			fmt.Sprint("--build-arg=DIST_NAME=", dist),
+			fmt.Sprint("--build-arg=DIST_NAME=", distName),
 		},
 		Files:  files,
 		Goos:   "linux",
@@ -428,7 +440,9 @@ func DockerManifests(dist string, nightly bool, fips bool) []config.DockerManife
 			r = append(r, DockerManifest(prefix, "nightly", dist, nightly, fips))
 		} else {
 			r = append(r, DockerManifest(prefix, `{{ .Version }}`, dist, nightly, fips))
-			r = append(r, DockerManifest(prefix, "latest", dist, nightly, fips))
+			if !fips {
+				r = append(r, DockerManifest(prefix, "latest", dist, nightly, fips))
+			}
 		}
 	}
 
@@ -440,6 +454,7 @@ func DockerManifests(dist string, nightly bool, fips bool) []config.DockerManife
 func DockerManifest(prefix, version, dist string, nightly bool, fips bool) config.DockerManifest {
 	var imageTemplates []string
 	prefixFormat := "%s/%s:%s-%s"
+	nameFormat := "%s/%s:%s"
 	k8sDistro := dist == K8sDistro
 
 	//if nightly {
@@ -447,7 +462,9 @@ func DockerManifest(prefix, version, dist string, nightly bool, fips bool) confi
 	//}
 
 	if fips {
-		dist = fmt.Sprint(dist, "-fips")
+		// dist = fmt.Sprint(dist, "-fips")
+		prefixFormat = "%s/%s:%s-fips-%s"
+		nameFormat = "%s/%s:%s-fips"
 	}
 
 	for _, arch := range Architectures {
@@ -474,7 +491,7 @@ func DockerManifest(prefix, version, dist string, nightly bool, fips bool) confi
 	}
 
 	return config.DockerManifest{
-		NameTemplate:   fmt.Sprintf("%s/%s:%s", prefix, imageName(dist), version),
+		NameTemplate:   fmt.Sprintf(nameFormat, prefix, imageName(dist), version),
 		ImageTemplates: imageTemplates,
 	}
 }
