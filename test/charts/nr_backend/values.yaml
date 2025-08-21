@@ -1,0 +1,14 @@
+image:
+  repository: newrelic/nrdot-collector-host
+  tag: latest
+  # Avoid accidentally pulling remote images in CI
+  pullPolicy: Never
+
+secrets:
+  nrBackendUrl: PLACEHOLDER
+  nrIngestKey: PLACEHOLDER
+
+collector:
+  hostname: nrdot-collector-default-hostname
+
+clusterName: default-cluster-name
