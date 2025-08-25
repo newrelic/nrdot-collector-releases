@@ -177,33 +177,6 @@ func Build(dist string, fips bool) config.Build {
 		}
 	}
 
-	var buildDetailsOverrides []config.BuildDetailsOverride
-
-	cc := map[string]string{
-		"amd64": "x86_64-linux-gnu-gcc",
-		"arm64": "aarch64-linux-gnu-gcc",
-	}
-
-	cxx := map[string]string{
-		"amd64": "x86_64-linux-gnu-g++",
-		"arm64": "aarch64-linux-gnu-g++",
-	}
-
-	if fips {
-		for _, arch := range archs {
-			buildDetailsOverrides = append(buildDetailsOverrides, config.BuildDetailsOverride{
-				Goos:   goos[0],
-				Goarch: arch,
-				BuildDetails: config.BuildDetails{
-					Env: []string{
-						fmt.Sprint("CC=", cc[arch]),
-						fmt.Sprint("CXX=", cxx[arch]),
-					},
-				},
-			})
-		}
-	}
-
 	return config.Build{
 		ID:     dist,
 		Dir:    dir,

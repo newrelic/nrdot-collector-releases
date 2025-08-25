@@ -5,25 +5,22 @@ release:
   use_existing_draft: true
   disable: "false"
 builds:
-  - id: nrdot-collector-host-fips
+  - id: nrdot-collector-host
     goos:
       - linux
     goarch:
       - amd64
       - arm64
-    dir: _build-fips
-    binary: nrdot-collector-host-fips
+    dir: _build
+    binary: nrdot-collector-host
     ldflags:
+      - -s
       - -w
-      - -linkmode external
-      - -extldflags '-static'
-    tags:
-      - netgo
     flags:
       - -trimpath
     env:
-      - CGO_ENABLED=1
-      - GOEXPERIMENT=boringcrypto
+      - CGO_ENABLED=0
+      - GOEXPERIMENT=
     overrides:
       - goos: linux
         goarch: amd64
