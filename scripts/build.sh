@@ -9,7 +9,8 @@ validate=true
 fips=true
 cgo=0
 
-while getopts d:s:s:b:f:c: flag
+while getopts d:s:l:b:f:c: flag
+
 do
     case "${flag}" in
         d) distributions=${OPTARG};;
@@ -80,4 +81,3 @@ do
 
     popd > /dev/null || exit
 done
-
