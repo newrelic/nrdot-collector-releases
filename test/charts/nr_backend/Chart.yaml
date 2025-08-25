@@ -1,0 +1,5 @@
+apiVersion: v2
+name: nrdot-nr-backend
+description: A Helm chart for deploying an nrdot collector as a DaemonSet writing to New Relic
+version: 0.2.0
+appVersion: "1.0"

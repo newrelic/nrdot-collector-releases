@@ -10,6 +10,7 @@ fips=true
 cgo=0
 
 while getopts d:s:l:b:f:c: flag
+
 do
     case "${flag}" in
         d) distributions=${OPTARG};;

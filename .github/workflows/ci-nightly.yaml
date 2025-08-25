@@ -6,6 +6,10 @@ on:
     # Scheduled to run in the morning (PT) on every day-of-week from Monday through Friday.
     - cron: '0 15 * * 1-5'
 
+concurrency:
+  group: ci-nightly
+  cancel-in-progress: false
+
 env:
   REGISTRY: '${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com'
 
@@ -15,6 +19,7 @@ jobs:
     strategy:
       matrix:
         distribution:
+          - nrdot-collector
           - nrdot-collector-host
           - nrdot-collector-k8s
     uses: ./.github/workflows/ci-base.yaml
@@ -40,6 +45,7 @@ jobs:
     strategy:
       matrix:
         distribution:
+          - nrdot-collector
           - nrdot-collector-host
           - nrdot-collector-k8s
     steps:
@@ -136,11 +142,9 @@ jobs:
     strategy:
       matrix:
         distribution:
+          - nrdot-collector
           - nrdot-collector-host
           - nrdot-collector-k8s
-    concurrency:
-      # concurrency limit of 1 b/c failed tf job cancelling each other causes tf state and locks to corrupt
-      group: deploy-nightly-terraform
     with:
       branch: ${{ github.ref }}
       tf_work_subdir: nightly
@@ -163,6 +167,7 @@ jobs:
     strategy:
       matrix:
         distribution:
+          - nrdot-collector
           - nrdot-collector-host
           - nrdot-collector-k8s
     steps:

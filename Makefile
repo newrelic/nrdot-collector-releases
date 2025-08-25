@@ -9,7 +9,7 @@ GOTAGS := $(GOTAGS) netgo
 
 # SRC_ROOT is the top of the source tree.
 SRC_ROOT := $(shell git rev-parse --show-toplevel)
-OTELCOL_BUILDER_VERSION ?= 0.128.0
+OTELCOL_BUILDER_VERSION ?= 0.132.0
 OTELCOL_BUILDER_DIR ?= ${HOME}/bin
 OTELCOL_BUILDER ?= ${OTELCOL_BUILDER_DIR}/ocb
 
@@ -33,7 +33,7 @@ build: build-fips
 
 build-fips: go
 	@$(MAKE) ocb CGO=1
-	@./scripts/build.sh -d "${DISTRIBUTIONS}" -b ${OTELCOL_BUILDER} -c 1
+	@./scripts/build.sh -d "${DISTRIBUTIONS}" -b ${OTELCOL_BUILDER}
 
 generate: generate-sources generate-goreleaser
 
