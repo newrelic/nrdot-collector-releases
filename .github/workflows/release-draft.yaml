@@ -38,6 +38,7 @@ jobs:
     strategy:
       matrix:
         distribution:
+          - nrdot-collector
           - nrdot-collector-host
           - nrdot-collector-k8s
     steps:
