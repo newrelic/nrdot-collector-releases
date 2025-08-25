@@ -144,41 +144,36 @@ func Build(dist string, fips bool) config.Build {
 	ldflags := []string{"-s", "-w"}
 	gotags := []string{}
 	goexperiment := ""
-	overrides := []config.BuildDetailsOverride{}
 
 	if dist == K8sDistro || fips {
 		goos = K8sGoos
 		archs = K8sArchs
 	}
 
+	var buildDetailsOverrides []config.BuildDetailsOverride
+
+	cc := map[string]string{
+		"amd64": "x86_64-linux-gnu-gcc",
+		"arm64": "aarch64-linux-gnu-gcc",
+	}
+
+	cxx := map[string]string{
+		"amd64": "x86_64-linux-gnu-g++",
+		"arm64": "aarch64-linux-gnu-g++",
+	}
+
 	if fips {
-		dist = fmt.Sprint(dist, "-fips")
-		dir = fmt.Sprint(dir, "-fips")
-		cgo = 1
-		ldflags = FipsLdflags
-		gotags = FipsGoTags
-		goexperiment = "boringcrypto"
-		overrides = []config.BuildDetailsOverride{
-			config.BuildDetailsOverride{
-				Goos: 			goos[0],
-				Goarch: 		archs[0],
-				BuildDetails: 	config.BuildDetails {
+		for _, arch := range archs {
+			buildDetailsOverrides = append(buildDetailsOverrides, config.BuildDetailsOverride{
+				Goos:   goos[0],
+				Goarch: arch,
+				BuildDetails: config.BuildDetails{
 					Env: []string{
-						"CC=x86_64-linux-gnu-gcc",
-						"CXX=x86_64-linux-gnu-g++",
+						fmt.Sprint("CC=", cc[arch]),
+						fmt.Sprint("CXX=", cxx[arch]),
 					},
 				},
-			},
-			config.BuildDetailsOverride{
-				Goos: 			goos[0],
-				Goarch: 		archs[1],
-				BuildDetails: 	config.BuildDetails {
-					Env: []string{
-						"CC=aarch64-linux-gnu-gcc",
-						"CXX=aarch64-linux-gnu-g++",
-					},
-				},
-			},
+			})
 		}
 	}
 
@@ -190,12 +185,12 @@ func Build(dist string, fips bool) config.Build {
 			Env:     []string{fmt.Sprint("CGO_ENABLED=", cgo), fmt.Sprint("GOEXPERIMENT=", goexperiment)},
 			Flags:   []string{"-trimpath"},
 			Ldflags: ldflags,
-			Tags: gotags,
+			Tags: 	gotags,
 		},
-		Goos:   goos,
-		Goarch: archs,
-		Ignore: ignoreBuild,
-		BuildDetailsOverrides: overrides,
+		BuildDetailsOverrides: buildDetailsOverrides,
+		Goos:                  goos,
+		Goarch:                archs,
+		Ignore:                ignoreBuild,
 	}
 }
 
