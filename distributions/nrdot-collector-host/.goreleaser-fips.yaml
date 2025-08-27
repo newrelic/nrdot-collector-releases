@@ -5,14 +5,14 @@ release:
   use_existing_draft: true
   disable: "false"
 builds:
-  - id: nrdot-collector-host
+  - id: nrdot-collector-host-fips
     goos:
       - linux
     goarch:
       - amd64
       - arm64
     dir: _build
-    binary: nrdot-collector-host
+    binary: nrdot-collector-host-fips
     ldflags:
       - -s
       - -w

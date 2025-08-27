@@ -5,14 +5,14 @@ release:
   use_existing_draft: true
   disable: "false"
 builds:
-  - id: nrdot-collector-k8s
+  - id: nrdot-collector-k8s-fips
     goos:
       - linux
     goarch:
       - amd64
       - arm64
     dir: _build
-    binary: nrdot-collector-k8s
+    binary: nrdot-collector-k8s-fips
     ldflags:
       - -s
       - -w

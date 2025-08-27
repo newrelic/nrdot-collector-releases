@@ -73,6 +73,14 @@ jobs:
       - name: Verify build
         run: make ci DISTRIBUTIONS=${{ inputs.distribution }}
 
+      - name: Login to Docker
+        uses: docker/login-action@v3
+        if: ${{ env.ACT }}
+        with:
+          registry: docker.io
+          username: ${{ secrets.docker_hub_username }}
+          password: ${{ secrets.docker_hub_password }}
+
       - uses: docker/setup-qemu-action@v2
 
       - uses: docker/setup-buildx-action@v2
