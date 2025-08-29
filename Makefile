@@ -43,6 +43,9 @@ generate-goreleaser: go
 generate-sources: go ocb
 	@./scripts/build.sh -d "${DISTRIBUTIONS}" -s true -b ${OTELCOL_BUILDER}
 
+generate-systemd: go
+	@./scripts/generate-systemd.sh -d "${DISTRIBUTIONS}" -g ${GO}
+
 goreleaser-verify: goreleaser
 	@${GORELEASER} release --snapshot --clean
 
