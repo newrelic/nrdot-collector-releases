@@ -1,5 +1,10 @@
 package main
 
+// This file is a script which generates .config and .service systemd files
+// for supported NRDOT Collector distributions.
+//
+// Run it with `make generate-systemd`.
+
 import (
 	"flag"
 	"fmt"
