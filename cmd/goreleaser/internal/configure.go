@@ -164,6 +164,8 @@ func Build(dist string, fips bool) config.Build {
 
 	if fips {
 		dist = fmt.Sprint(dist, "-fips")
+		cgo = 1
+		goexperiment = "boringcrypto"
 		for _, arch := range archs {
 			buildDetailsOverrides = append(buildDetailsOverrides, config.BuildDetailsOverride{
 				Goos:   goos[0],
