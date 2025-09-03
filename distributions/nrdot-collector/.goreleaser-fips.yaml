@@ -9,7 +9,7 @@ builds:
     goos:
       - linux
     goarch:
-#      - amd64
+      - amd64
       - arm64
     dir: _build
     binary: nrdot-collector-fips
