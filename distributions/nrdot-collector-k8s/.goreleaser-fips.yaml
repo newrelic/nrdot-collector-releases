@@ -11,11 +11,14 @@ builds:
     goarch:
       - amd64
       - arm64
-    dir: _build
+    dir: _build-fips
     binary: nrdot-collector-k8s-fips
     ldflags:
-      - -s
       - -w
+      - -linkmode external
+      - -extldflags '-static'
+    tags:
+      - netgo
     flags:
       - -trimpath
     env:
