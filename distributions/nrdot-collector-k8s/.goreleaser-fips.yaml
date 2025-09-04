@@ -11,7 +11,7 @@ builds:
     goarch:
       - amd64
       - arm64
-    dir: _build
+    dir: _build-fips
     binary: nrdot-collector-k8s-fips
     ldflags:
       - -w
