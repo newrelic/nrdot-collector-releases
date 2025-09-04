@@ -19,10 +19,9 @@ data "aws_ecr_repository" "ecr_repo" {
 }
 
 resource "helm_release" "ci_e2e_nightly_nr_backend" {
-  count   = local.chart_name == "nr_backend" ? 1 : 0
-  name    = "nightly-nr-backend-${var.distro}"
-  chart   = "../../charts/nr_backend"
-  version = local.chart_version
+  count = local.chart_name == "nr_backend" ? 1 : 0
+  name  = "nightly-nr-backend-${var.distro}"
+  chart = "../../charts/nr_backend"
 
   create_namespace  = true
   namespace         = local.k8s_namespace
@@ -54,7 +53,7 @@ resource "helm_release" "ci_e2e_nightly_nr_backend" {
   }
 
   set {
-    name  = "collector.hostname"
+    name  = "testKey"
     value = "${var.test_environment}-${random_string.deploy_id.result}-${var.distro}-k8s_node"
   }
 
