@@ -45,17 +45,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Install packages
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            gcc-aarch64-linux-gnu \
-            g++-aarch64-linux-gnu \
-            gcc-x86-64-linux-gnu \
-            g++-x86-64-linux-gnu \
-            libc6-dev-arm64-cross \
-            libc6-dev-amd64-cross
-
       - name: Checkout
         uses: actions/checkout@v4
         with:
