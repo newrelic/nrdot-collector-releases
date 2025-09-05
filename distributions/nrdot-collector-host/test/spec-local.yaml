@@ -190,6 +190,19 @@ scenarios:
         - source: "internal-expected-metrics.yaml"
       # Tests for existence of signal + specific attributes
       nrqls:
+        # Resource attributes (any signal would work)
+        - query: FROM Log SELECT filter(count(*), service.name is not null) as logs_service_name
+          expected_results:
+            - key: logs_service_name
+              lowerBoundedValue: 1
+        - query: FROM Log SELECT filter(count(*), newrelic.collector_telemetry.version is not null) as logs_telemetry_version
+          expected_results:
+            - key: logs_telemetry_version
+              lowerBoundedValue: 1
+        - query: FROM Log SELECT filter(count(*), newrelic.service.type='otel_collector') as logs_service_type
+          expected_results:
+            - key: logs_service_type
+              lowerBoundedValue: 1
         # Logs
         - query: FROM Log SELECT count(*) as logs_all
           expected_results:
