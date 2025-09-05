@@ -5,32 +5,32 @@ dist:
   version: 1.3.0
   output_path: ./_build
 receivers:
-  - gomod: go.opentelemetry.io/collector/receiver/otlpreceiver v0.132.0
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/filelogreceiver v0.132.0
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/hostmetricsreceiver v0.132.0
+  - gomod: go.opentelemetry.io/collector/receiver/otlpreceiver v0.134.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/filelogreceiver v0.134.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/hostmetricsreceiver v0.134.0
 processors:
-  - gomod: go.opentelemetry.io/collector/processor/batchprocessor v0.132.0
-  - gomod: go.opentelemetry.io/collector/processor/memorylimiterprocessor v0.132.0
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/attributesprocessor v0.132.0
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/cumulativetodeltaprocessor v0.132.0
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/filterprocessor v0.132.0
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/metricstransformprocessor v0.132.0
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/resourcedetectionprocessor v0.132.0
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/transformprocessor v0.132.0
+  - gomod: go.opentelemetry.io/collector/processor/batchprocessor v0.134.0
+  - gomod: go.opentelemetry.io/collector/processor/memorylimiterprocessor v0.134.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/attributesprocessor v0.134.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/cumulativetodeltaprocessor v0.134.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/filterprocessor v0.134.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/metricstransformprocessor v0.134.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/resourcedetectionprocessor v0.134.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/transformprocessor v0.134.0
 exporters:
-  - gomod: go.opentelemetry.io/collector/exporter/debugexporter v0.132.0
-  - gomod: go.opentelemetry.io/collector/exporter/otlpexporter v0.132.0
-  - gomod: go.opentelemetry.io/collector/exporter/otlphttpexporter v0.132.0
+  - gomod: go.opentelemetry.io/collector/exporter/debugexporter v0.134.0
+  - gomod: go.opentelemetry.io/collector/exporter/otlpexporter v0.134.0
+  - gomod: go.opentelemetry.io/collector/exporter/otlphttpexporter v0.134.0
 connectors:
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/connector/routingconnector v0.132.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/connector/routingconnector v0.134.0
 extensions:
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/extension/healthcheckextension v0.132.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/extension/healthcheckextension v0.134.0
 providers:
-  - gomod: go.opentelemetry.io/collector/confmap/provider/envprovider v1.38.0
-  - gomod: go.opentelemetry.io/collector/confmap/provider/fileprovider v1.38.0
-  - gomod: go.opentelemetry.io/collector/confmap/provider/httpprovider v1.38.0
-  - gomod: go.opentelemetry.io/collector/confmap/provider/httpsprovider v1.38.0
-  - gomod: go.opentelemetry.io/collector/confmap/provider/yamlprovider v1.38.0
+  - gomod: go.opentelemetry.io/collector/confmap/provider/envprovider v1.40.0
+  - gomod: go.opentelemetry.io/collector/confmap/provider/fileprovider v1.40.0
+  - gomod: go.opentelemetry.io/collector/confmap/provider/httpprovider v1.40.0
+  - gomod: go.opentelemetry.io/collector/confmap/provider/httpsprovider v1.40.0
+  - gomod: go.opentelemetry.io/collector/confmap/provider/yamlprovider v1.40.0
 
 # When adding a replace, add a comment before it to document why it's needed and when it can be removed
 # replaces:
