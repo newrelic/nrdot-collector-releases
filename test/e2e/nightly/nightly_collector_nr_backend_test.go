@@ -59,7 +59,7 @@ func TestNightlyCollectorWithNrBackend(t *testing.T) {
 						"2 hour ago",
 					)
 					assertion := assertionFactory.NewNrMetricAssertion(testCase.Metric, testCase.Assertions)
-					assertion.ExecuteWithRetries(t, client, 24, 5*time.Second)
+					assertion.ExecuteWithRetries(t, client, 50, 10*time.Second)
 				})
 			}
 		}
