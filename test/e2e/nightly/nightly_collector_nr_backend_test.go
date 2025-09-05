@@ -12,19 +12,19 @@ import (
 )
 
 var ec2Ubuntu22 = spec.NightlySystemUnderTest{
-	HostNamePattern: testutil.NewNrQueryHostNamePattern("nightly", testutil.Wildcard, "ec2_ubuntu22_04"),
+	TestKeyPattern: testutil.NewNrQueryHostNamePattern("nightly", testutil.Wildcard, "ec2_ubuntu22_04"),
 	SkipIf: func(testSpec *spec.TestSpec) bool {
 		return !testSpec.Nightly.EC2.Enabled
 	},
 }
 var ec2Ubuntu24 = spec.NightlySystemUnderTest{
-	HostNamePattern: testutil.NewNrQueryHostNamePattern("nightly", testutil.Wildcard, "ec2_ubuntu24_04"),
+	TestKeyPattern: testutil.NewNrQueryHostNamePattern("nightly", testutil.Wildcard, "ec2_ubuntu24_04"),
 	SkipIf: func(testSpec *spec.TestSpec) bool {
 		return !testSpec.Nightly.EC2.Enabled
 	},
 }
 var k8sNode = spec.NightlySystemUnderTest{
-	HostNamePattern: testutil.NewNrQueryHostNamePattern("nightly", testutil.Wildcard, "k8s_node"),
+	TestKeyPattern: testutil.NewNrQueryHostNamePattern("nightly", testutil.Wildcard, "k8s_node"),
 }
 
 func TestNightlyCollectorWithNrBackend(t *testing.T) {
@@ -35,12 +35,12 @@ func TestNightlyCollectorWithNrBackend(t *testing.T) {
 
 	for _, sut := range []spec.NightlySystemUnderTest{ec2Ubuntu22, ec2Ubuntu24, k8sNode} {
 		if sut.SkipIf != nil && sut.SkipIf(testSpec) {
-			t.Logf("Skipping nightly system-under-test: %s", sut.HostNamePattern)
+			t.Logf("Skipping nightly system-under-test: %s", sut.TestKeyPattern)
 			continue
 		}
 		testEnvironment := map[string]string{
 			"clusterName": envutil.GetK8sContextName(),
-			"hostName":    sut.HostNamePattern,
+			"testKey":     sut.TestKeyPattern,
 		}
 		for _, testCaseSpecName := range testSpec.Nightly.TestCaseSpecs {
 			testCaseSpec := spec.LoadTestCaseSpec(testCaseSpecName)
@@ -52,7 +52,7 @@ func TestNightlyCollectorWithNrBackend(t *testing.T) {
 
 			whereClause := testCaseSpec.RenderWhereClause(testEnvironment)
 			for caseName, testCase := range testCaseSpec.GetTestCasesWithout(sut.ExcludedMetrics) {
-				t.Run(fmt.Sprintf("%s/%s/%s", sut.HostNamePattern, testCaseSpecName, caseName), func(t *testing.T) {
+				t.Run(fmt.Sprintf("%s/%s/%s", sut.TestKeyPattern, testCaseSpecName, caseName), func(t *testing.T) {
 					t.Parallel()
 					assertionFactory := assert.NewNrMetricAssertionFactory(
 						whereClause,

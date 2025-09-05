@@ -1,7 +1,7 @@
 whereClause:
-  template: "WHERE host.name like '{{ .hostName }}'"
+  template: "WHERE testKey like '{{ .testKey }}'"
   vars:
-    - hostName
+    - testKey
 
 testCases:
   host_receiver_cpu.utilization_user:
