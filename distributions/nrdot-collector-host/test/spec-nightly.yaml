@@ -5,3 +5,4 @@ nightly:
     enabled: true
   testCaseSpecs:
     - host
+    - resourcedetection
