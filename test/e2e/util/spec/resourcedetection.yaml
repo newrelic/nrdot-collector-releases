@@ -1,0 +1,15 @@
+whereClause:
+  template: "WHERE testKey like '{{ .testKey }}'"
+  vars:
+    - testKey
+
+testCases:
+  resourcedetection/cloud.ec2_host_name:
+    metric:
+      # any metric processed by resourcedetection works
+      name: system.cpu.utilization
+      whereClause: WHERE host.name like 'ip-%'
+    assertions:
+      - aggregationFunction: max
+        comparisonOperator: ">"
+        threshold: 0
