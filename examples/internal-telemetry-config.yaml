@@ -64,5 +64,6 @@ service:
                   - name: api-key
                     value: "${env:INTERNAL_TELEMETRY_NEW_RELIC_LICENSE_KEY}"
     resource:
-      newrelic.collector_telemetry.version: 0.2.0
+      newrelic.collector_telemetry.version: 0.3.0
+      newrelic.service.type: otel_collector
       service.name: "${env:INTERNAL_TELEMETRY_SERVICE_NAME:-otel-collector}"
