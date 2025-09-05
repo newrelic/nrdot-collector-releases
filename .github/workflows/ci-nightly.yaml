@@ -119,7 +119,7 @@ jobs:
           REGISTRY: ${{ env.REGISTRY }}
         with:
           distribution: goreleaser
-          version: '~> v2'
+          version: '2.11.2'
           args: --skip=announce,validate --clean --timeout 2h --config .goreleaser-nightly.yaml
           workdir: distributions/${{ matrix.distribution }}
       - name: Extract Docker Manifest SHA
