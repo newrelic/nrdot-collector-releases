@@ -158,6 +158,22 @@ jobs:
 
       - uses: azure/setup-helm@v4.2.0
 
+      - name: Validate Usage of BoringCrypto
+        if: inputs.fips == true
+        run: |
+          ARCH=$(echo '${{ runner.arch }}' | sed 's/X/amd/g')
+          ARCH=${ARCH@L}
+          OS=$(echo '${{ runner.os }}')
+          OS=${OS@L}
+          printf -v BINARY_PATTERN "%s-fips_%s_%s*" "${{ inputs.distribution }}" "${OS}" "${ARCH}"
+          echo "Looking for binary pattern: ${BINARY_PATTERN}"
+          BINARY=$(ls ${BINARY_PATTERN} 2>/dev/null | head -1)
+          if [[ -z "${BINARY}" ]]; then
+            echo "Error"
+            exit 1
+          fi
+          go tool nm ${BINARY} | grep '_Cfunc__goboringcrypto_' && (echo 'fips distro should not use standard crypto' && exit 1)
+
       - name: Run local e2e tests
         if: ${{ hashFiles(format('distributions/{0}/test/spec-local.yaml', inputs.distribution)) != '' }}
         uses: newrelic/newrelic-integration-e2e-action@v1

@@ -65,6 +65,45 @@ else
 OTELCOL_BUILDER=$(shell command -v ocb)
 endif
 
+.PHONY: ocb-version-check
+ocb-version-check:
+	@need_install=false; \
+	if [ -x '$(OTELCOL_BUILDER)' ]; then \
+		current_version=$$($(OTELCOL_BUILDER) version 2>&1 | grep -o 'v[0-9]\+\.[0-9]\+\.[0-9]\+' | sed 's/.*v//') ;\
+		if [ "$${current_version}" != "$(OTELCOL_BUILDER_VERSION)" ]; then \
+			echo "OCB version mismatch: found $${current_version} $(OTELCOL_BUILDER), expected $(OTELCOL_BUILDER_VERSION)" ;\
+			rm -f $(OTELCOL_BUILDER) ;\
+			need_install=true; \
+		else \
+			echo "OCB found correct version $${current_version}" ;\
+		fi \
+	elif command -v ocb 2>&1; then \
+		current_version=$$(ocb version 2>&1 | grep -o 'v[0-9]\+\.[0-9]\+\.[0-9]\+' | sed 's/.*v//') ;\
+		if [ "$${current_version}" != "$(OTELCOL_BUILDER_VERSION)" ]; then \
+			echo "System OCB version mismatch: found $${current_version}, expected $(OTELCOL_BUILDER_VERSION)" ;\
+			echo "Will install local version..." ;\
+			need_install=true; \
+		else \
+			echo "OCB found correct version $${current_version}" ;\
+		fi \
+	else \
+		echo "OCB not found, will install..." ;\
+		need_install=true; \
+	fi; \
+	if [ "$$need_install" = "true" ]; then \
+		set -e ;\
+		os=$$(uname | tr A-Z a-z) ;\
+		machine=$$(uname -m) ;\
+		[ "$${machine}" != x86 ] || machine=386 ;\
+		[ "$${machine}" != x86_64 ] || machine=amd64 ;\
+		echo "Installing ocb ($${os}/$${machine}) at $(OTELCOL_BUILDER_DIR)";\
+		mkdir -p $(OTELCOL_BUILDER_DIR) ;\
+		go clean -modcache; \
+		CGO_ENABLED=0 go install -trimpath -ldflags="-s -w" go.opentelemetry.io/collector/cmd/builder@v$(OTELCOL_BUILDER_VERSION) ;\
+		mv $$(go env GOPATH)/bin/builder $(OTELCOL_BUILDER) ;\
+		echo "OCB installed at $(OTELCOL_BUILDER)"; \
+	fi
+
 .PHONY: go
 go:
 	@{ \
