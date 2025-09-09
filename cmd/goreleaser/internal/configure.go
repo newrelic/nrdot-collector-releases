@@ -389,6 +389,7 @@ func DockerManifests(dist string, nightly bool, fips bool) []config.DockerManife
 
 	if nightly {
 		r = append(r, DockerManifest("nightly", dist, nightly, fips))
+		r = append(r, DockerManifest("{{ .Version }}-nightly", dist, nightly, fips))
 	} else {
 		r = append(r, DockerManifest(`{{ .Version }}`, dist, nightly, fips))
 		if !fips {
@@ -405,10 +406,6 @@ func DockerManifest(version, dist string, nightly bool, fips bool) config.Docker
 	var imageTemplates []string
 	prefixFormat := "{{ .Env.REGISTRY }}/%s:%s-%s"
 	nameFormat := "{{ .Env.REGISTRY }}/%s:%s"
-
-	//if nightly {
-	//	prefixFormat = "%s/%s:%s-nightly-%s"
-	//}
 
 	if fips {
 		// dist = fmt.Sprint(dist, "-fips")

@@ -76,6 +76,10 @@ docker_manifests:
     image_templates:
       - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:nightly-amd64'
       - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:nightly-arm64'
+  - name_template: '{{ .Env.REGISTRY }}/nrdot-collector-k8s:{{ .Version }}-nightly'
+    image_templates:
+      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:{{ .Version }}-nightly-amd64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:{{ .Version }}-nightly-arm64'
 changelog:
   disable: "true"
 signs:
