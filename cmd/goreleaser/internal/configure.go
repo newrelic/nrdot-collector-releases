@@ -20,7 +20,6 @@ package internal
 import (
 	"fmt"
 	"path"
-	"strings"
 
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 )
@@ -337,16 +336,15 @@ func DockerImage(dist string, nightly bool, arch string, fips bool) config.Docke
 		prefixFormat = "{{ .Env.REGISTRY }}/%s:{{ .Version }}-fips-%s"
 	}
 
-	dockerArchTag := strings.ReplaceAll(arch, "/", "")
 	imageTemplates = append(
 		imageTemplates,
-		fmt.Sprintf(prefixFormat, dist, dockerArchTag),
+		fmt.Sprintf(prefixFormat, dist, arch),
 	)
 
 	if !fips {
 		imageTemplates = append(
 			imageTemplates,
-			fmt.Sprintf(latestPrefixFormat, dist, dockerArchTag),
+			fmt.Sprintf(latestPrefixFormat, dist, arch),
 		)
 	}
 
