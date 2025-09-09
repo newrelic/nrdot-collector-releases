@@ -318,33 +318,31 @@ func DockerImages(dist string, nightly bool, fips bool) []config.Docker {
 	return r
 }
 
+func DockerImageTags(nightly bool, fips bool) []string {
+	tags := []string{}
+	if fips {
+		tags = append(tags, "{{ .Version }}-fips")
+	} else if nightly {
+		tags = append(tags, "{{ .Version }}-nightly")
+		tags = append(tags, "nightly")
+	} else {
+		tags = append(tags, "{{ .Version }}")
+		tags = append(tags, "latest")
+	}
+	return tags
+}
+
 // DockerImage configures goreleaser to build a container image.
 // https://goreleaser.com/customization/docker/
 func DockerImage(dist string, nightly bool, arch string, fips bool) config.Docker {
-	imageTemplates := make([]string, 0)
+
 	dockerFile := "Dockerfile"
 
-	prefixFormat := "{{ .Env.REGISTRY }}/%s:{{ .Version }}-%s"
-	latestPrefixFormat := "{{ .Env.REGISTRY }}/%s:latest-%s"
-
-	if nightly {
-		prefixFormat = "{{ .Env.REGISTRY }}/%s:{{ .Version }}-nightly-%s"
-		latestPrefixFormat = "{{ .Env.REGISTRY }}/%s:nightly-%s"
-	}
-
-	if fips {
-		prefixFormat = "{{ .Env.REGISTRY }}/%s:{{ .Version }}-fips-%s"
-	}
-
-	imageTemplates = append(
-		imageTemplates,
-		fmt.Sprintf(prefixFormat, dist, arch),
-	)
-
-	if !fips {
+	imageTemplates := make([]string, 0)
+	for _, tag := range DockerImageTags(nightly, fips) {
 		imageTemplates = append(
 			imageTemplates,
-			fmt.Sprintf(latestPrefixFormat, dist, arch),
+			fmt.Sprintf("{{ .Env.REGISTRY }}/%s:%s-%s", dist, tag, arch),
 		)
 	}
 
@@ -387,14 +385,8 @@ func DockerImage(dist string, nightly bool, arch string, fips bool) config.Docke
 func DockerManifests(dist string, nightly bool, fips bool) []config.DockerManifest {
 	r := make([]config.DockerManifest, 0)
 
-	if nightly {
-		r = append(r, DockerManifest("nightly", dist, nightly, fips))
-		r = append(r, DockerManifest("{{ .Version }}-nightly", dist, nightly, fips))
-	} else {
-		r = append(r, DockerManifest(`{{ .Version }}`, dist, nightly, fips))
-		if !fips {
-			r = append(r, DockerManifest("latest", dist, nightly, fips))
-		}
+	for _, tag := range DockerImageTags(nightly, fips) {
+		r = append(r, DockerManifest(tag, dist))
 	}
 
 	return r
@@ -402,26 +394,18 @@ func DockerManifests(dist string, nightly bool, fips bool) []config.DockerManife
 
 // DockerManifest configures goreleaser to build a multi-arch container image manifest.
 // https://goreleaser.com/customization/docker_manifest/
-func DockerManifest(version, dist string, nightly bool, fips bool) config.DockerManifest {
+func DockerManifest(version, dist string) config.DockerManifest {
 	var imageTemplates []string
-	prefixFormat := "{{ .Env.REGISTRY }}/%s:%s-%s"
-	nameFormat := "{{ .Env.REGISTRY }}/%s:%s"
-
-	if fips {
-		// dist = fmt.Sprint(dist, "-fips")
-		prefixFormat = "{{ .Env.REGISTRY }}/%s:%s-fips-%s"
-		nameFormat = "{{ .Env.REGISTRY }}/%s:%s-fips"
-	}
 
 	for _, arch := range Architectures {
 		imageTemplates = append(
 			imageTemplates,
-			fmt.Sprintf(prefixFormat, dist, version, arch),
+			fmt.Sprintf("{{ .Env.REGISTRY }}/%s:%s-%s", dist, version, arch),
 		)
 	}
 
 	return config.DockerManifest{
-		NameTemplate:   fmt.Sprintf(nameFormat, dist, version),
+		NameTemplate:   fmt.Sprintf("{{ .Env.REGISTRY }}/%s:%s", dist, version),
 		ImageTemplates: imageTemplates,
 	}
 }
