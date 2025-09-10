@@ -232,10 +232,6 @@ func Archive(dist Distribution) config.Archive {
 		})
 	}
 
-	if dist.Fips {
-		goos = "linux"
-	}
-
 	return config.Archive{
 		ID:           dist.FullName,
 		NameTemplate: "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}",
