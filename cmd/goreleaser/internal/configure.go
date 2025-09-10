@@ -33,6 +33,7 @@ const (
 type Distribution struct {
 	BaseName string
 	FullName string // dist or dist-fips
+	Goos     []string
 }
 
 var (
@@ -45,10 +46,28 @@ var (
 		CoreDistro: "config.yaml",
 		// k8s missing due to not packaged via nfpm
 	}
-	K8sGoos     = []string{"linux"}
 	FipsLdflags = []string{"-w", "-linkmode external", "-extldflags '-static'"}
 	FipsGoTags  = []string{"netgo"}
 )
+
+func GetDistribution(distFlag string, fips bool) Distribution {
+	fullName := distFlag
+	if fips {
+		fullName += "-fips"
+	}
+
+	dist := Distribution{
+		BaseName: distFlag,
+		FullName: fullName,
+		Goos:     []string{"linux", "windows"},
+	}
+
+	if distFlag == K8sDistro || fips {
+		dist.Goos = []string{"linux"}
+	}
+
+	return dist
+}
 
 func Generate(distFlag string, nightly bool, fips bool) config.Project {
 	projectName := "nrdot-collector-releases"
@@ -63,10 +82,7 @@ func Generate(distFlag string, nightly bool, fips bool) config.Project {
 	if fips {
 		fullName += "-fips"
 	}
-	dist := Distribution{
-		BaseName: distFlag,
-		FullName: fullName,
-	}
+	dist := GetDistribution(distFlag, fips)
 
 	return config.Project{
 		ProjectName: projectName,
@@ -130,17 +146,12 @@ func Builds(dist Distribution, fips bool) []config.Build {
 // Build configures a goreleaser build.
 // https://goreleaser.com/customization/build/
 func Build(dist Distribution, fips bool) config.Build {
-	goos := []string{"linux", "windows"}
 	dir := "_build"
 	cgo := 0
 	ignoreBuild := IgnoreBuildCombinations(dist, fips)
 	ldflags := []string{"-s", "-w"}
 	gotags := []string{}
 	goexperiment := ""
-
-	if dist.BaseName == K8sDistro || fips {
-		goos = K8sGoos
-	}
 
 	var buildDetailsOverrides []config.BuildDetailsOverride
 
@@ -162,7 +173,7 @@ func Build(dist Distribution, fips bool) config.Build {
 		gotags = FipsGoTags
 		for _, arch := range Architectures {
 			buildDetailsOverrides = append(buildDetailsOverrides, config.BuildDetailsOverride{
-				Goos:   goos[0],
+				Goos:   dist.Goos[0],
 				Goarch: arch,
 				BuildDetails: config.BuildDetails{
 					Env: []string{
@@ -185,7 +196,7 @@ func Build(dist Distribution, fips bool) config.Build {
 			Tags:    gotags,
 		},
 		BuildDetailsOverrides: buildDetailsOverrides,
-		Goos:                  goos,
+		Goos:                  dist.Goos,
 		Goarch:                Architectures,
 		Ignore:                ignoreBuild,
 	}
