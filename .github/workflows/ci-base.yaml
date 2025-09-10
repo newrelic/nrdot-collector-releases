@@ -144,6 +144,11 @@ jobs:
           else
             echo "image_tag=$VERSION-$ARCH" >> $GITHUB_ENV
           fi
+      
+      - name: Validay FIPS ciphers
+        if: inputs.fips == true
+        run: |
+          ./fips/validation/validate.sh "${{ secrets.registry }}/${{ inputs.distribution }}:${{ env.image_tag }}"
 
       - name: Setup local kind cluster
         uses: helm/kind-action@v1
