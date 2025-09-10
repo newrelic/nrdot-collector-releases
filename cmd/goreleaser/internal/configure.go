@@ -28,46 +28,25 @@ const (
 	HostDistro = "nrdot-collector-host"
 	K8sDistro  = "nrdot-collector-k8s"
 	CoreDistro = "nrdot-collector"
+
+	ConfigFile = "config.yaml"
 )
 
 type Distribution struct {
-	BaseName string
-	FullName string // dist or dist-fips
-	Goos     []string
+	BaseName      string
+	FullName      string // dist or dist-fips
+	Nightly       bool
+	Fips          bool
+	Goos          []string
+	SkipBinaries  bool
+	IncludeConfig bool
 }
 
 var (
 	Architectures = []string{"amd64", "arm64"}
-	SkipBinaries  = map[string]bool{
-		K8sDistro: true,
-	}
-	IncludedConfig = map[string]string{
-		HostDistro: "config.yaml",
-		CoreDistro: "config.yaml",
-		// k8s missing due to not packaged via nfpm
-	}
-	FipsLdflags = []string{"-w", "-linkmode external", "-extldflags '-static'"}
-	FipsGoTags  = []string{"netgo"}
+	FipsLdflags   = []string{"-w", "-linkmode external", "-extldflags '-static'"}
+	FipsGoTags    = []string{"netgo"}
 )
-
-func GetDistribution(distFlag string, fips bool) Distribution {
-	fullName := distFlag
-	if fips {
-		fullName += "-fips"
-	}
-
-	dist := Distribution{
-		BaseName: distFlag,
-		FullName: fullName,
-		Goos:     []string{"linux", "windows"},
-	}
-
-	if distFlag == K8sDistro || fips {
-		dist.Goos = []string{"linux"}
-	}
-
-	return dist
-}
 
 func Generate(distFlag string, nightly bool, fips bool) config.Project {
 	projectName := "nrdot-collector-releases"
@@ -82,7 +61,7 @@ func Generate(distFlag string, nightly bool, fips bool) config.Project {
 	if fips {
 		fullName += "-fips"
 	}
-	dist := GetDistribution(distFlag, fips)
+	dist := GetDistribution(distFlag, nightly, fips)
 
 	return config.Project{
 		ProjectName: projectName,
@@ -91,18 +70,18 @@ func Generate(distFlag string, nightly bool, fips bool) config.Project {
 			Split:        true,
 			Algorithm:    "sha256",
 		},
-		Builds:          Builds(dist, fips),
-		Archives:        Archives(dist, fips),
-		NFPMs:           Packages(dist, fips),
-		Dockers:         DockerImages(dist, nightly, fips),
-		DockerManifests: DockerManifests(dist, nightly, fips),
+		Builds:          Builds(dist),
+		Archives:        Archives(dist),
+		NFPMs:           Packages(dist),
+		Dockers:         DockerImages(dist),
+		DockerManifests: DockerManifests(dist),
 		Signs:           Sign(),
 		Version:         2,
 		Changelog:       config.Changelog{Disable: "true"},
 		Snapshot: config.Snapshot{
 			VersionTemplate: "{{ incpatch .Version }}-SNAPSHOT-{{.ShortCommit}}",
 		},
-		Blobs: Blobs(dist, nightly, fips),
+		Blobs: Blobs(dist),
 		Release: config.Release{
 			Disable:              disableRelease,
 			Draft:                true,
@@ -112,20 +91,48 @@ func Generate(distFlag string, nightly bool, fips bool) config.Project {
 	}
 }
 
-func Blobs(dist Distribution, nightly bool, fips bool) []config.Blob {
-	if skip, ok := SkipBinaries[dist.BaseName]; ok && skip {
+func GetDistribution(baseDist string, nightly bool, fips bool) Distribution {
+	fullName := baseDist
+	if fips {
+		fullName += "-fips"
+	}
+
+	dist := Distribution{
+		BaseName:      baseDist,
+		FullName:      fullName,
+		Goos:          []string{"linux", "windows"},
+		Nightly:       nightly,
+		Fips:          fips,
+		SkipBinaries:  false,
+		IncludeConfig: true,
+	}
+
+	if baseDist == K8sDistro {
+		dist.SkipBinaries = true
+		dist.IncludeConfig = false
+	}
+
+	if baseDist == K8sDistro || fips {
+		dist.Goos = []string{"linux"}
+	}
+
+	return dist
+}
+
+func Blobs(dist Distribution) []config.Blob {
+	if dist.SkipBinaries {
 		return nil
 	}
 
 	return []config.Blob{
-		Blob(dist, nightly, fips),
+		Blob(dist),
 	}
 }
 
-func Blob(dist Distribution, nightly bool, fips bool) config.Blob {
+func Blob(dist Distribution) config.Blob {
 	version := "{{ .Version }}"
 
-	if nightly {
+	if dist.Nightly {
 		version = "nightly"
 	}
 
@@ -137,18 +144,18 @@ func Blob(dist Distribution, nightly bool, fips bool) config.Blob {
 	}
 }
 
-func Builds(dist Distribution, fips bool) []config.Build {
+func Builds(dist Distribution) []config.Build {
 	return []config.Build{
-		Build(dist, fips),
+		Build(dist),
 	}
 }
 
 // Build configures a goreleaser build.
 // https://goreleaser.com/customization/build/
-func Build(dist Distribution, fips bool) config.Build {
+func Build(dist Distribution) config.Build {
 	dir := "_build"
 	cgo := 0
-	ignoreBuild := IgnoreBuildCombinations(dist, fips)
+	ignoreBuild := IgnoreBuildCombinations(dist)
 	ldflags := []string{"-s", "-w"}
 	gotags := []string{}
 	goexperiment := ""
@@ -165,7 +172,7 @@ func Build(dist Distribution, fips bool) config.Build {
 		"arm64": "aarch64-linux-gnu-g++",
 	}
 
-	if fips {
+	if dist.Fips {
 		dir = "_build-fips"
 		cgo = 1
 		goexperiment = "boringcrypto"
@@ -202,8 +209,8 @@ func Build(dist Distribution, fips bool) config.Build {
 	}
 }
 
-func IgnoreBuildCombinations(dist Distribution, fips bool) []config.IgnoredBuild {
-	if dist.BaseName == K8sDistro || fips {
+func IgnoreBuildCombinations(dist Distribution) []config.IgnoredBuild {
+	if dist.BaseName == K8sDistro || dist.Fips {
 		return nil
 	}
 	return []config.IgnoredBuild{
@@ -211,25 +218,25 @@ func IgnoreBuildCombinations(dist Distribution, fips bool) []config.IgnoredBuild
 	}
 }
 
-func Archives(dist Distribution, fips bool) []config.Archive {
+func Archives(dist Distribution) []config.Archive {
 	return []config.Archive{
-		Archive(dist, fips),
+		Archive(dist),
 	}
 }
 
 // Archive configures a goreleaser archive (tarball).
 // https://goreleaser.com/customization/archive/
-func Archive(dist Distribution, fips bool) config.Archive {
+func Archive(dist Distribution) config.Archive {
 	files := make([]config.File, 0)
 	goos := "windows"
 
-	if configFile, ok := IncludedConfig[dist.BaseName]; ok {
+	if dist.IncludeConfig {
 		files = append(files, config.File{
-			Source: configFile,
+			Source: ConfigFile,
 		})
 	}
 
-	if fips {
+	if dist.Fips {
 		goos = "linux"
 	}
 
@@ -246,21 +253,19 @@ func Archive(dist Distribution, fips bool) config.Archive {
 	}
 }
 
-func Packages(dist Distribution, fips bool) []config.NFPM {
-	if skip, ok := SkipBinaries[dist.BaseName]; ok && skip {
+func Packages(dist Distribution) []config.NFPM {
+	if dist.SkipBinaries {
 		return nil
 	}
 
 	return []config.NFPM{
-		Package(dist, fips),
+		Package(dist),
 	}
 }
 
 // Package configures goreleaser to build a system package.
 // https://goreleaser.com/customization/nfpm/
-func Package(dist Distribution, fips bool) config.NFPM {
-	configFile, ok := IncludedConfig[dist.BaseName]
-
+func Package(dist Distribution) config.NFPM {
 	nfpmContents := []config.NFPMContent{
 		{
 			Source:      fmt.Sprintf("%s.service", dist.FullName),
@@ -273,10 +278,10 @@ func Package(dist Distribution, fips bool) config.NFPM {
 		},
 	}
 
-	if ok {
+	if dist.IncludeConfig {
 		nfpmContents = append(nfpmContents, config.NFPMContent{
-			Source:      configFile,
-			Destination: path.Join("/etc", dist.FullName, configFile),
+			Source:      ConfigFile,
+			Destination: path.Join("/etc", dist.FullName, ConfigFile),
 			Type:        "config",
 		})
 	}
@@ -323,11 +328,11 @@ func Package(dist Distribution, fips bool) config.NFPM {
 	}
 }
 
-func DockerImageTags(nightly bool, fips bool) []string {
+func DockerImageTags(dist Distribution) []string {
 	tags := []string{}
-	if fips {
+	if dist.Fips {
 		tags = append(tags, "{{ .Version }}-fips")
-	} else if nightly {
+	} else if dist.Nightly {
 		tags = append(tags, "{{ .Version }}-nightly")
 		tags = append(tags, "nightly")
 	} else {
@@ -337,11 +342,11 @@ func DockerImageTags(nightly bool, fips bool) []string {
 	return tags
 }
 
-func DockerImages(dist Distribution, nightly bool, fips bool) []config.Docker {
+func DockerImages(dist Distribution) []config.Docker {
 	var r []config.Docker
 
 	for _, arch := range Architectures {
-		r = append(r, DockerImage(dist, nightly, arch, fips))
+		r = append(r, DockerImage(dist, arch))
 	}
 
 	return r
@@ -349,12 +354,12 @@ func DockerImages(dist Distribution, nightly bool, fips bool) []config.Docker {
 
 // DockerImage configures goreleaser to build a container image.
 // https://goreleaser.com/customization/docker/
-func DockerImage(dist Distribution, nightly bool, arch string, fips bool) config.Docker {
+func DockerImage(dist Distribution, arch string) config.Docker {
 
 	dockerFile := "Dockerfile"
 
 	imageTemplates := make([]string, 0)
-	for _, tag := range DockerImageTags(nightly, fips) {
+	for _, tag := range DockerImageTags(dist) {
 		imageTemplates = append(
 			imageTemplates,
 			fmt.Sprintf("{{ .Env.REGISTRY }}/%s:%s-%s", dist.BaseName, tag, arch),
@@ -366,8 +371,8 @@ func DockerImage(dist Distribution, nightly bool, arch string, fips bool) config
 	}
 
 	files := make([]string, 0)
-	if configFile, ok := IncludedConfig[dist.BaseName]; ok {
-		files = append(files, configFile)
+	if dist.IncludeConfig {
+		files = append(files, ConfigFile)
 	}
 
 	return config.Docker{
@@ -392,10 +397,10 @@ func DockerImage(dist Distribution, nightly bool, arch string, fips bool) config
 	}
 }
 
-func DockerManifests(dist Distribution, nightly bool, fips bool) []config.DockerManifest {
+func DockerManifests(dist Distribution) []config.DockerManifest {
 	r := make([]config.DockerManifest, 0)
 
-	for _, tag := range DockerImageTags(nightly, fips) {
+	for _, tag := range DockerImageTags(dist) {
 		r = append(r, DockerManifest(tag, dist))
 	}
 
