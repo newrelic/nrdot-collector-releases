@@ -57,10 +57,6 @@ func Generate(distFlag string, nightly bool, fips bool) config.Project {
 		disableRelease = "true"
 	}
 
-	fullName := distFlag
-	if fips {
-		fullName += "-fips"
-	}
 	dist := GetDistribution(distFlag, nightly, fips)
 
 	return config.Project{
