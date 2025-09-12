@@ -18,12 +18,16 @@ jobs:
     name: Build & Validate
     strategy:
       matrix:
+        fips:
+          - true
+          - false
         distribution:
           - nrdot-collector
           - nrdot-collector-host
           - nrdot-collector-k8s
     uses: ./.github/workflows/ci-base.yaml
     with:
+      fips: ${{ matrix.fips }}
       nightly: true
       distribution: ${{ matrix.distribution }}
       test_cluster_name: '${{ matrix.distribution }}-${{ github.run_id }}-${{ github.run_attempt }}'
