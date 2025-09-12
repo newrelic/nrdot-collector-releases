@@ -2,7 +2,7 @@ locals {
   test_spec                                       = yamldecode(file("${path.module}/../../../distributions/${var.distro}/test/spec-nightly.yaml"))
   ec2_enabled                                     = local.test_spec.nightly.ec2.enabled
   chart_name                                      = local.test_spec.nightly.collectorChart.name
-  chart_version                                   = local.test_spec.nightly.collectorChart.version
+  chart_version                                   = try(local.test_spec.nightly.collectorChart.version, null)
   releases_bucket_name                            = "nr-releases"
   required_permissions_boundary_arn_for_new_roles = "arn:aws:iam::${var.aws_account_id}:policy/resource-provisioner-boundary"
   k8s_namespace                                   = "nightly-${var.distro}"
@@ -19,10 +19,9 @@ data "aws_ecr_repository" "ecr_repo" {
 }
 
 resource "helm_release" "ci_e2e_nightly_nr_backend" {
-  count   = local.chart_name == "nr_backend" ? 1 : 0
-  name    = "nightly-nr-backend-${var.distro}"
-  chart   = "../../charts/nr_backend"
-  version = local.chart_version
+  count = local.chart_name == "nr_backend" ? 1 : 0
+  name  = "nightly-nr-backend-${var.distro}"
+  chart = "../../charts/nr_backend"
 
   create_namespace  = true
   namespace         = local.k8s_namespace
@@ -54,7 +53,7 @@ resource "helm_release" "ci_e2e_nightly_nr_backend" {
   }
 
   set {
-    name  = "collector.hostname"
+    name  = "testKey"
     value = "${var.test_environment}-${random_string.deploy_id.result}-${var.distro}-k8s_node"
   }
 

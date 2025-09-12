@@ -126,7 +126,7 @@ jobs:
           REGISTRY: "${{ secrets.registry }}"
         with:
           distribution: goreleaser
-          version: '~> v2'
+          version: '2.11.2'
           args: ${{ env.goreleaser_args }}
           workdir: distributions/${{ inputs.distribution }}
 
