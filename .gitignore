@@ -1,5 +1,6 @@
 vendor
 **/_build
+**/_build-fips
 **/collections
 **/roles
 dist/
@@ -21,5 +22,6 @@ inventory
 .secrets
 .input
 .tools
+.scratch
 
 test/**/charts/*.tgz

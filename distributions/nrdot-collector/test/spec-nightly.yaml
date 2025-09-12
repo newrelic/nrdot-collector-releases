@@ -1,6 +1,7 @@
 nightly:
   collectorChart:
     name: nr_backend
+    version: 0.1.0
   ec2:
     enabled: true
   testCaseSpecs:
