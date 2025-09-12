@@ -33,13 +33,14 @@ const (
 )
 
 type Distribution struct {
-	BaseName      string
-	FullName      string // dist or dist-fips
-	Nightly       bool
-	Fips          bool
-	Goos          []string
-	SkipBinaries  bool
-	IncludeConfig bool
+	BaseName          string
+	FullName          string // dist or dist-fips
+	Nightly           bool
+	Fips              bool
+	Goos              []string
+	SkipBinaries      bool
+	IncludeConfig     bool
+	IgnoreBuildCombos bool
 }
 
 var (
@@ -57,7 +58,7 @@ func Generate(distFlag string, nightly bool, fips bool) config.Project {
 		disableRelease = "true"
 	}
 
-	dist := GetDistribution(distFlag, nightly, fips)
+	dist := NewDistribution(distFlag, nightly, fips)
 
 	return config.Project{
 		ProjectName: projectName,
@@ -87,7 +88,7 @@ func Generate(distFlag string, nightly bool, fips bool) config.Project {
 	}
 }
 
-func GetDistribution(baseDist string, nightly bool, fips bool) Distribution {
+func NewDistribution(baseDist string, nightly bool, fips bool) Distribution {
 	fullName := baseDist
 	if fips {
 		fullName += "-fips"
@@ -110,6 +111,7 @@ func GetDistribution(baseDist string, nightly bool, fips bool) Distribution {
 
 	if baseDist == K8sDistro || fips {
 		dist.Goos = []string{"linux"}
+		dist.IgnoreBuildCombos = true
 	}
 
 	return dist
@@ -206,7 +208,7 @@ func Build(dist Distribution) config.Build {
 }
 
 func IgnoreBuildCombinations(dist Distribution) []config.IgnoredBuild {
-	if dist.BaseName == K8sDistro || dist.Fips {
+	if dist.IgnoreBuildCombos {
 		return nil
 	}
 	return []config.IgnoredBuild{
