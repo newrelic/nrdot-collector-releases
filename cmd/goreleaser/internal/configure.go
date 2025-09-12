@@ -20,6 +20,7 @@ package internal
 import (
 	"fmt"
 	"path"
+	"slices"
 	"strings"
 
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -60,7 +61,7 @@ var (
 	FipsGoTags         = []string{"netgo"}
 )
 
-func Generate(dist string, nightly bool, fips bool) config.Project {
+func Generate(dist string, nightly bool) config.Project {
 
 	projectName := "nrdot-collector-releases"
 	disableRelease := "false"
@@ -77,18 +78,18 @@ func Generate(dist string, nightly bool, fips bool) config.Project {
 			Split:        true,
 			Algorithm:    "sha256",
 		},
-		Builds:          Builds(dist, fips),
-		Archives:        Archives(dist, fips),
-		NFPMs:           Packages(dist, fips),
-		Dockers:         DockerImages(dist, nightly, fips),
-		DockerManifests: DockerManifests(dist, nightly, fips),
+		Builds:          Builds(dist),
+		Archives:        Archives(dist),
+		NFPMs:           Packages(dist),
+		Dockers:         DockerImages(dist, nightly),
+		DockerManifests: DockerManifests(dist, nightly),
 		Signs:           Sign(),
 		Version:         2,
 		Changelog:       config.Changelog{Disable: "true"},
 		Snapshot: config.Snapshot{
 			VersionTemplate: "{{ incpatch .Version }}-SNAPSHOT-{{.ShortCommit}}",
 		},
-		Blobs: Blobs(dist, nightly, fips),
+		Blobs: Blobs(dist, nightly),
 		Release: config.Release{
 			Disable:              disableRelease,
 			Draft:                true,
@@ -98,13 +99,14 @@ func Generate(dist string, nightly bool, fips bool) config.Project {
 	}
 }
 
-func Blobs(dist string, nightly bool, fips bool) []config.Blob {
+func Blobs(dist string, nightly bool) []config.Blob {
 	if skip, ok := SkipBinaries[dist]; ok && skip {
 		return nil
 	}
 
 	return []config.Blob{
-		Blob(dist, nightly, fips),
+		Blob(dist, nightly, true),
+		Blob(dist, nightly, false),
 	}
 }
 
@@ -127,9 +129,10 @@ func Blob(dist string, nightly bool, fips bool) config.Blob {
 	}
 }
 
-func Builds(dist string, fips bool) []config.Build {
+func Builds(dist string) []config.Build {
 	return []config.Build{
-		Build(dist, fips),
+		Build(dist, true),
+		Build(dist, false),
 	}
 }
 
@@ -216,9 +219,10 @@ func ArmVersions(dist string, fips bool) []string {
 	return []string{"7"}
 }
 
-func Archives(dist string, fips bool) []config.Archive {
+func Archives(dist string) []config.Archive {
 	return []config.Archive{
-		Archive(dist, fips),
+		Archive(dist, true),
+		Archive(dist, false),
 	}
 }
 
@@ -253,13 +257,14 @@ func Archive(dist string, fips bool) config.Archive {
 	}
 }
 
-func Packages(dist string, fips bool) []config.NFPM {
+func Packages(dist string) []config.NFPM {
 	if skip, ok := SkipBinaries[dist]; ok && skip {
 		return nil
 	}
 
 	return []config.NFPM{
-		Package(dist, fips),
+		Package(dist, true),
+		Package(dist, false),
 	}
 }
 
@@ -333,8 +338,15 @@ func Package(dist string, fips bool) config.NFPM {
 	}
 }
 
-func DockerImages(dist string, nightly bool, fips bool) []config.Docker {
-	var r []config.Docker
+func DockerImages(dist string, nightly bool) []config.Docker {
+	return slices.Concat(
+		DockerImagesWithFips(dist, nightly, false),
+		DockerImagesWithFips(dist, nightly, true),
+	)
+}
+
+func DockerImagesWithFips(dist string, nightly bool, fips bool) []config.Docker {
+	r := make([]config.Docker, 0)
 
 	for _, arch := range Architectures {
 		if (dist == K8sDistro || fips) && K8sDockerSkipArchs[arch] {
@@ -360,31 +372,35 @@ func DockerImage(dist string, nightly bool, arch string, armVersion string, fips
 	imageTemplates := make([]string, 0)
 	dockerFile := "Dockerfile"
 	configFiles, ok := IncludedConfigs[dist]
+	prefixVersion := ""
+	latestPrefixVersion := ""
 
 	imagePrefixes := ImagePrefixes
-	prefixFormat := "%s/%s:{{ .Version }}-%s"
-	latestPrefixFormat := "%s/%s:latest-%s"
+	prefixFormat := "%s/%s:{{ .Version }}-%s%s"
+	latestPrefixFormat := "%s/%s:%s%s"
 
 	if nightly {
-		prefixFormat = "%s/%s:{{ .Version }}-nightly-%s"
-		latestPrefixFormat = "%s/%s:nightly-%s"
+		prefixVersion = "nightly-"
+		latestPrefixVersion = "nightly-"
+	} else {
+		latestPrefixVersion = "latest-"
 	}
 
 	if fips {
-		prefixFormat = "%s/%s:{{ .Version }}-fips-%s"
+		prefixVersion = prefixVersion + "fips-"
 	}
 
 	for _, prefix := range imagePrefixes {
 		dockerArchTag := strings.ReplaceAll(dockerArchName, "/", "")
 		imageTemplates = append(
 			imageTemplates,
-			fmt.Sprintf(prefixFormat, prefix, imageName(dist), dockerArchTag),
+			fmt.Sprintf(prefixFormat, prefix, imageName(dist), prefixVersion, dockerArchTag),
 		)
 
 		if !fips {
 			imageTemplates = append(
 				imageTemplates,
-				fmt.Sprintf(latestPrefixFormat, prefix, imageName(dist), dockerArchTag),
+				fmt.Sprintf(latestPrefixFormat, prefix, imageName(dist), latestPrefixVersion, dockerArchTag),
 			)
 		}
 	}
@@ -427,19 +443,18 @@ func DockerImage(dist string, nightly bool, arch string, armVersion string, fips
 	}
 }
 
-func DockerManifests(dist string, nightly bool, fips bool) []config.DockerManifest {
+func DockerManifests(dist string, nightly bool) []config.DockerManifest {
 	r := make([]config.DockerManifest, 0)
 
 	imagePrefixes := ImagePrefixes
 
 	for _, prefix := range imagePrefixes {
 		if nightly {
-			r = append(r, DockerManifest(prefix, "nightly", dist, nightly, fips))
+			r = append(r, DockerManifest(prefix, "nightly-fips", dist, nightly, true))
+			r = append(r, DockerManifest(prefix, "nightly", dist, nightly, false))
 		} else {
-			r = append(r, DockerManifest(prefix, `{{ .Version }}`, dist, nightly, fips))
-			if !fips {
-				r = append(r, DockerManifest(prefix, "latest", dist, nightly, fips))
-			}
+			r = append(r, DockerManifest(prefix, `{{ .Version }}`, dist, nightly, true))
+			r = append(r, DockerManifest(prefix, "latest", dist, nightly, false))
 		}
 	}
 
@@ -457,12 +472,6 @@ func DockerManifest(prefix, version, dist string, nightly bool, fips bool) confi
 	//if nightly {
 	//	prefixFormat = "%s/%s:%s-nightly-%s"
 	//}
-
-	if fips {
-		// dist = fmt.Sprint(dist, "-fips")
-		prefixFormat = "%s/%s:%s-fips-%s"
-		nameFormat = "%s/%s:%s-fips"
-	}
 
 	for _, arch := range Architectures {
 		if k8sDistro || fips {
