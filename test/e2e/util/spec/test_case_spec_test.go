@@ -7,9 +7,9 @@ import (
 func TestRenderWhereClause(t *testing.T) {
 	testCaseSpec := LoadTestCaseSpec("host")
 	actual := testCaseSpec.RenderWhereClause(map[string]string{
-		"testKey": "nrdot-collector-host-foobar",
+		"hostName": "nrdot-collector-host-foobar",
 	})
-	if actual != "WHERE testKey like 'nrdot-collector-host-foobar'" {
+	if actual != "WHERE host.name like 'nrdot-collector-host-foobar'" {
 		t.Fatalf("unexpected where clause: %s", actual)
 	}
 }
