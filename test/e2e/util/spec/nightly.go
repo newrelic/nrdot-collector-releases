@@ -1,7 +1,7 @@
 package spec
 
 type NightlySystemUnderTest struct {
-	TestKeyPattern  string
+	HostNamePattern string
 	ExcludedMetrics []string
 	SkipIf          func(testSpec *TestSpec) bool
 }

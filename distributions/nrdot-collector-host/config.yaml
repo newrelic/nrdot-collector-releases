@@ -180,7 +180,10 @@ processors:
   resourcedetection/cloud:
     detectors: ["gcp", "ec2", "azure"]
     timeout: 2s
-    override: true
+    ec2:
+      resource_attributes:
+        host.name:
+          enabled: false
 
   # Gives OTEL_RESOURCE_ATTRIBUTES precedence over other sources.
   # host.id is set from env whenever the collector is orchestrated by NR Agents.

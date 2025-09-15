@@ -27,7 +27,7 @@ jobs:
         uses: goreleaser/goreleaser-action@v6
         with:
           distribution: goreleaser
-          version: '2.11.2'
+          version: '~> v2'
           args: --clean --timeout 2h
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -111,6 +111,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           distribution: goreleaser
-          version: '2.11.2'
+          version: '~> v2'
           args: --clean --skip=announce --timeout 2h
           workdir: distributions/${{ matrix.distribution }}
