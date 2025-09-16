@@ -33,14 +33,15 @@ const (
 )
 
 type Distribution struct {
-	BaseName          string
-	FullName          string // dist or dist-fips
-	Nightly           bool
-	Fips              bool
-	Goos              []string
-	SkipBinaries      bool
-	IncludeConfig     bool
-	IgnoreBuildCombos bool
+	BaseName              string
+	FullName              string // dist or dist-fips
+	Nightly               bool
+	Fips                  bool
+	Goos                  []string
+	IncludeConfig         bool
+	SkipBinaries          bool
+	SkipIgnoreBuildCombos bool
+	SkipArchives          bool
 }
 
 var (
@@ -95,13 +96,15 @@ func NewDistribution(baseDist string, nightly bool, fips bool) Distribution {
 	}
 
 	dist := Distribution{
-		BaseName:      baseDist,
-		FullName:      fullName,
-		Goos:          []string{"linux", "windows"},
-		Nightly:       nightly,
-		Fips:          fips,
-		SkipBinaries:  false,
-		IncludeConfig: true,
+		BaseName:              baseDist,
+		FullName:              fullName,
+		Goos:                  []string{"linux", "windows"},
+		Nightly:               nightly,
+		Fips:                  fips,
+		IncludeConfig:         true,
+		SkipBinaries:          false,
+		SkipIgnoreBuildCombos: false,
+		SkipArchives:          false,
 	}
 
 	if baseDist == K8sDistro {
@@ -111,7 +114,11 @@ func NewDistribution(baseDist string, nightly bool, fips bool) Distribution {
 
 	if baseDist == K8sDistro || fips {
 		dist.Goos = []string{"linux"}
-		dist.IgnoreBuildCombos = true
+		dist.SkipIgnoreBuildCombos = true
+	}
+
+	if fips {
+		dist.SkipArchives = true
 	}
 
 	return dist
@@ -208,7 +215,7 @@ func Build(dist Distribution) config.Build {
 }
 
 func IgnoreBuildCombinations(dist Distribution) []config.IgnoredBuild {
-	if dist.IgnoreBuildCombos {
+	if dist.SkipIgnoreBuildCombos {
 		return nil
 	}
 	return []config.IgnoredBuild{
@@ -217,6 +224,10 @@ func IgnoreBuildCombinations(dist Distribution) []config.IgnoredBuild {
 }
 
 func Archives(dist Distribution) []config.Archive {
+	if dist.SkipArchives {
+		return nil
+	}
+
 	return []config.Archive{
 		Archive(dist),
 	}
