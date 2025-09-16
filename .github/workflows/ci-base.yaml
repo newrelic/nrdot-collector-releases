@@ -173,6 +173,11 @@ jobs:
             exit 1
           fi
           go tool nm ${BINARY} | grep '_Cfunc__goboringcrypto_' || (echo 'fips distro should not use standard crypto' && exit 1)
+      
+      - name: Validay FIPS ciphers
+        if: inputs.fips == true
+        run: |
+          ./fips/validation/validate.sh "${{ secrets.registry }}/${{ inputs.distribution }}:${{ env.image_tag }}"
 
       - name: Run local e2e tests
         if: ${{ hashFiles(format('distributions/{0}/test/spec-local.yaml', inputs.distribution)) != '' }}
