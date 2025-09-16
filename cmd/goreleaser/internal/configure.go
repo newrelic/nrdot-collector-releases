@@ -33,15 +33,15 @@ const (
 )
 
 type Distribution struct {
-	BaseName              string
-	FullName              string // dist or dist-fips
-	Nightly               bool
-	Fips                  bool
-	Goos                  []string
-	IncludeConfig         bool
-	SkipBinaries          bool
-	SkipIgnoreBuildCombos bool
-	SkipArchives          bool
+	BaseName      string
+	FullName      string // dist or dist-fips
+	Nightly       bool
+	Fips          bool
+	Goos          []string
+	IgnoredBuilds []config.IgnoredBuild
+	IncludeConfig bool
+	SkipBinaries  bool
+	SkipArchives  bool
 }
 
 var (
@@ -96,15 +96,17 @@ func NewDistribution(baseDist string, nightly bool, fips bool) Distribution {
 	}
 
 	dist := Distribution{
-		BaseName:              baseDist,
-		FullName:              fullName,
-		Goos:                  []string{"linux", "windows"},
-		Nightly:               nightly,
-		Fips:                  fips,
-		IncludeConfig:         true,
-		SkipBinaries:          false,
-		SkipIgnoreBuildCombos: false,
-		SkipArchives:          false,
+		BaseName: baseDist,
+		FullName: fullName,
+		Nightly:  nightly,
+		Fips:     fips,
+		Goos:     []string{"linux", "windows"},
+		IgnoredBuilds: []config.IgnoredBuild{
+			{Goos: "windows", Goarch: "arm64"},
+		},
+		IncludeConfig: true,
+		SkipBinaries:  false,
+		SkipArchives:  false,
 	}
 
 	if baseDist == K8sDistro {
@@ -114,7 +116,7 @@ func NewDistribution(baseDist string, nightly bool, fips bool) Distribution {
 
 	if baseDist == K8sDistro || fips {
 		dist.Goos = []string{"linux"}
-		dist.SkipIgnoreBuildCombos = true
+		dist.IgnoredBuilds = nil
 	}
 
 	if fips {
@@ -160,7 +162,6 @@ func Builds(dist Distribution) []config.Build {
 func Build(dist Distribution) config.Build {
 	dir := "_build"
 	cgo := 0
-	ignoreBuild := IgnoreBuildCombinations(dist)
 	ldflags := []string{"-s", "-w"}
 	gotags := []string{}
 	goexperiment := ""
@@ -210,16 +211,7 @@ func Build(dist Distribution) config.Build {
 		BuildDetailsOverrides: buildDetailsOverrides,
 		Goos:                  dist.Goos,
 		Goarch:                Architectures,
-		Ignore:                ignoreBuild,
-	}
-}
-
-func IgnoreBuildCombinations(dist Distribution) []config.IgnoredBuild {
-	if dist.SkipIgnoreBuildCombos {
-		return nil
-	}
-	return []config.IgnoredBuild{
-		{Goos: "windows", Goarch: "arm64"},
+		Ignore:                dist.IgnoredBuilds,
 	}
 }
 
