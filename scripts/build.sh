@@ -4,16 +4,21 @@ REPO_DIR="$( cd "$(dirname "$( dirname "${BASH_SOURCE[0]}" )")" &> /dev/null && 
 BUILDER=''
 
 # default values
-skipcompilation=false
+skipcompilation=true
 validate=true
+fips=true
+cgo=0
 
-while getopts d:s:b: flag
+while getopts d:s:l:b:f:c: flag
+
 do
     case "${flag}" in
         d) distributions=${OPTARG};;
         s) skipcompilation=${OPTARG};;
         l) validate=${OPTARG};;
         b) BUILDER=${OPTARG};;
+        f) fips=${OPTARG};;
+        c) cgo=${OPTARG};;
         *) exit 1;;
     esac
 done
@@ -28,6 +33,10 @@ fi
 
 if [[ "$skipcompilation" = true ]]; then
     echo "Skipping the compilation, we'll only generate the sources."
+elif [[ "$fips" == true ]]; then
+    echo "❌ ERROR: FIPS requires skip compilation."
+    echo "Skip Compilation is false."
+    exit 1
 fi
 
 echo "Distributions to build: $distributions";
@@ -35,19 +44,37 @@ echo "Distributions to build: $distributions";
 for distribution in $(echo "$distributions" | tr "," "\n")
 do
     pushd "${REPO_DIR}/distributions/${distribution}" > /dev/null || exit
-    mkdir -p _build
+
+    manifest_file="manifest.yaml";
+    build_folder="_build"
+
+    if [[ "$fips" == true ]]; then
+      yq eval '
+         .dist.name += "-fips" |
+         .dist.description += "-fips" |
+         .dist.output_path += "-fips"' manifest.yaml > manifest-fips.yaml
+      manifest_file="manifest-fips.yaml"
+      build_folder="_build-fips"
+    fi
+
+    mkdir -p $build_folder
 
     echo "Building: $distribution"
     echo "Using Builder: $(command -v "$BUILDER")"
     echo "Using Go: $(command -v go)"
+    echo "Using FIPS: ${fips}"
 
-    if "$BUILDER" --skip-compilation="${skipcompilation}" --config manifest.yaml > _build/build.log 2>&1; then
+    if CGO_ENABLED=${cgo} "$BUILDER" --skip-compilation="${skipcompilation}" --config ${manifest_file} > ${build_folder}/build.log 2>&1; then
+        if [[ "$fips" == true ]]; then
+            echo "Copying fips.go into _build-fips."
+            cp ../../fips/fips.go ./$build_folder
+        fi
         echo "✅ SUCCESS: distribution '${distribution}' built."
     else
         echo "❌ ERROR: failed to build the distribution '${distribution}'."
         echo "🪵 Build logs for '${distribution}'"
         echo "----------------------"
-        cat _build/build.log
+        cat $build_folder/build.log
         echo "----------------------"
         exit 1
     fi

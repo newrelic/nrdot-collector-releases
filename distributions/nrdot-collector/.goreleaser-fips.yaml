@@ -1,52 +1,62 @@
 version: 2
-project_name: nrdot-collector-releases-nightly
+project_name: nrdot-collector-releases
 release:
   draft: true
   use_existing_draft: true
-  disable: "true"
+  disable: "false"
 builds:
-  - id: nrdot-collector-host
+  - id: nrdot-collector-fips
     goos:
       - linux
-      - windows
     goarch:
       - amd64
       - arm64
-    ignore:
-      - goos: windows
-        goarch: arm64
-    dir: _build
-    binary: nrdot-collector-host
+    dir: _build-fips
+    binary: nrdot-collector-fips
     ldflags:
-      - -s
       - -w
+      - -linkmode external
+      - -extldflags '-static'
+    tags:
+      - netgo
     flags:
       - -trimpath
     env:
-      - CGO_ENABLED=0
-      - GOEXPERIMENT=
+      - CGO_ENABLED=1
+      - GOEXPERIMENT=boringcrypto
+    overrides:
+      - goos: linux
+        goarch: amd64
+        env:
+          - CC=x86_64-linux-gnu-gcc
+          - CXX=x86_64-linux-gnu-g++
+      - goos: linux
+        goarch: arm64
+        env:
+          - CC=aarch64-linux-gnu-gcc
+          - CXX=aarch64-linux-gnu-g++
 archives:
-  - id: nrdot-collector-host
+  - id: nrdot-collector-fips
     ids:
-      - nrdot-collector-host
+      - nrdot-collector-fips
     name_template: '{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}'
     format_overrides:
-      - goos: windows
+      - goos: linux
         formats:
           - zip
     files:
       - src: config.yaml
 nfpms:
   - file_name_template: '{{ .PackageName }}_{{ .Version }}_{{ .Os }}_{{- if not (eq (filter .ConventionalFileName "\\.rpm$") "") }}{{- replace .Arch "amd64" "x86_64" }}{{- else }}{{- .Arch }}{{- end }}{{- with .Arm }}v{{ . }}{{- end }}{{- with .Mips }}_{{ . }}{{- end }}{{- if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{- end }}'
-    package_name: nrdot-collector-host
+    package_name: nrdot-collector-fips
     contents:
-      - src: nrdot-collector-host.service
-        dst: /lib/systemd/system/nrdot-collector-host.service
-      - src: nrdot-collector-host.conf
-        dst: /etc/nrdot-collector-host/nrdot-collector-host.conf
+      - src: nrdot-collector-fips.service
+        dst: /lib/systemd/system/nrdot-collector-fips.service
+      - src: nrdot-collector-fips.conf
+        dst: /etc/nrdot-collector-fips/nrdot-collector-fips.conf
         type: config|noreplace
       - src: config.yaml
-        dst: /etc/nrdot-collector-host/config.yaml
+        dst: /etc/nrdot-collector-fips/config.yaml
         type: config
     scripts:
       preinstall: preinstall.sh
@@ -62,14 +72,14 @@ nfpms:
       rpm:
         dependencies:
           - /bin/sh
-    id: nrdot-collector-host
+    id: nrdot-collector-fips
     ids:
-      - nrdot-collector-host
+      - nrdot-collector-fips
     formats:
       - deb
       - rpm
     maintainer: New Relic <otelcomm-team@newrelic.com>
-    description: NRDOT Collector - nrdot-collector-host
+    description: NRDOT Collector - nrdot-collector-fips
     license: Apache 2.0
 snapshot:
   version_template: '{{ incpatch .Version }}-SNAPSHOT-{{.ShortCommit}}'
@@ -82,8 +92,7 @@ dockers:
     goarch: amd64
     dockerfile: Dockerfile
     image_templates:
-      - '{{ .Env.REGISTRY }}/nrdot-collector-host:{{ .Version }}-nightly-amd64'
-      - '{{ .Env.REGISTRY }}/nrdot-collector-host:nightly-amd64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector:{{ .Version }}-fips-amd64'
     extra_files:
       - config.yaml
     build_flag_templates:
@@ -95,14 +104,13 @@ dockers:
       - --label=org.opencontainers.image.version={{.Version}}
       - --label=org.opencontainers.image.source={{.GitURL}}
       - --label=org.opencontainers.image.licenses=Apache-2.0
-      - --build-arg=DIST_NAME=nrdot-collector-host
+      - --build-arg=DIST_NAME=nrdot-collector-fips
     use: buildx
   - goos: linux
     goarch: arm64
     dockerfile: Dockerfile
     image_templates:
-      - '{{ .Env.REGISTRY }}/nrdot-collector-host:{{ .Version }}-nightly-arm64'
-      - '{{ .Env.REGISTRY }}/nrdot-collector-host:nightly-arm64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector:{{ .Version }}-fips-arm64'
     extra_files:
       - config.yaml
     build_flag_templates:
@@ -114,18 +122,18 @@ dockers:
       - --label=org.opencontainers.image.version={{.Version}}
       - --label=org.opencontainers.image.source={{.GitURL}}
       - --label=org.opencontainers.image.licenses=Apache-2.0
-      - --build-arg=DIST_NAME=nrdot-collector-host
+      - --build-arg=DIST_NAME=nrdot-collector-fips
     use: buildx
 docker_manifests:
-  - name_template: '{{ .Env.REGISTRY }}/nrdot-collector-host:nightly'
+  - name_template: '{{ .Env.REGISTRY }}/nrdot-collector:{{ .Version }}-fips'
     image_templates:
-      - '{{ .Env.REGISTRY }}/nrdot-collector-host:nightly-amd64'
-      - '{{ .Env.REGISTRY }}/nrdot-collector-host:nightly-arm64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector:{{ .Version }}-fips-amd64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector:{{ .Version }}-fips-arm64'
 blobs:
   - bucket: nr-releases
     provider: s3
     region: us-east-1
-    directory: nrdot-collector-releases/nrdot-collector-host/nightly
+    directory: nrdot-collector-releases/nrdot-collector-fips/{{ .Version }}
 changelog:
   disable: "true"
 signs:

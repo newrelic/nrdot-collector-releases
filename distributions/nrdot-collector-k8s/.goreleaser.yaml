@@ -20,6 +20,7 @@ builds:
       - -trimpath
     env:
       - CGO_ENABLED=0
+      - GOEXPERIMENT=
 archives:
   - id: nrdot-collector-k8s
     ids:
@@ -51,6 +52,7 @@ dockers:
       - --label=org.opencontainers.image.version={{.Version}}
       - --label=org.opencontainers.image.source={{.GitURL}}
       - --label=org.opencontainers.image.licenses=Apache-2.0
+      - --build-arg=DIST_NAME=nrdot-collector-k8s
     use: buildx
   - goos: linux
     goarch: arm64
@@ -67,6 +69,7 @@ dockers:
       - --label=org.opencontainers.image.version={{.Version}}
       - --label=org.opencontainers.image.source={{.GitURL}}
       - --label=org.opencontainers.image.licenses=Apache-2.0
+      - --build-arg=DIST_NAME=nrdot-collector-k8s
     use: buildx
 docker_manifests:
   - name_template: '{{ .Env.REGISTRY }}/nrdot-collector-k8s:{{ .Version }}'

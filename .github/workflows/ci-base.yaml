@@ -10,6 +10,10 @@ on:
         required: false
         type: boolean
         default: false
+      fips:
+        required: false
+        type: boolean
+        default: false
       test_cluster_name:
         required: false
         type: string
@@ -70,6 +74,18 @@ jobs:
 
       - uses: docker/setup-buildx-action@v2
 
+      - name: Install cross-compilation toolchain
+        if: inputs.fips == true
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            gcc-aarch64-linux-gnu \
+            g++-aarch64-linux-gnu \
+            gcc-x86-64-linux-gnu \
+            g++-x86-64-linux-gnu \
+            libc6-dev-arm64-cross \
+            libc6-dev-amd64-cross
+
       - name: Import GPG key
         if: ${{github.event.pull_request.user.login != 'dependabot[bot]' }}
         id: import_gpg
@@ -92,6 +108,8 @@ jobs:
         run: |
           if [ ${{ inputs.nightly }} = "true" ]; then
             echo "goreleaser_args=--snapshot --clean --skip=publish,validate --timeout 2h --config .goreleaser-nightly.yaml" >> $GITHUB_ENV
+          elif [ ${{ inputs.fips }} = "true" ]; then
+            echo "goreleaser_args=--snapshot --clean --skip=publish,validate --timeout 2h --config .goreleaser-fips.yaml" >> $GITHUB_ENV
           elif [ ${{github.event.pull_request.user.login == 'dependabot[bot]' }} ]; then
             echo "goreleaser_args=--snapshot --clean --skip=publish,validate,sign --timeout 2h" >> $GITHUB_ENV
           else
@@ -121,6 +139,8 @@ jobs:
           echo "arch=$ARCH" >> $GITHUB_ENV
           if [ ${{ inputs.nightly }} = "true" ]; then
             echo "image_tag=$VERSION-nightly-$ARCH" >> $GITHUB_ENV
+          elif [ ${{ inputs.fips }} = "true" ]; then
+            echo "image_tag=$VERSION-fips-$ARCH" >> $GITHUB_ENV
           else
             echo "image_tag=$VERSION-$ARCH" >> $GITHUB_ENV
           fi
@@ -137,6 +157,22 @@ jobs:
           kind load docker-image "${{ secrets.registry }}/${{ inputs.distribution }}:${{ env.image_tag }}" --name ${{ inputs.test_cluster_name }}
 
       - uses: azure/setup-helm@v4.2.0
+
+      - name: Validate Usage of BoringCrypto
+        if: inputs.fips == true
+        run: |
+          ARCH=$(echo '${{ runner.arch }}' | sed 's/X/amd/g')
+          ARCH=${ARCH@L}
+          OS=$(echo '${{ runner.os }}')
+          OS=${OS@L}
+          printf -v BINARY_PATTERN "distributions/%s/dist/%s-fips_%s_%s*/*" "${{ inputs.distribution}}" "${{ inputs.distribution }}" "${OS}" "${ARCH}"
+          echo "Looking for binary pattern: ${BINARY_PATTERN}"
+          BINARY=$(find ${BINARY_PATTERN} 2>/dev/null | head -1)
+          if [[ -z "${BINARY}" ]]; then
+            echo "Error"
+            exit 1
+          fi
+          go tool nm ${BINARY} | grep '_Cfunc__goboringcrypto_' || (echo 'fips distro should not use standard crypto' && exit 1)
 
       - name: Run local e2e tests
         if: ${{ hashFiles(format('distributions/{0}/test/spec-local.yaml', inputs.distribution)) != '' }}

@@ -15,13 +15,18 @@ TOOLS_PKG_NAMES := $(shell grep -E $(TOOLS_MOD_REGEX) < $(TOOLS_MOD_DIR)/tools.g
 TOOLS_BIN_NAMES := $(addprefix $(TOOLS_BIN_DIR)/, $(notdir $(shell echo $(TOOLS_PKG_NAMES))))
 GO_LICENCE_DETECTOR        := $(TOOLS_BIN_DIR)/go-licence-detector
 GO_LICENCE_DETECTOR_CONFIG   := $(SRC_ROOT)/internal/assets/license/rules.json
+CGO := 0
 
 DISTRIBUTIONS ?= "nrdot-collector-host,nrdot-collector-k8s,nrdot-collector"
 
 ci: check build version-check licenses-check
 check: ensure-goreleaser-up-to-date
 
-build: go ocb
+build: build-fips
+	@./scripts/build.sh -d "${DISTRIBUTIONS}" -b ${OTELCOL_BUILDER} -f false
+
+build-fips: go
+	@$(MAKE) ocb CGO=1
 	@./scripts/build.sh -d "${DISTRIBUTIONS}" -b ${OTELCOL_BUILDER}
 
 generate: generate-sources generate-goreleaser
@@ -53,12 +58,51 @@ ifeq (, $(shell command -v ocb 2>/dev/null))
 	[ "$${machine}" != x86_64 ] || machine=amd64 ;\
 	echo "Installing ocb ($${os}/$${machine}) at $(OTELCOL_BUILDER_DIR)";\
 	mkdir -p $(OTELCOL_BUILDER_DIR) ;\
-	CGO_ENABLED=0 go install -trimpath -ldflags="-s -w" go.opentelemetry.io/collector/cmd/builder@v$(OTELCOL_BUILDER_VERSION) ;\
+	CGO_ENABLED=${CGO} go install -trimpath -ldflags="-s -w" go.opentelemetry.io/collector/cmd/builder@v$(OTELCOL_BUILDER_VERSION) ;\
 	mv $$(go env GOPATH)/bin/builder $(OTELCOL_BUILDER) ;\
 	}
 else
 OTELCOL_BUILDER=$(shell command -v ocb)
 endif
+
+.PHONY: ocb-version-check
+ocb-version-check:
+	@need_install=false; \
+	if [ -x '$(OTELCOL_BUILDER)' ]; then \
+		current_version=$$($(OTELCOL_BUILDER) version 2>&1 | grep -o 'v[0-9]\+\.[0-9]\+\.[0-9]\+' | sed 's/.*v//') ;\
+		if [ "$${current_version}" != "$(OTELCOL_BUILDER_VERSION)" ]; then \
+			echo "OCB version mismatch: found $${current_version} $(OTELCOL_BUILDER), expected $(OTELCOL_BUILDER_VERSION)" ;\
+			rm -f $(OTELCOL_BUILDER) ;\
+			need_install=true; \
+		else \
+			echo "OCB found correct version $${current_version}" ;\
+		fi \
+	elif command -v ocb 2>&1; then \
+		current_version=$$(ocb version 2>&1 | grep -o 'v[0-9]\+\.[0-9]\+\.[0-9]\+' | sed 's/.*v//') ;\
+		if [ "$${current_version}" != "$(OTELCOL_BUILDER_VERSION)" ]; then \
+			echo "System OCB version mismatch: found $${current_version}, expected $(OTELCOL_BUILDER_VERSION)" ;\
+			echo "Will install local version..." ;\
+			need_install=true; \
+		else \
+			echo "OCB found correct version $${current_version}" ;\
+		fi \
+	else \
+		echo "OCB not found, will install..." ;\
+		need_install=true; \
+	fi; \
+	if [ "$$need_install" = "true" ]; then \
+		set -e ;\
+		os=$$(uname | tr A-Z a-z) ;\
+		machine=$$(uname -m) ;\
+		[ "$${machine}" != x86 ] || machine=386 ;\
+		[ "$${machine}" != x86_64 ] || machine=amd64 ;\
+		echo "Installing ocb ($${os}/$${machine}) at $(OTELCOL_BUILDER_DIR)";\
+		mkdir -p $(OTELCOL_BUILDER_DIR) ;\
+		go clean -modcache; \
+		CGO_ENABLED=0 go install -trimpath -ldflags="-s -w" go.opentelemetry.io/collector/cmd/builder@v$(OTELCOL_BUILDER_VERSION) ;\
+		mv $$(go env GOPATH)/bin/builder $(OTELCOL_BUILDER) ;\
+		echo "OCB installed at $(OTELCOL_BUILDER)"; \
+	fi
 
 .PHONY: go
 go:
