@@ -37,6 +37,7 @@ is_cipher_fips_compliant() {
     # TLS 1.2 FIPS-approved patterns
     [[ "$cipher" =~ ECDHE_(ECDSA|RSA).*AES_(128|256)_GCM_SHA(256|384) ]] ||
     [[ "$cipher" =~ DHE_RSA.*AES_(128|256)_GCM_SHA(256|384) ]] ||
+    [[ "$cipher" =~ TLS_RSA_WITH_AES_(128|256)_GCM_SHA(256|384) ]] ||
     [[ "$cipher" =~ ^(AES_(128|256)_GCM|RSA.*AES_(128|256)_GCM) ]]
 }
 
@@ -104,9 +105,12 @@ start_collector() {
     # Clean up any existing containers and processes
     docker stop "$CONTAINER_NAME" 2>/dev/null || true
     docker rm "$CONTAINER_NAME" 2>/dev/null || true
+
+     # Fix file permissions for Docker container access
+    chmod 644 "$CONFIG_FILE"
+    chmod -R 644 "$CERT_DIR"/*
+    chmod 755 "$CERT_DIR"
     
-    
-    print_status "info" "Starting collector..."
     docker run -d --name "$CONTAINER_NAME" --network host \
         -v "$CERT_DIR:/certs:ro" -v "$CONFIG_FILE:/config.yaml:ro" \
         "$DOCKER_IMAGE" --config=/config.yaml >/dev/null
