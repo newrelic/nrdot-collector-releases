@@ -110,13 +110,13 @@ func NewDistribution(baseDist string, nightly bool, fips bool) Distribution {
 	}
 
 	if baseDist == K8sDistro {
-		dist.SkipBinaries = true
 		dist.IncludeConfig = false
 	}
 
 	if baseDist == K8sDistro || fips {
 		dist.Goos = []string{"linux"}
 		dist.IgnoredBuilds = nil
+		dist.SkipBinaries = true
 	}
 
 	if fips {
