@@ -78,7 +78,7 @@ If a distribution provides linux packages (refer to its README), you can follow 
 ##### DEB Installation
 ```bash
 export collector_distro="nrdot-collector-host"
-export collector_version="1.3.0"
+export collector_version="1.4.0"
 export collector_arch="amd64" # or arm64
 export license_key="YOUR_LICENSE_KEY"
 
@@ -91,7 +91,7 @@ sudo systemctl reload-or-restart "${collector_distro}.service"
 ### RPM Installation
 ```bash
 export collector_distro="nrdot-collector-host"
-export collector_version="1.3.0"
+export collector_version="1.4.0"
 export collector_arch="x86_64" # or arm64
 export license_key="YOUR_LICENSE_KEY"
 
@@ -105,7 +105,7 @@ sudo systemctl reload-or-restart "${collector_distro}.service"
 Archives contain the binary and the default configuration which is usually `config.yaml` unless the distro packages multiple defaults, e.g. `nrdot-collector-k8s`.
 ```bash
 export collector_distro="nrdot-collector-host"
-export collector_version="1.3.0"
+export collector_version="1.4.0"
 export collector_arch="amd64" # or arm64
 export license_key="YOUR_LICENSE_KEY"
 curl "https://github.com/newrelic/nrdot-collector-releases/releases/download/${collector_version}/${collector_distro}_${collector_version}_linux_${collector_arch}.tar.gz" --location --output collector.tar.gz
