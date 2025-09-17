@@ -6,7 +6,7 @@ BUILDER=''
 # default values
 skipcompilation=true
 validate=true
-fips=true
+fips=false
 cgo=0
 
 while getopts d:s:l:b:f:c: flag

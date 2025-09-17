@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"crypto/boring"
-_ "crypto/tls/fipsonly"
+	_ "crypto/tls/fipsonly"
 )
 
 func init() {

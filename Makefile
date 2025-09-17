@@ -22,12 +22,13 @@ DISTRIBUTIONS ?= "nrdot-collector-host,nrdot-collector-k8s,nrdot-collector"
 ci: check build version-check licenses-check
 check: ensure-goreleaser-up-to-date
 
-build: build-fips
-	@./scripts/build.sh -d "${DISTRIBUTIONS}" -b ${OTELCOL_BUILDER} -f false
+build: go
+	@$(MAKE) ocb CGO=0
+	@./scripts/build.sh -d "${DISTRIBUTIONS}" -b ${OTELCOL_BUILDER}
 
 build-fips: go
 	@$(MAKE) ocb CGO=1
-	@./scripts/build.sh -d "${DISTRIBUTIONS}" -b ${OTELCOL_BUILDER}
+	@./scripts/build.sh -d "${DISTRIBUTIONS}" -b ${OTELCOL_BUILDER} -f true -c 1
 
 generate: generate-sources generate-goreleaser
 
