@@ -17,6 +17,8 @@ inventory
 *.auto.tfvars
 # rely on pinned provider versions for now to avoid having to deal with multi-platform lock file hashes
 .terraform.lock.hcl
+#fips manifest files
+distributions/**/manifest-fips.yaml
 
 .env
 .secrets

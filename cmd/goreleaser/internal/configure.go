@@ -61,7 +61,7 @@ var (
 	FipsGoTags         = []string{"netgo"}
 )
 
-func Generate(dist string, nightly bool) config.Project {
+func Generate(dist string, nightly bool, fips bool) config.Project {
 
 	projectName := "nrdot-collector-releases"
 	disableRelease := "false"
@@ -78,18 +78,18 @@ func Generate(dist string, nightly bool) config.Project {
 			Split:        true,
 			Algorithm:    "sha256",
 		},
-		Builds:          Builds(dist),
-		Archives:        Archives(dist),
-		NFPMs:           Packages(dist),
-		Dockers:         DockerImages(dist, nightly),
-		DockerManifests: DockerManifests(dist, nightly),
+		Builds:          Builds(dist, fips),
+		Archives:        Archives(dist, fips),
+		NFPMs:           Packages(dist, fips),
+		Dockers:         DockerImages(dist, nightly, fips),
+		DockerManifests: DockerManifests(dist, nightly, fips),
 		Signs:           Sign(),
 		Version:         2,
 		Changelog:       config.Changelog{Disable: "true"},
 		Snapshot: config.Snapshot{
 			VersionTemplate: "{{ incpatch .Version }}-SNAPSHOT-{{.ShortCommit}}",
 		},
-		Blobs: Blobs(dist, nightly),
+		Blobs: Blobs(dist, nightly, fips),
 		Release: config.Release{
 			Disable:              disableRelease,
 			Draft:                true,
@@ -99,7 +99,7 @@ func Generate(dist string, nightly bool) config.Project {
 	}
 }
 
-func Blobs(dist string, nightly bool) []config.Blob {
+func Blobs(dist string, nightly bool, fips bool) []config.Blob {
 	if skip, ok := SkipBinaries[dist]; ok && skip {
 		return nil
 	}
@@ -129,7 +129,7 @@ func Blob(dist string, nightly bool, fips bool) config.Blob {
 	}
 }
 
-func Builds(dist string) []config.Build {
+func Builds(dist string, fips bool) []config.Build {
 	return []config.Build{
 		Build(dist, true),
 		Build(dist, false),
@@ -219,7 +219,7 @@ func ArmVersions(dist string, fips bool) []string {
 	return []string{"7"}
 }
 
-func Archives(dist string) []config.Archive {
+func Archives(dist string, fips bool) []config.Archive {
 	return []config.Archive{
 		Archive(dist, true),
 		Archive(dist, false),
@@ -257,7 +257,7 @@ func Archive(dist string, fips bool) config.Archive {
 	}
 }
 
-func Packages(dist string) []config.NFPM {
+func Packages(dist string, fips bool) []config.NFPM {
 	if skip, ok := SkipBinaries[dist]; ok && skip {
 		return nil
 	}
@@ -390,6 +390,10 @@ func DockerImage(dist string, nightly bool, arch string, armVersion string, fips
 		prefixVersion = prefixVersion + "fips-"
 	}
 
+	if fips {
+		prefixFormat = "%s/%s:{{ .Version }}-fips-%s"
+	}
+
 	for _, prefix := range imagePrefixes {
 		dockerArchTag := strings.ReplaceAll(dockerArchName, "/", "")
 		imageTemplates = append(
@@ -443,7 +447,7 @@ func DockerImage(dist string, nightly bool, arch string, armVersion string, fips
 	}
 }
 
-func DockerManifests(dist string, nightly bool) []config.DockerManifest {
+func DockerManifests(dist string, nightly bool, fips bool) []config.DockerManifest {
 	r := make([]config.DockerManifest, 0)
 
 	imagePrefixes := ImagePrefixes
@@ -472,6 +476,12 @@ func DockerManifest(prefix, version, dist string, nightly bool, fips bool) confi
 	//if nightly {
 	//	prefixFormat = "%s/%s:%s-nightly-%s"
 	//}
+
+	if fips {
+		// dist = fmt.Sprint(dist, "-fips")
+		prefixFormat = "%s/%s:%s-fips-%s"
+		nameFormat = "%s/%s:%s-fips"
+	}
 
 	for _, arch := range Architectures {
 		if k8sDistro || fips {
