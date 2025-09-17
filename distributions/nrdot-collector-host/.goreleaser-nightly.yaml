@@ -117,6 +117,10 @@ dockers:
       - --build-arg=DIST_NAME=nrdot-collector-host
     use: buildx
 docker_manifests:
+  - name_template: '{{ .Env.REGISTRY }}/nrdot-collector-host:{{ .Version }}-nightly'
+    image_templates:
+      - '{{ .Env.REGISTRY }}/nrdot-collector-host:{{ .Version }}-nightly-amd64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-host:{{ .Version }}-nightly-arm64'
   - name_template: '{{ .Env.REGISTRY }}/nrdot-collector-host:nightly'
     image_templates:
       - '{{ .Env.REGISTRY }}/nrdot-collector-host:nightly-amd64'
