@@ -20,6 +20,7 @@ package internal
 import (
 	"fmt"
 	"path"
+	"slices"
 	"strings"
 
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -104,7 +105,8 @@ func Blobs(dist string, nightly bool, fips bool) []config.Blob {
 	}
 
 	return []config.Blob{
-		Blob(dist, nightly, fips),
+		Blob(dist, nightly, true),
+		Blob(dist, nightly, false),
 	}
 }
 
@@ -129,7 +131,8 @@ func Blob(dist string, nightly bool, fips bool) config.Blob {
 
 func Builds(dist string, fips bool) []config.Build {
 	return []config.Build{
-		Build(dist, fips),
+		Build(dist, true),
+		Build(dist, false),
 	}
 }
 
@@ -218,7 +221,8 @@ func ArmVersions(dist string, fips bool) []string {
 
 func Archives(dist string, fips bool) []config.Archive {
 	return []config.Archive{
-		Archive(dist, fips),
+		Archive(dist, true),
+		Archive(dist, false),
 	}
 }
 
@@ -259,7 +263,8 @@ func Packages(dist string, fips bool) []config.NFPM {
 	}
 
 	return []config.NFPM{
-		Package(dist, fips),
+		Package(dist, true),
+		Package(dist, false),
 	}
 }
 
@@ -333,8 +338,15 @@ func Package(dist string, fips bool) config.NFPM {
 	}
 }
 
-func DockerImages(dist string, nightly bool, fips bool) []config.Docker {
-	var r []config.Docker
+func DockerImages(dist string, nightly bool) []config.Docker {
+	return slices.Concat(
+		DockerImagesWithFips(dist, nightly, false),
+		DockerImagesWithFips(dist, nightly, true),
+	)
+}
+
+func DockerImagesWithFips(dist string, nightly bool, fips bool) []config.Docker {
+	r := make([]config.Docker, 0)
 
 	for _, arch := range Architectures {
 		if (dist == K8sDistro || fips) && K8sDockerSkipArchs[arch] {
@@ -360,14 +372,22 @@ func DockerImage(dist string, nightly bool, arch string, armVersion string, fips
 	imageTemplates := make([]string, 0)
 	dockerFile := "Dockerfile"
 	configFiles, ok := IncludedConfigs[dist]
+	prefixVersion := ""
+	latestPrefixVersion := ""
 
 	imagePrefixes := ImagePrefixes
-	prefixFormat := "%s/%s:{{ .Version }}-%s"
-	latestPrefixFormat := "%s/%s:latest-%s"
+	prefixFormat := "%s/%s:{{ .Version }}-%s%s"
+	latestPrefixFormat := "%s/%s:%s%s"
 
 	if nightly {
-		prefixFormat = "%s/%s:{{ .Version }}-nightly-%s"
-		latestPrefixFormat = "%s/%s:nightly-%s"
+		prefixVersion = "nightly-"
+		latestPrefixVersion = "nightly-"
+	} else {
+		latestPrefixVersion = "latest-"
+	}
+
+	if fips {
+		prefixVersion = prefixVersion + "fips-"
 	}
 
 	if fips {
@@ -378,13 +398,13 @@ func DockerImage(dist string, nightly bool, arch string, armVersion string, fips
 		dockerArchTag := strings.ReplaceAll(dockerArchName, "/", "")
 		imageTemplates = append(
 			imageTemplates,
-			fmt.Sprintf(prefixFormat, prefix, imageName(dist), dockerArchTag),
+			fmt.Sprintf(prefixFormat, prefix, imageName(dist), prefixVersion, dockerArchTag),
 		)
 
 		if !fips {
 			imageTemplates = append(
 				imageTemplates,
-				fmt.Sprintf(latestPrefixFormat, prefix, imageName(dist), dockerArchTag),
+				fmt.Sprintf(latestPrefixFormat, prefix, imageName(dist), latestPrefixVersion, dockerArchTag),
 			)
 		}
 	}
@@ -434,12 +454,11 @@ func DockerManifests(dist string, nightly bool, fips bool) []config.DockerManife
 
 	for _, prefix := range imagePrefixes {
 		if nightly {
-			r = append(r, DockerManifest(prefix, "nightly", dist, nightly, fips))
+			r = append(r, DockerManifest(prefix, "nightly-fips", dist, nightly, true))
+			r = append(r, DockerManifest(prefix, "nightly", dist, nightly, false))
 		} else {
-			r = append(r, DockerManifest(prefix, `{{ .Version }}`, dist, nightly, fips))
-			if !fips {
-				r = append(r, DockerManifest(prefix, "latest", dist, nightly, fips))
-			}
+			r = append(r, DockerManifest(prefix, `{{ .Version }}`, dist, nightly, true))
+			r = append(r, DockerManifest(prefix, "latest", dist, nightly, false))
 		}
 	}
 

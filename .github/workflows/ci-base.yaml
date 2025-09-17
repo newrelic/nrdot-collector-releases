@@ -136,7 +136,9 @@ jobs:
           ARCH=${ARCH@L}
           echo "version=$VERSION" >> $GITHUB_ENV
           echo "arch=$ARCH" >> $GITHUB_ENV
-          if [ ${{ inputs.nightly }} = "true" ]; then
+          if [ ${{ inputs.nightly }} = "true" && ${{ inputs.fips }} = "true" ]; then
+            echo "image_tag=$VERSION-nightly-fips-$ARCH" >> $GITHUB_ENV
+          elif [ ${{ inputs.nightly }} = "true" ]; then
             echo "image_tag=$VERSION-nightly-$ARCH" >> $GITHUB_ENV
           elif [ ${{ inputs.fips }} = "true" ]; then
             echo "image_tag=$VERSION-fips-$ARCH" >> $GITHUB_ENV
@@ -172,7 +174,7 @@ jobs:
             exit 1
           fi
           go tool nm ${BINARY} | grep '_Cfunc__goboringcrypto_' || (echo 'fips distro should not use standard crypto' && exit 1)
-      
+
       - name: Validay FIPS ciphers
         if: inputs.fips == true
         run: |

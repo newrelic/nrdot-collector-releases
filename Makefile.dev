@@ -10,7 +10,8 @@ ci_custom_matrix:
 ci_custom_fips_matrix:
 	@# repeat --matrix arg for multiple distros
 	act push -W .github/workflows/ci-fips.yaml \
-		--matrix distribution:nrdot-collector-host
+		--matrix distribution:nrdot-collector-host \
+		--bind
 
 ci_nightly_custom_matrix:
 	@# repeat --matrix arg for multiple distros
