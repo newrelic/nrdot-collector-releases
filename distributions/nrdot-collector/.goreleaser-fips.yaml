@@ -35,41 +35,6 @@ builds:
         env:
           - CC=aarch64-linux-gnu-gcc
           - CXX=aarch64-linux-gnu-g++
-nfpms:
-  - file_name_template: '{{ .PackageName }}_{{ .Version }}_{{ .Os }}_{{- if not (eq (filter .ConventionalFileName "\\.rpm$") "") }}{{- replace .Arch "amd64" "x86_64" }}{{- else }}{{- .Arch }}{{- end }}{{- with .Arm }}v{{ . }}{{- end }}{{- with .Mips }}_{{ . }}{{- end }}{{- if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{- end }}'
-    package_name: nrdot-collector-fips
-    contents:
-      - src: nrdot-collector-fips.service
-        dst: /lib/systemd/system/nrdot-collector-fips.service
-      - src: nrdot-collector-fips.conf
-        dst: /etc/nrdot-collector-fips/nrdot-collector-fips.conf
-        type: config|noreplace
-      - src: config.yaml
-        dst: /etc/nrdot-collector-fips/config.yaml
-        type: config
-    scripts:
-      preinstall: preinstall.sh
-      postinstall: postinstall.sh
-      preremove: preremove.sh
-    rpm:
-      signature:
-        key_file: '{{ .Env.GPG_KEY_PATH }}'
-    deb:
-      signature:
-        key_file: '{{ .Env.GPG_KEY_PATH }}'
-    overrides:
-      rpm:
-        dependencies:
-          - /bin/sh
-    id: nrdot-collector-fips
-    ids:
-      - nrdot-collector-fips
-    formats:
-      - deb
-      - rpm
-    maintainer: New Relic <otelcomm-team@newrelic.com>
-    description: NRDOT Collector - nrdot-collector-fips
-    license: Apache 2.0
 snapshot:
   version_template: '{{ incpatch .Version }}-SNAPSHOT-{{.ShortCommit}}'
 checksum:
@@ -118,11 +83,6 @@ docker_manifests:
     image_templates:
       - '{{ .Env.REGISTRY }}/nrdot-collector:{{ .Version }}-fips-amd64'
       - '{{ .Env.REGISTRY }}/nrdot-collector:{{ .Version }}-fips-arm64'
-blobs:
-  - bucket: nr-releases
-    provider: s3
-    region: us-east-1
-    directory: nrdot-collector-releases/nrdot-collector-fips/{{ .Version }}
 changelog:
   disable: "true"
 signs:
