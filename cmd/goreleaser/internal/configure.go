@@ -180,6 +180,7 @@ func Build(dist Distribution) config.Build {
 	dir := "_build"
 	cgo := 0
 	ldflags := []string{"-s", "-w"}
+	env := []string{}
 	gotags := []string{}
 	goexperiment := ""
 
@@ -193,10 +194,6 @@ func Build(dist Distribution) config.Build {
 	cxx := map[string]string{
 		"amd64": "x86_64-linux-gnu-g++",
 		"arm64": "aarch64-linux-gnu-g++",
-	}
-
-	env := []string{
-		fmt.Sprint("CGO_ENABLED=", cgo),
 	}
 
 	if dist.Fips {
@@ -219,6 +216,8 @@ func Build(dist Distribution) config.Build {
 			})
 		}
 	}
+
+	env = append(env, fmt.Sprint("CGO_ENABLED=", cgo))
 
 	return config.Build{
 		ID:     dist.FullName,

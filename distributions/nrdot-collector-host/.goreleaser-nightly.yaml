@@ -41,8 +41,8 @@ builds:
     flags:
       - -trimpath
     env:
-      - CGO_ENABLED=0
       - GOEXPERIMENT=boringcrypto
+      - CGO_ENABLED=1
     overrides:
       - goos: linux
         goarch: amd64
