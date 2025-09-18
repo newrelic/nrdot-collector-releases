@@ -62,8 +62,10 @@ jobs:
         id: cache-sources
         uses: actions/cache@v4
         with:
-          path: distributions/${{ inputs.distribution }}/_build
-          key: "sources-${{ hashFiles('distributions/${{ inputs.distribution }}/manifest.yaml', 'Makefile') }}"
+          path: |
+            distributions/${{ inputs.distribution }}/_build
+            distributions/${{ inputs.distribution }}/_build-fips
+          key: "sources-${{ hashFiles('distributions/${{ inputs.distribution }}/manifest.yaml', 'distributions/${{ inputs.distribution }}/manifest-fips.yaml', 'Makefile') }}"
 
       - name: Generate sources
         if: steps.cache-sources.outputs.cache-hit != 'true'
@@ -132,10 +134,10 @@ jobs:
         run: |
           # Hash files that affect binary generation
           BINARY_HASH="${{ hashFiles('distributions/${{ inputs.distribution }}/.goreleaser*.yaml', 'distributions/${{ inputs.distribution }}/_build/*') }}"
-          echo "binary_key=${{ inputs.distribution }}-${{ github.ref_name }}-${BINARY_HASH}" >> $GITHUB_OUTPUT
+          echo "binary_key=goreleaser-build-${{ inputs.distribution }}-${{ github.ref_name }}-${BINARY_HASH}" >> $GITHUB_OUTPUT
           # Extended hash for Docker build (includes generated sources)
           DOCKER_HASH="${{ hashFiles('distributions/${{ inputs.distribution }}/Dockerfile', 'distributions/${{ inputs.distribution }}/config*.yaml') }}"
-          echo "docker_key=${{ inputs.distribution }}-${{ github.ref_name }}-${DOCKER_HASH}-${BINARY_HASH}" >> $GITHUB_OUTPUT
+          echo "docker_key=docker-build-${{ inputs.distribution }}-${{ github.ref_name }}-${DOCKER_HASH}-${BINARY_HASH}" >> $GITHUB_OUTPUT
       
       - name: Cache GoReleaser build
         id: cache-goreleaser
@@ -225,8 +227,8 @@ jobs:
             ${{ secrets.registry }}/${{ inputs.distribution }}:${{ env.image_tag }}
           cache-from: |
             type=gha,scope=${{ steps.build-cache-keys.outputs.docker_key }}
-            type=gha,scope=${{ inputs.distribution }}-${{ github.ref_name }}
-            type=gha,scope=${{ inputs.distribution }}-main
+            type=gha,scope=docker-build-${{ inputs.distribution }}-${{ github.ref_name }}
+            type=gha,scope=docker-build-${{ inputs.distribution }}-main
           cache-to: |
             type=gha,mode=max,scope=${{ steps.build-cache-keys.outputs.docker_key }}
             ${{ github.ref_name == 'main' && format('type=gha,mode=max,scope={0}-main', inputs.distribution) || format('type=gha,mode=max,scope={0}-{1}', inputs.distribution, github.ref_name) }}
