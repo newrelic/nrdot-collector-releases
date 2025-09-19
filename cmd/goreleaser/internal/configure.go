@@ -91,6 +91,7 @@ func Generate(distFlag string, nightly bool, fips bool) config.Project {
 
 func NewDistribution(baseDist string, nightly bool, fips bool) Distribution {
 	fullName := baseDist
+
 	if fips {
 		fullName += "-fips"
 	}
@@ -327,7 +328,10 @@ func Package(dist Distribution) config.NFPM {
 
 func DockerImageTags(dist Distribution) []string {
 	tags := []string{}
-	if dist.Fips {
+	if dist.Nightly && dist.Fips {
+		tags = append(tags, "{{ .Version }}-nightly-fips")
+		tags = append(tags, "nightly-fips")
+	} else if dist.Fips {
 		tags = append(tags, "{{ .Version }}-fips")
 	} else if dist.Nightly {
 		tags = append(tags, "{{ .Version }}-nightly")
