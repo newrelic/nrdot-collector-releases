@@ -206,7 +206,7 @@ jobs:
         run: |
           cd distributions/${{ inputs.distribution }}
           BINARY_FILE="${{ inputs.distribution }}"
-          if [ ${{ inputs.fips }} ]; then
+          if [ ${{ inputs.fips }} = "true" ]; then
             BINARY_FILE="${BINARY_FILE}-fips"
           fi
           BINARY_PATH="$(find dist -name "${{ inputs.distribution }}*_linux_amd64*" -type d)/$BINARY_FILE"
