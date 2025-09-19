@@ -35,8 +35,9 @@ generate-goreleaser: go
 	@./scripts/generate-goreleaser.sh -d "${DISTRIBUTIONS}" -g ${GO}
 
 generate-sources: go ocb
-	@./scripts/build.sh -d "${DISTRIBUTIONS}" -s true -b ${OTELCOL_BUILDER}
-
+	@./scripts/build.sh -d "${DISTRIBUTIONS}" -s true -b ${OTELCOL_BUILDER} -f false
+	@./scripts/build.sh -d "${DISTRIBUTIONS}" -s true -b ${OTELCOL_BUILDER} -f true
+	
 goreleaser-verify: goreleaser
 	@${GORELEASER} release --snapshot --clean
 
