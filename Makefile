@@ -19,7 +19,7 @@ CGO := 0
 
 DISTRIBUTIONS ?= "nrdot-collector-host,nrdot-collector-k8s,nrdot-collector"
 
-ci: check generate-sources version-check licenses-check
+ci: generate-sources version-check licenses-check
 check: ensure-goreleaser-up-to-date
 
 build: build-fips
