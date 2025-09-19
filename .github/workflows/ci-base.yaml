@@ -168,11 +168,7 @@ jobs:
           ARCH=${ARCH@L}
           OS=$(echo '${{ runner.os }}')
           OS=${OS@L}
-          NIGHTLY=$(echo '')
-          if [ ${{ inputs.nightly }} == 'true' ]; then
-            NIGHTLY=$(echo '-nightly')
-          fi
-          printf -v BINARY_PATTERN "distributions/%s/dist/%s%s-fips_%s_%s*/*" "${{ inputs.distribution}}" "${{ inputs.distribution }}" "${NIGHTLY}" "${OS}" "${ARCH}"
+          printf -v BINARY_PATTERN "distributions/%s/dist/%s-fips_%s_%s*/*" "${{ inputs.distribution}}" "${{ inputs.distribution }}" "${OS}" "${ARCH}"
           echo "Looking for binary pattern: ${BINARY_PATTERN}"
           BINARY=$(find ${BINARY_PATTERN} 2>/dev/null | head -1)
           if [[ -z "${BINARY}" ]]; then
