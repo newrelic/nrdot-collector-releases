@@ -26,4 +26,5 @@ do
     ${GO} run cmd/goreleaser/main.go -d "${distribution}" > "./distributions/${distribution}/.goreleaser.yaml"
     ${GO} run cmd/goreleaser/main.go -d "${distribution}" -n > "./distributions/${distribution}/.goreleaser-nightly.yaml"
     ${GO} run cmd/goreleaser/main.go -d "${distribution}" -f > "./distributions/${distribution}/.goreleaser-fips.yaml"
+    ${GO} run cmd/goreleaser/main.go -d "${distribution}" -n -f > "./distributions/${distribution}/.goreleaser-nightly-fips.yaml"
 done
