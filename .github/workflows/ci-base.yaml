@@ -150,7 +150,6 @@ jobs:
           path: |
             distributions/${{ inputs.distribution }}/dist
             ~/.cache/go-build
-            ~/go/pkg/mod
           key: ${{ steps.build-cache-keys.outputs.binary_key }}
           restore-keys: |
             goreleaser-build-${{ inputs.distribution }}-
