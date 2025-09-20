@@ -19,7 +19,7 @@ CGO := 0
 
 DISTRIBUTIONS ?= "nrdot-collector-host,nrdot-collector-k8s,nrdot-collector"
 
-ci: check build version-check licenses-check
+ci: generate-sources version-check licenses-check
 check: ensure-goreleaser-up-to-date
 
 build: build-fips
@@ -35,8 +35,9 @@ generate-goreleaser: go
 	@./scripts/generate-goreleaser.sh -d "${DISTRIBUTIONS}" -g ${GO}
 
 generate-sources: go ocb
-	@./scripts/build.sh -d "${DISTRIBUTIONS}" -s true -b ${OTELCOL_BUILDER}
-
+	@./scripts/build.sh -d "${DISTRIBUTIONS}" -s true -b ${OTELCOL_BUILDER} -f false
+	@./scripts/build.sh -d "${DISTRIBUTIONS}" -s true -b ${OTELCOL_BUILDER} -f true
+	
 goreleaser-verify: goreleaser
 	@${GORELEASER} release --snapshot --clean
 
