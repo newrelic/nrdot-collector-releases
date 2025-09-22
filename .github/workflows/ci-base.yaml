@@ -136,7 +136,11 @@ jobs:
         id: build-cache-keys
         run: |
           # Hash files that affect binary generation
-          BINARY_HASH="${{ hashFiles('distributions/${{ inputs.distribution }}/.goreleaser*.yaml', 'distributions/${{ inputs.distribution }}/_build/*') }}"
+          if [ ${{inputs.fips}} = "true" ]; then
+            BINARY_HASH="${{ hashFiles('distributions/${{ inputs.distribution }}/.goreleaser-fips.yaml', 'distributions/${{ inputs.distribution }}/_build-fips/*') }}"
+          else
+            BINARY_HASH="${{ hashFiles('distributions/${{ inputs.distribution }}/.goreleaser*.yaml', 'distributions/${{ inputs.distribution }}/_build/*') }}"
+          fi
           echo "binary_key=goreleaser-build-${{ inputs.distribution }}-${{ github.ref_name }}-${BINARY_HASH}" >> $GITHUB_OUTPUT
           # Extended hash for Docker build (includes generated sources)
           DOCKER_HASH="${{ hashFiles('distributions/${{ inputs.distribution }}/Dockerfile', 'distributions/${{ inputs.distribution }}/config*.yaml') }}"
