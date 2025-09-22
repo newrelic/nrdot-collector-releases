@@ -55,6 +55,7 @@ do
          .dist.output_path += "-fips"' manifest.yaml > manifest-fips.yaml
       manifest_file="manifest-fips.yaml"
       build_folder="_build-fips"
+      cgo=1
     fi
 
     mkdir -p $build_folder
