@@ -137,13 +137,22 @@ jobs:
         run: |
           # Hash files that affect binary generation
           if [ ${{inputs.fips}} = "true" ]; then
-            BINARY_HASH="${{ hashFiles('distributions/${{ inputs.distribution }}/.goreleaser-fips.yaml', 'distributions/${{ inputs.distribution }}/_build-fips/*') }}"
+            BINARY_HASH="${{ hashFiles(
+              format('distributions/{0}/.goreleaser-fips.yaml', inputs.distribution),
+              format('distributions/{0}/_build-fips/*', inputs.distribution)
+            ) }}"
           else
-            BINARY_HASH="${{ hashFiles('distributions/${{ inputs.distribution }}/.goreleaser*.yaml', 'distributions/${{ inputs.distribution }}/_build/*') }}"
+            BINARY_HASH="${{ hashFiles(
+              format('distributions/{0}/.goreleaser*.yaml', inputs.distribution),
+              format('distributions/{0}/_build/*', inputs.distribution)
+            ) }}"
           fi
           echo "binary_key=goreleaser-build-${{ inputs.distribution }}-${{ github.ref_name }}-${BINARY_HASH}" >> $GITHUB_OUTPUT
           # Extended hash for Docker build (includes generated sources)
-          DOCKER_HASH="${{ hashFiles('distributions/${{ inputs.distribution }}/Dockerfile', 'distributions/${{ inputs.distribution }}/config*.yaml') }}"
+          DOCKER_HASH="${{ hashFiles(
+            format('distributions/{0}/Dockerfile', inputs.distribution),
+            format('distributions/{0}/config*.yaml', inputs.distribution)
+          ) }}"
           echo "docker_key=docker-build-${{ inputs.distribution }}-${{ github.ref_name }}-${DOCKER_HASH}-${BINARY_HASH}" >> $GITHUB_OUTPUT
       
       - name: Cache GoReleaser build
