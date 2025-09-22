@@ -13,6 +13,7 @@ const (
 	NrApiKey       = "E2E_TEST__NR_API_KEY"
 	NrAccountId    = "E2E_TEST__NR_ACCOUNT_ID"
 	NrApiBaseUrl   = "E2E_TEST__NR_API_BASE_URL"
+	FipsMode	   = "E2E_TEST__FIPS_MODE"
 )
 
 func getEnvVar(envVar string) string {
@@ -51,3 +52,5 @@ func GetNrAccountId() int {
 func GetNrApiBaseUrl() string {
 	return getEnvVar(NrApiBaseUrl)
 }
+
+func GetFipsMode() string {return getEnvVar(FipsMode)}

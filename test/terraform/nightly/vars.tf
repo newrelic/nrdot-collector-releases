@@ -37,3 +37,9 @@ variable "test_environment" {
   default     = "nightly"
 }
 
+variable "fips"  {
+  type        = string
+  description = "Is FIPS compliant or not"
+  default     = ""
+}
+
