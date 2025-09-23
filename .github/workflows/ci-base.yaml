@@ -179,8 +179,6 @@ jobs:
             distributions/${{ inputs.distribution }}/dist
             ~/.cache/go-build
           key: ${{ steps.build-cache-keys.outputs.binary_key }}
-          restore-keys: |
-            goreleaser-build-${{ inputs.distribution }}-
 
       - name: Build binaries & packages with GoReleaser
         id: goreleaser
