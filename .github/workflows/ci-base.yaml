@@ -177,7 +177,6 @@ jobs:
         with:
           path: |
             distributions/${{ inputs.distribution }}/dist
-            ~/.cache/go-build
           key: ${{ steps.build-cache-keys.outputs.binary_key }}
 
       - name: Build binaries & packages with GoReleaser
