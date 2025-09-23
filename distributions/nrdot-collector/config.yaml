@@ -180,10 +180,6 @@ processors:
   resourcedetection/cloud:
     detectors: ["gcp", "ec2", "azure"]
     timeout: 2s
-    ec2:
-      resource_attributes:
-        host.name:
-          enabled: false
     override: true
 
   # Gives OTEL_RESOURCE_ATTRIBUTES precedence over other sources.
