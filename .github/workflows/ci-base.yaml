@@ -265,7 +265,7 @@ jobs:
             type=gha,scope=docker-build-${{ inputs.distribution }}-main
           cache-to: |
             type=gha,mode=max,scope=${{ steps.build-cache-keys.outputs.docker_key }}
-            ${{ github.ref_name == 'main' && format('type=gha,mode=max,scope={0}-main', inputs.distribution) || format('type=gha,mode=max,scope={0}-{1}', inputs.distribution, github.ref_name) }}
+            ${{ github.ref_name == 'main' && format('type=gha,mode=max,scope=docker-build-{0}-main', inputs.distribution) || format('type=gha,mode=max,scope=docker-build-{0}-{1}', inputs.distribution, github.ref_name) }}
 
       - name: Setup local kind cluster
         uses: helm/kind-action@v1
