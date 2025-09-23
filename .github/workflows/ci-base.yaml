@@ -61,19 +61,29 @@ jobs:
       - name: Ensure goreleaser up to date
         run: make check
 
+      - name: Generate sources cache key
+        id: sources-cache-key
+        run: |
+          SOURCES_HASH="${{ hashFiles(
+            format('distributions/{0}/manifest.yaml', inputs.distribution),
+            'Makefile'
+          ) }}"
+          if [ ${{ inputs.fips }} = "true" ]; then
+            SOURCES_PATH="distributions/${{ inputs.distribution }}/_build-fips"
+            SOURCES_KEY="sources-fips-${SOURCES_HASH}"
+          else
+            SOURCES_PATH="distributions/${{ inputs.distribution }}/_build"
+            SOURCES_KEY="sources-${SOURCES_HASH}"
+          fi
+          echo "sources_path=${SOURCES_PATH}" >> $GITHUB_OUTPUT
+          echo "sources_key=sources-${{ inputs.distribution }}-${{ github.ref_name }}-${SOURCES_KEY}" >> $GITHUB_OUTPUT
+
       - name: Cache sources
         id: cache-sources
         uses: actions/cache@v4
         with:
-          path: |
-            distributions/${{ inputs.distribution }}/_build
-            distributions/${{ inputs.distribution }}/_build-fips
-          key: | 
-            "sources-${{ hashFiles(
-              format('distributions/{0}/manifest.yaml', inputs.distribution),
-              format('distributions/{0}/manifest-fips.yaml', inputs.distribution),
-              'Makefile'
-            ) }}"
+          path: ${{ steps.sources-cache-key.outputs.sources_path }}
+          key: ${{ steps.sources-cache-key.outputs.sources_key }}
 
       - name: Generate sources
         if: steps.cache-sources.outputs.cache-hit != 'true'
