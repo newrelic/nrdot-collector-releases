@@ -86,6 +86,7 @@ jobs:
       TF_VAR_nr_backend_url: ${{ secrets.nr_backend_url }}
       TF_VAR_nr_ingest_key: ${{ secrets.nr_ingest_key }}
       TF_VAR_distro: ${{ inputs.distro }}
+      TF_VAR_fips: ${{ inputs.fips }}
 
     steps:
       - name: Checkout repository

@@ -9,7 +9,7 @@ validate=true
 fips=false
 cgo=0
 
-while getopts d:s:l:b:f:c: flag
+while getopts d:s:l:b:f: flag
 
 do
     case "${flag}" in
@@ -18,7 +18,6 @@ do
         l) validate=${OPTARG};;
         b) BUILDER=${OPTARG};;
         f) fips=${OPTARG};;
-        c) cgo=${OPTARG};;
         *) exit 1;;
     esac
 done

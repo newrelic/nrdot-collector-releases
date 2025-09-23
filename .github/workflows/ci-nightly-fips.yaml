@@ -10,6 +10,9 @@ concurrency:
   group: ci-nightly-fips
   cancel-in-progress: false
 
+  env:
+    REGISTRY: '${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com'
+
 jobs:
   build:
     name: Build & Validate
@@ -31,7 +34,7 @@ jobs:
       docker_hub_password: ${{ secrets.OTELCOMM_DOCKER_HUB_PASSWORD }}
       gpg_private_key: ${{ secrets.OTELCOMM_GPG_PRIVATE_KEY_BASE64 }}
       gpg_passphrase: ${{ secrets.OTELCOMM_GPG_PASSPHRASE }}
-      registry: 'newrelic'
+      registry: '${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com'
       nr_backend_url: ${{ secrets.NR_STAGING_BACKEND_URL }}
       nr_ingest_key: ${{ secrets.OTELCOMM_NR_INGEST_KEY }}
       nr_account_id: ${{ secrets.OTELCOMM_NR_TEST_ACCOUNT_ID }}
@@ -152,7 +155,7 @@ jobs:
       execute_apply: true
       distro: ${{ matrix.distribution }}
       nightly_docker_manifest_sha_artifact_name: docker_manifest_sha_${{ matrix.distribution }}
-      fips: "-fips"
+      fips: true
     secrets:
       aws_access_key_id: ${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCESS_KEY_ID }}
       aws_secret_access_key: ${{secrets.OTELCOMM_AWS_TEST_ACC_SECRET_ACCESS_KEY}}
@@ -186,5 +189,5 @@ jobs:
           NR_API_BASE_URL=${{ secrets.NR_STAGING_API_BASE_URL }} \
           DISTRO=${{ matrix.distribution }} \
           K8S_CONTEXT_NAME=aws-ci-e2etest \
-          FIPS="fips"
+          FIPS=true
           make -f ./test/e2e/Makefile ci_test-nightly

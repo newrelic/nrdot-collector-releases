@@ -28,7 +28,7 @@ build: go
 
 build-fips: go
 	@$(MAKE) ocb CGO=1
-	@./scripts/build.sh -d "${DISTRIBUTIONS}" -b ${OTELCOL_BUILDER} -f true -c 1
+	@./scripts/build.sh -d "${DISTRIBUTIONS}" -b ${OTELCOL_BUILDER} -f true
 
 generate: generate-sources generate-goreleaser
 

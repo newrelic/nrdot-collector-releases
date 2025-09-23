@@ -38,8 +38,8 @@ variable "test_environment" {
 }
 
 variable "fips"  {
-  type        = string
+  type        = bool
   description = "Is FIPS compliant or not"
-  default     = ""
+  default     = false
 }
 
