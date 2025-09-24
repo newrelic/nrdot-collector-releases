@@ -124,7 +124,7 @@ jobs:
       - name: Extract Docker Manifest SHA
         run: | 
           docker_manifest_sha=$(echo '${{ steps.goreleaser_publish.outputs.artifacts }}' |
-            yq -r '.[] | select(.type == "Docker Manifest") | .extra.Digest')
+            jq -r '.[] | select(.type == "Docker Manifest") | select(.name | endswith(":nightly")) | .extra.Digest')
           echo "docker manifest sha: ${docker_manifest_sha}"
           echo -n "${docker_manifest_sha}" > docker_manifest_sha_${{ matrix.distribution }}
       - name: Upload Docker Manifest SHA
