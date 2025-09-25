@@ -10,6 +10,9 @@ concurrency:
   group: ci-nightly-fips
   cancel-in-progress: false
 
+permissions:
+  contents: read
+
 env:
   REGISTRY: '${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com'
 
