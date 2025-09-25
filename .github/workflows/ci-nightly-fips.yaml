@@ -10,8 +10,8 @@ concurrency:
   group: ci-nightly-fips
   cancel-in-progress: false
 
-  env:
-    REGISTRY: '${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com'
+env:
+  REGISTRY: '${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com'
 
 jobs:
   build:
@@ -128,6 +128,7 @@ jobs:
         run: |
           docker_manifest_sha=$(echo '${{ steps.goreleaser_publish.outputs.artifacts }}' |
             yq -r '.[] | select(.type == "Docker Manifest") | .extra.Digest')
+            jq -r '.[] | select(.type == "Docker Manifest") | select(.name | endswith(":nightly-fips")) | .extra.Digest')
           echo "docker manifest sha: ${docker_manifest_sha}"
           echo -n "${docker_manifest_sha}" > docker_manifest_sha_${{ matrix.distribution }}
       - name: Upload Docker Manifest SHA
