@@ -16,31 +16,44 @@ TOOLS_BIN_NAMES := $(addprefix $(TOOLS_BIN_DIR)/, $(notdir $(shell echo $(TOOLS_
 GO_LICENCE_DETECTOR        := $(TOOLS_BIN_DIR)/go-licence-detector
 GO_LICENCE_DETECTOR_CONFIG   := $(SRC_ROOT)/internal/assets/license/rules.json
 
-DISTRIBUTIONS ?= "nrdot-collector-host,nrdot-collector-k8s,nrdot-collector,nrdot-collector-experimental"
+DISTRO ?= nrdot-collector-host
+ALL_DISTROS = nrdot-collector-host nrdot-collector-k8s nrdot-collector nrdot-collector-experimental
 
-ci: check build build-fips version-check licenses-check
-check: ensure-goreleaser-up-to-date
+.PHONY: ci
+ci: pre-sourcegen-check-$(DISTRO) generate-sources-$(DISTRO) generate-sources-$(DISTRO)-fips post-sourcegen-check-$(DISTRO)
 
-build: go ocb
-	@./scripts/build.sh -d "${DISTRIBUTIONS}" -b ${OTELCOL_BUILDER}
+.PHONY: pre-sourcegen-check-$(DISTRO)
+pre-sourcegen-check-$(DISTRO): ensure-goreleaser-up-to-date-$(DISTRO) version-check
 
-build-fips: go ocb
-	@./scripts/build.sh -d "${DISTRIBUTIONS}" -b ${OTELCOL_BUILDER} -f true
+.PHONY: post-sourcegen-check-$(DISTRO)
+post-sourcegen-check-$(DISTRO): licenses-check-$(DISTRO)
 
-generate: generate-sources generate-goreleaser
+.PHONY: generate-sources-$(DISTRO)
+generate-sources-$(DISTRO): go ocb
+	@./scripts/build.sh -d "$(DISTRO)" -b ${OTELCOL_BUILDER}
 
-generate-goreleaser: go
-	@./scripts/generate-goreleaser.sh -d "${DISTRIBUTIONS}" -g ${GO}
+.PHONY: generate-sources-$(DISTRO)-fips
+generate-sources-$(DISTRO)-fips: go ocb
+	@./scripts/build.sh -d "$(DISTRO)" -b ${OTELCOL_BUILDER} -f true
 
-generate-sources: go ocb
-	@./scripts/build.sh -d "${DISTRIBUTIONS}" -s true -b ${OTELCOL_BUILDER}
+.PHONY: generate-goreleaser
+generate-goreleaser:
+	@for d in $(ALL_DISTROS); do \
+		make generate-goreleaser-$$d DISTRO=$$d; \
+	done
 
-goreleaser-verify: goreleaser
-	@${GORELEASER} release --snapshot --clean
+.PHONY: generate-goreleaser-$(DISTRO)
+generate-goreleaser-$(DISTRO): go
+	@./scripts/generate-goreleaser.sh -d "$(DISTRO)" -g ${GO}
 
-ensure-goreleaser-up-to-date: generate-goreleaser
-	@git diff -s --exit-code distributions/*/.goreleaser.yaml || (echo "Check failed: The goreleaser templates have changed but the .goreleaser.yamls haven't. Run 'make generate-goreleaser' and update your PR." && exit 1)
+.PHONY: ensure-goreleaser-up-to-date-$(DISTRO)
+ensure-goreleaser-up-to-date-$(DISTRO): generate-goreleaser-$(DISTRO)
+	@{ \
+		git diff -s --exit-code distributions/*/.goreleaser*.yaml || \
+		(echo "📋 Check failed: The goreleaser templates have changed but the .goreleaser.yamls haven't. Run 'make generate-goreleaser' and update your PR." && exit 1) \
+	} && echo "📋 Goreleaser files are up to date."
 
+.PHONY: validate-components
 validate-components:
 	@./scripts/validate-components.sh
 
@@ -148,17 +161,51 @@ $(TOOLS_BIN_NAMES): $(TOOLS_BIN_DIR) $(TOOLS_MOD_DIR)/go.mod
 FILENAME?=$(shell git branch --show-current)
 NOTICE_OUTPUT?=THIRD_PARTY_NOTICES.md
 
-.PHONY: licenses
-licenses: go generate-sources $(GO_LICENCE_DETECTOR)
-	@./scripts/licenses.sh -d "${DISTRIBUTIONS}" -b ${GO_LICENCE_DETECTOR} -n ${NOTICE_OUTPUT} -g ${GO}
 
-.PHONY: licenses-check
-licenses-check: licenses
+
+.PHONY: licenses
+licenses:
+	@for d in $(ALL_DISTROS); do \
+		make licenses-$$d DISTRO=$$d; \
+	done
+
+.PHONY: licenses-$(DISTRO)
+licenses-$(DISTRO): go $(GO_LICENCE_DETECTOR)
+	@{ if [ ! -d "distributions/$(DISTRO)/_build" ]; then $(MAKE) generate-sources-$(DISTRO); fi }
+	@./scripts/licenses.sh -d "$(DISTRO)" -b ${GO_LICENCE_DETECTOR} -n ${NOTICE_OUTPUT} -g ${GO}
+
+.PHONY: licenses-check-$(DISTRO)
+licenses-check-$(DISTRO): licenses-$(DISTRO)
 	@git diff --name-only | grep -q $(NOTICE_OUTPUT) \
 		&& { \
-			echo "Third party notices out of date, please run \"make licenses\" and commit the changes in this PR.";\
+			echo "📜 Third party notices out of date, please run \"make licenses\" and commit the changes in this PR.";\
 			echo "Diff of $(NOTICE_OUTPUT):";\
 			git --no-pager diff HEAD -- */$(NOTICE_OUTPUT);\
 			exit 1;\
 		} \
-		|| exit 0
+		|| { \
+			echo "📜 Third party notices up to date";\
+			exit 0;\
+		}
+
+
+.PHONY: clean
+clean: clean-build clean-dist clean-tools clean-act-tmp
+
+.PHONY: clean-build
+clean-build:
+	@rm -rf distributions/*/_build
+	@rm -rf distributions/*/_build-fips
+
+.PHONY: clean-dist
+clean-dist:
+	@rm -rf distributions/*/dist
+
+.PHONY: clean-tools
+clean-tools:
+	@rm -rf .tools
+
+.PHONY: clean-act-tmp
+clean-act-tmp:
+	@rm -rf .artifacts
+	@rm -rf .tmp

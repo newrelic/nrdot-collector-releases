@@ -26,7 +26,7 @@ variable "nr_ingest_key" {
   sensitive   = true
 }
 
-variable "test_environment" {
+variable "test_env_prefix" {
   type        = string
   description = "Name of test environment to distinguish entities"
   default     = "nightly"

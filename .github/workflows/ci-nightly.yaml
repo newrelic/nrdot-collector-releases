@@ -2,8 +2,9 @@ name: 🔄 CI | Nightly Tests (Regular & FIPS)
 on:
   workflow_dispatch:
   schedule:
-    # Scheduled to run in the morning (PT) on every day-of-week from Monday through Friday.
-    - cron: "0 15 * * 1-5"
+    # Scheduled to run in the morning (ET) on every day-of-week from Monday through Friday.
+    - cron: '0 10 * * 1-5'
+
 concurrency:
   group: ci-nightly
   cancel-in-progress: false

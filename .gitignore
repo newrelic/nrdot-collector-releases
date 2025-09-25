@@ -30,7 +30,9 @@ test/**/charts/*.tgz
 
 # tmp directory used in act builds
 .tmp
+.artifacts
 
 # Claude Code local context
 CLAUDE.local.md
 .claude/settings.local.json
+

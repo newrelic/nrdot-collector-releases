@@ -1,12 +1,12 @@
 locals {
   instance_config = [
     {
-      hostname_suffix    = "ec2_ubuntu22_04-0"
+      test_key_suffix    = "ec2_ubuntu22_04-0"
       release_verion     = "22.04"
       release_short_name = "jammy"
     },
     {
-      hostname_suffix    = "ec2_ubuntu24_04-0"
+      test_key_suffix    = "ec2_ubuntu24_04-0"
       release_verion     = "24.04"
       release_short_name = "noble"
     },

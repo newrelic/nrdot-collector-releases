@@ -71,11 +71,11 @@ jobs:
           cache: ${{ env.caching_enabled }}
           check-latest: true
 
-      - name: Tidy go.mod files
+      - name: Download dependencies
         run: go mod tidy
 
-      - name: Ensure goreleaser up to date
-        run: make check
+      - name: Run checks
+        run: make pre-sourcegen-check-${{ inputs.distribution }} DISTRO=${{ inputs.distribution }}
 
       - name: Generate sources cache key
         id: sources-cache-key
@@ -101,7 +101,7 @@ jobs:
 
       - name: Generate sources
         if: steps.cache-sources.outputs.cache-hit != 'true'
-        run: make ci DISTRIBUTIONS=${{ inputs.distribution }}
+        run: make ci DISTRO=${{ inputs.distribution }}
 
       - name: Skip source generation (cached)
         if: steps.cache-sources.outputs.cache-hit == 'true'
