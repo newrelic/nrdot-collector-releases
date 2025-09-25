@@ -12,6 +12,11 @@ const (
 
 func NewNrQueryHostNamePattern(envName string, deployId string, hostType string) string {
 	distro := envutil.GetDistro()
+
+	if envutil.IsFipsMode() {
+		envName = envName + hostNameSegmentSeparator + "fips"
+	}
+
 	hostId := Wildcard
 	return strings.Join([]string{envName, deployId, distro, hostType, hostId}, hostNameSegmentSeparator)
 }

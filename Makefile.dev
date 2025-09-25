@@ -16,3 +16,8 @@ ci_nightly_custom_matrix:
 	@# repeat --matrix arg for multiple distros
 	act schedule -W .github/workflows/ci-nightly.yaml \
 		--matrix distribution:nrdot-collector-host
+
+ci_nightly_fips_custom_matrix:
+	@# repeat --matrix arg for multiple distros
+	act schedule -W .github/workflows/ci-nightly-fips.yaml \
+		--matrix distribution:nrdot-collector-host

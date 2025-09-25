@@ -51,6 +51,11 @@ on:
         type: string
         required: false
         default: ""
+      fips:
+        description: "whether or not fips compliant"
+        type: boolean
+        required: false
+        default: false
     secrets:
       aws_access_key_id:
         description: "AWS credentials for tf with permission to assume resource-provider"
@@ -81,6 +86,7 @@ jobs:
       TF_VAR_nr_backend_url: ${{ secrets.nr_backend_url }}
       TF_VAR_nr_ingest_key: ${{ secrets.nr_ingest_key }}
       TF_VAR_distro: ${{ inputs.distro }}
+      TF_VAR_fips: ${{ inputs.fips }}
 
     steps:
       - name: Checkout repository

@@ -105,7 +105,9 @@ jobs:
 
       - name: Build Args
         run: |
-          if [ ${{ inputs.nightly }} = "true" ]; then
+          if [ ${{ inputs.nightly }} = "true" && ${{ inputs.fips }} = "true" ]; then
+            echo "goreleaser_args=--snapshot --clean --skip=publish,validate --timeout 2h --config .goreleaser-nightly-fips.yaml" >> $GITHUB_ENV
+          elif [ ${{ inputs.nightly }} = "true" ]; then
             echo "goreleaser_args=--snapshot --clean --skip=publish,validate --timeout 2h --config .goreleaser-nightly.yaml" >> $GITHUB_ENV
           elif [ ${{ inputs.fips }} = "true" ]; then
             echo "goreleaser_args=--snapshot --clean --skip=publish,validate --timeout 2h --config .goreleaser-fips.yaml" >> $GITHUB_ENV
@@ -136,7 +138,9 @@ jobs:
           ARCH=${ARCH@L}
           echo "version=$VERSION" >> $GITHUB_ENV
           echo "arch=$ARCH" >> $GITHUB_ENV
-          if [ ${{ inputs.nightly }} = "true" ]; then
+          if [ ${{ inputs.nightly }} = "true" && ${{ inputs.fips }} = "true" ]; then
+            echo "image_tag=$VERSION-nightly-fips-$ARCH" >> $GITHUB_ENV
+          elif [ ${{ inputs.nightly }} = "true" ]; then
             echo "image_tag=$VERSION-nightly-$ARCH" >> $GITHUB_ENV
           elif [ ${{ inputs.fips }} = "true" ]; then
             echo "image_tag=$VERSION-fips-$ARCH" >> $GITHUB_ENV
@@ -173,7 +177,7 @@ jobs:
           fi
           go tool nm ${BINARY} | grep '_Cfunc__goboringcrypto_' || (echo 'fips distro should not use standard crypto' && exit 1)
       
-      - name: Validay FIPS ciphers
+      - name: Validate FIPS ciphers
         if: inputs.fips == true
         run: |
           ./fips/validation/validate.sh "${{ secrets.registry }}/${{ inputs.distribution }}:${{ env.image_tag }}"
