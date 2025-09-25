@@ -50,6 +50,11 @@ func TestNightlyCollectorWithNrBackend(t *testing.T) {
 				testCaseSpec.WhereClause = clause
 			}
 
+			if envutil.IsFipsMode() {
+				testEnvironment["clusterNamespace"] = fmt.Sprintf("%s%s", envutil.GetK8sContextName(), "-fips")
+				testCaseSpec.WhereClause = fmt.Sprintf("%s AND k8s.namespace.name='{{ .clusterNamespace }}'", testCaseSpec.WhereClause)
+			}
+
 			whereClause := testCaseSpec.RenderWhereClause(testEnvironment)
 			for caseName, testCase := range testCaseSpec.GetTestCasesWithout(sut.ExcludedMetrics) {
 				t.Run(fmt.Sprintf("%s/%s/%s", sut.TestKeyPattern, testCaseSpecName, caseName), func(t *testing.T) {

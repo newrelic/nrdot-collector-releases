@@ -13,7 +13,7 @@ const (
 func NewNrQueryHostNamePattern(envName string, deployId string, hostType string) string {
 	distro := envutil.GetDistro()
 
-	if envutil.GetFipsMode() {
+	if envutil.IsFipsMode() {
 		envName = envName + hostNameSegmentSeparator + "fips"
 	}
 

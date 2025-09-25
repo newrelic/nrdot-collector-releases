@@ -1,7 +1,7 @@
 locals {
   fips_str                                        = var.fips ? "-fips" : ""
   test_spec                                       = yamldecode(file("${path.module}/../../../distributions/${var.distro}/test/spec-nightly.yaml"))
-  ec2_enabled                                     = local.test_spec.nightly.ec2.enabled
+  ec2_enabled                                     = local.test_spec.nightly.ec2.enabled || !var.fips
   chart_name                                      = local.test_spec.nightly.collectorChart.name
   chart_version                                   = try(local.test_spec.nightly.collectorChart.version, null)
   releases_bucket_name                            = "nr-releases"
@@ -67,6 +67,13 @@ resource "helm_release" "ci_e2e_nightly_nr_backend" {
     name  = "demoService.enabled"
     value = "true"
   }
+
+  set {
+    // avoid name conflicts for global resources like ClusterRole when fips + non-fips nightly run side by side
+    name  = "fullnameOverride"
+    // usage of namespace has no particular significance, it's just guaranteed to be different for fips vs non-fips
+    value = local.k8s_namespace
+  }
 }
 
 resource "helm_release" "ci_e2e_nightly_nr_k8s_otel_collector" {
@@ -108,6 +115,13 @@ resource "helm_release" "ci_e2e_nightly_nr_k8s_otel_collector" {
   set {
     name  = "lowDataMode"
     value = "false"
+  }
+
+  set {
+    // avoid name conflicts for global resources like ClusterRole when fips + non-fips nightly run side by side
+    name  = "fullnameOverride"
+    // usage of namespace has no particular significance, it's just guaranteed to be different for fips vs non-fips
+    value = local.k8s_namespace
   }
 }
 

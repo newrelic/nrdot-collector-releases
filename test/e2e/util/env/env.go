@@ -53,6 +53,6 @@ func GetNrApiBaseUrl() string {
 	return getEnvVar(NrApiBaseUrl)
 }
 
-func GetFipsMode() string {
+func IsFipsMode() bool {
 	return getEnvVar(FipsMode)
 }
