@@ -67,13 +67,6 @@ resource "helm_release" "ci_e2e_nightly_nr_backend" {
     name  = "demoService.enabled"
     value = "true"
   }
-
-  set {
-    // avoid name conflicts for global resources like ClusterRole when fips + non-fips nightly run side by side
-    name  = "fullnameOverride"
-    // usage of namespace has no particular significance, it's just guaranteed to be different for fips vs non-fips
-    value = local.k8s_namespace
-  }
 }
 
 resource "helm_release" "ci_e2e_nightly_nr_k8s_otel_collector" {
