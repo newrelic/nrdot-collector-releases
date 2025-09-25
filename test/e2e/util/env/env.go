@@ -54,5 +54,5 @@ func GetNrApiBaseUrl() string {
 }
 
 func IsFipsMode() bool {
-	return getEnvVar(FipsMode)
+	return getEnvVar(FipsMode) == "true"
 }
