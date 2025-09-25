@@ -2,7 +2,7 @@ dist:
   module: github.com/newrelic/nrdot-collector-releases/nrdot-collector-host
   name: nrdot-collector-host
   description: NRDOT Collector Host
-  version: 1.4.0
+  version: 1.5.0
   output_path: ./_build
 receivers:
   - gomod: go.opentelemetry.io/collector/receiver/otlpreceiver v0.135.0
