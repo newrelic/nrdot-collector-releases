@@ -8,9 +8,4 @@ secrets:
   nrBackendUrl: PLACEHOLDER
   nrIngestKey: PLACEHOLDER
 
-collector:
-  hostname: nrdot-collector-default-hostname
-
 testKey: testKey-default-value
-
-clusterName: default-cluster-name
