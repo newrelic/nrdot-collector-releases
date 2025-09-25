@@ -13,9 +13,9 @@ variable "test_environment" {
   default     = "nightly"
 }
 
-variable "deploy_id" {
+variable "test_key_prefix" {
   type        = string
-  description = "An id to uniquely identify a deployment to an environment, e.g. for change tracking"
+  description = "An id to uniquely identify a test run deployment, e.g. for tracking different versions or distinguish parallel deployments"
 }
 
 variable "vpc_id" {
