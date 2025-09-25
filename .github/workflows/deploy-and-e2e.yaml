@@ -101,7 +101,7 @@ jobs:
       TF_VAR_distro: ${{ inputs.distro }}
       TF_VAR_fips: ${{ inputs.fips }}
       TF_VAR_nightly_docker_manifest_sha: ${{ needs.setup.outputs.docker-manifest-sha }}
-      TF_VAR_k8s_namespace_prefix: ${{ inputs.workspace_prefix }}
+      TF_VAR_test_env_prefix: ${{ inputs.workspace_prefix }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

@@ -1,13 +1,14 @@
 locals {
   fips_str                                        = var.fips ? "-fips" : ""
-  test_env_name                                   = "nightly${local.fips_str}"
+  test_env_name                                   = "${var.test_env_prefix}${local.fips_str}"
+  k8s_namespace                                   = "${local.test_env_name}-${var.distro}"
+  test_key_prefix                                 = "${local.test_env_name}-${random_string.deploy_id.result}-${var.distro}"
   test_spec                                       = yamldecode(file("${path.module}/../../../distributions/${var.distro}/test/spec-nightly.yaml"))
   ec2_enabled                                     = local.test_spec.nightly.ec2.enabled || !var.fips
   chart_name                                      = local.test_spec.nightly.collectorChart.name
   chart_version                                   = try(local.test_spec.nightly.collectorChart.version, null)
   releases_bucket_name                            = "nr-releases"
   required_permissions_boundary_arn_for_new_roles = "arn:aws:iam::${var.aws_account_id}:policy/resource-provisioner-boundary"
-  k8s_namespace                                   = "${var.k8s_namespace_prefix}${local.fips_str}-${var.distro}"
 }
 
 resource "random_string" "deploy_id" {
@@ -56,17 +57,7 @@ resource "helm_release" "ci_e2e_nightly_nr_backend" {
 
   set {
     name  = "testKey"
-    value = "${local.test_env_name}-${random_string.deploy_id.result}-${var.distro}-k8s_node"
-  }
-
-  set {
-    name  = "clusterName"
-    value = data.aws_eks_cluster.eks_cluster.name
-  }
-
-  set {
-    name  = "demoService.enabled"
-    value = "true"
+    value = "${local.test_key_prefix}-k8s_node"
   }
 }
 
@@ -128,6 +119,6 @@ module "ci_e2e_ec2" {
   nr_ingest_key        = var.nr_ingest_key
   # reuse vpc to avoid having to pay for second NAT gateway for this simple use case
   vpc_id              = data.aws_eks_cluster.eks_cluster.vpc_config[0].vpc_id
-  deploy_id           = random_string.deploy_id.result
+  test_key_prefix     = local.test_key_prefix
   permission_boundary = local.required_permissions_boundary_arn_for_new_roles
 }

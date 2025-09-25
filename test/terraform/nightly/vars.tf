@@ -31,7 +31,7 @@ variable "nr_ingest_key" {
   sensitive   = true
 }
 
-variable "test_environment" {
+variable "test_env_prefix" {
   type        = string
   description = "Name of test environment to distinguish entities"
   default     = "nightly"
@@ -41,10 +41,4 @@ variable "fips"  {
   type        = bool
   description = "Is FIPS compliant or not"
   default     = false
-}
-
-variable "k8s_namespace_prefix" {
-  type        = string
-  description = "K8s namespace to deploy to"
-  default     = "nightly"
 }
