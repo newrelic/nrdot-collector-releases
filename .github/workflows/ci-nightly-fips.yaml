@@ -22,9 +22,9 @@ jobs:
     strategy:
       matrix:
         distribution:
+          - nrdot-collector
           - nrdot-collector-host
           - nrdot-collector-k8s
-          - nrdot-collector
     uses: ./.github/workflows/ci-base.yaml
     with:
       nightly: true
