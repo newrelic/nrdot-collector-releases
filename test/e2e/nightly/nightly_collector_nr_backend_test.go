@@ -38,21 +38,13 @@ func TestNightlyCollectorWithNrBackend(t *testing.T) {
 			t.Logf("Skipping nightly system-under-test: %s", sut.TestKeyPattern)
 			continue
 		}
-		testEnvironment := map[string]string{
-			"clusterName": envutil.GetK8sContextName(),
-			"testKey":     sut.TestKeyPattern,
-		}
+		testEnvironment := newTestEnvironment(sut)
 		for _, testCaseSpecName := range testSpec.Nightly.TestCaseSpecs {
 			testCaseSpec := spec.LoadTestCaseSpec(testCaseSpecName)
 
 			// Allow overriding where clause in distro test specs
 			if clause, exists := testSpec.WhereClause[testCaseSpecName]; exists {
 				testCaseSpec.WhereClause = clause
-			}
-
-			if envutil.IsFipsMode() {
-				testEnvironment["clusterNamespace"] = fmt.Sprintf("%s%s", envutil.GetK8sContextName(), "-fips")
-				testCaseSpec.WhereClause = fmt.Sprintf("%s AND k8s.namespace.name='{{ .clusterNamespace }}'", testCaseSpec.WhereClause)
 			}
 
 			whereClause := testCaseSpec.RenderWhereClause(testEnvironment)
@@ -68,5 +60,16 @@ func TestNightlyCollectorWithNrBackend(t *testing.T) {
 				})
 			}
 		}
+	}
+}
+
+func newTestEnvironment(sut spec.NightlySystemUnderTest) map[string]string {
+	clusterName := envutil.GetK8sContextName()
+	if envutil.IsFipsMode() {
+		clusterName += "-fips"
+	}
+	return map[string]string{
+		"clusterName": clusterName,
+		"testKey":     sut.TestKeyPattern,
 	}
 }
