@@ -148,19 +148,6 @@ jobs:
             echo "image_tag=$VERSION-$ARCH" >> $GITHUB_ENV
           fi
 
-      - name: Setup local kind cluster
-        uses: helm/kind-action@v1
-        with:
-          version: v0.21.0
-          cluster_name: ${{ inputs.test_cluster_name }}
-          wait: 60s
-
-      - name: Load image into kind cluster
-        run: |
-          kind load docker-image "${{ secrets.registry }}/${{ inputs.distribution }}:${{ env.image_tag }}" --name ${{ inputs.test_cluster_name }}
-
-      - uses: azure/setup-helm@v4.2.0
-
       - name: Validate Usage of BoringCrypto
         if: inputs.fips == true
         run: |
@@ -182,7 +169,20 @@ jobs:
             exit 1
           fi
           go tool nm ${BINARY} | grep '_Cfunc__goboringcrypto_' || (echo 'fips distro should not use standard crypto' && exit 1)
-      
+
+      - name: Setup local kind cluster
+        uses: helm/kind-action@v1
+        with:
+          version: v0.21.0
+          cluster_name: ${{ inputs.test_cluster_name }}
+          wait: 60s
+
+      - name: Load image into kind cluster
+        run: |
+          kind load docker-image "${{ secrets.registry }}/${{ inputs.distribution }}:${{ env.image_tag }}" --name ${{ inputs.test_cluster_name }}
+
+      - uses: azure/setup-helm@v4.2.0
+
       - name: Validate FIPS ciphers
         if: inputs.fips == true
         run: |
