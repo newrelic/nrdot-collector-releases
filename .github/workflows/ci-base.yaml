@@ -105,11 +105,11 @@ jobs:
 
       - name: Build Args
         run: |
-          if [ ${{ inputs.nightly }} = "true" && ${{ inputs.fips }} = "true" ]; then
+          if [ ${{ inputs.nightly }} ] && [ ${{ inputs.fips }} ]; then
             echo "goreleaser_args=--snapshot --clean --skip=publish,validate --timeout 2h --config .goreleaser-nightly-fips.yaml" >> $GITHUB_ENV
-          elif [ ${{ inputs.nightly }} = "true" ]; then
+          elif [ ${{ inputs.nightly }} ]; then
             echo "goreleaser_args=--snapshot --clean --skip=publish,validate --timeout 2h --config .goreleaser-nightly.yaml" >> $GITHUB_ENV
-          elif [ ${{ inputs.fips }} = "true" ]; then
+          elif [ ${{ inputs.fips }} ]; then
             echo "goreleaser_args=--snapshot --clean --skip=publish,validate --timeout 2h --config .goreleaser-fips.yaml" >> $GITHUB_ENV
           elif [ ${{github.event.pull_request.user.login == 'dependabot[bot]' }} ]; then
             echo "goreleaser_args=--snapshot --clean --skip=publish,validate,sign --timeout 2h" >> $GITHUB_ENV
