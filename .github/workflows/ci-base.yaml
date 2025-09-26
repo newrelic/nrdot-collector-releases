@@ -168,6 +168,12 @@ jobs:
           ARCH=${ARCH@L}
           OS=$(echo '${{ runner.os }}')
           OS=${OS@L}
+          echo '======Distros Folders START======'
+          ls distributions/*
+          echo '======Distros Folders END======'
+          echo '======Dist Folders START ======'
+          ls distributions/*/dist
+          echo '======Dist Folders END======'
           printf -v BINARY_PATTERN "distributions/%s/dist/%s-fips_%s_%s*/*" "${{ inputs.distribution}}" "${{ inputs.distribution }}" "${OS}" "${ARCH}"
           echo "Looking for binary pattern: ${BINARY_PATTERN}"
           BINARY=$(find ${BINARY_PATTERN} 2>/dev/null | head -1)
