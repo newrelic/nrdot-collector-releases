@@ -95,7 +95,7 @@ jobs:
         if: steps.cache-sources.outputs.cache-hit == 'true'
         run: echo "✅ Source generation skipped - no source changes detected"
 
-      - name: Verify that source files exist
+      - name: Verify source files exist
         run: |
           SOURCE_PATH="distributions/${{inputs.distribution}}/_build"
           files=(
