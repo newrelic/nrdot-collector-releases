@@ -111,6 +111,8 @@ jobs:
             if [ ! -f "$file" ]; then
               echo "❌ $file not found!"
               exit 1
+            else
+              echo "$file found!"
             fi
           done
           echo "✅ All source files found!"
