@@ -112,7 +112,7 @@ jobs:
               echo "❌ $file not found!"
               exit 1
             else
-              echo "$file found!"
+              echo "Found: $file"
             fi
           done
           echo "✅ All source files found!"
