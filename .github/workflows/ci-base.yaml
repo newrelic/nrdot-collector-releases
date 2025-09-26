@@ -75,7 +75,7 @@ jobs:
             'scripts/build.sh',
             'Makefile'
           ) }}"
-          echo "sources_key=sources-${{ inputs.distribution }}-${SOURCES_KEY}" >> $GITHUB_OUTPUT
+          echo "sources_key=sources-${{ inputs.distribution }}-${SOURCES_HASH}" >> $GITHUB_OUTPUT
 
       - name: Cache sources
         id: cache-sources
