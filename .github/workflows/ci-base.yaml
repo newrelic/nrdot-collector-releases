@@ -41,6 +41,9 @@ on:
 permissions:
   contents: read
 
+env:
+  caching_enabled: ${{ !inputs.nightly }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -49,10 +52,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0 # required for tag metadata
-
-      - name: Setup global environment variables
-        run: |
-          echo "caching_enabled=${{ !inputs.nightly && !env.ACT }}" >> $GITHUB_ENV
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -68,7 +67,7 @@ jobs:
 
       - name: Generate sources cache key
         id: sources-cache-key
-        if: env.caching_enabled == 'true'
+        if: env.CACHING_ENABLED
         run: |
           SOURCES_HASH="${{ hashFiles(
             format('distributions/{0}/manifest.yaml', inputs.distribution),
