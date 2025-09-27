@@ -67,7 +67,7 @@ jobs:
 
       - name: Generate sources cache key
         id: sources-cache-key
-        if: env.CACHING_ENABLED
+        if: ${{ env.caching_enabled }}
         run: |
           SOURCES_HASH="${{ hashFiles(
             format('distributions/{0}/manifest.yaml', inputs.distribution),
@@ -79,7 +79,7 @@ jobs:
       - name: Cache sources
         id: cache-sources
         uses: actions/cache@v4
-        if: env.caching_enabled == 'true'
+        if: ${{ env.caching_enabled }}
         with:
           path: |
             distributions/${{ inputs.distribution }}/_build
