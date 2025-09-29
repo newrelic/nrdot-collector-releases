@@ -97,14 +97,20 @@ jobs:
       - name: Verify source files exist
         run: |
           SOURCE_PATH="distributions/${{inputs.distribution}}/_build"
+          if [ ${{ inputs.fips }} = "true" ]; then
+            SOURCE_PATH="${SOURCE_PATH}-fips"
+          fi
+          if [ ! -d "$SOURCE_PATH" ]; then
+            echo "❌ $SOURCE_PATH not found!"
+            exit 1
+          fi
           files=(
             "build.log" "components.go" "go.mod" "go.sum"
             "main_others.go" "main_windows.go" "main.go"
           )
           if [ ${{ inputs.fips }} = "true" ]; then
-            SOURCE_PATH="${SOURCE_PATH}-fips"
             files+=("fips.go")
-          fi
+          fi  
           cd "$SOURCE_PATH"
           for file in "${files[@]}"; do
             if [ ! -f "$file" ]; then
