@@ -18,7 +18,7 @@ GO_LICENCE_DETECTOR_CONFIG   := $(SRC_ROOT)/internal/assets/license/rules.json
 
 DISTRIBUTIONS ?= "nrdot-collector-host,nrdot-collector-k8s,nrdot-collector"
 
-ci: build build-fips version-check licenses-check
+ci: check build build-fips version-check licenses-check
 check: ensure-goreleaser-up-to-date
 
 build: go ocb
