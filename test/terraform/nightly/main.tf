@@ -1,5 +1,6 @@
 locals {
   fips_str                                        = var.fips ? "-fips" : ""
+  test_env_name                                   = "nightly${local.fips_str}"
   test_spec                                       = yamldecode(file("${path.module}/../../../distributions/${var.distro}/test/spec-nightly.yaml"))
   ec2_enabled                                     = local.test_spec.nightly.ec2.enabled || !var.fips
   chart_name                                      = local.test_spec.nightly.collectorChart.name
@@ -21,7 +22,7 @@ data "aws_ecr_repository" "ecr_repo" {
 
 resource "helm_release" "ci_e2e_nightly_nr_backend" {
   count = local.chart_name == "nr_backend" ? 1 : 0
-  name  = "nightly${local.fips_str}-nr-backend-${var.distro}"
+  name  = "${local.test_env_name}${local.fips_str}-nr-backend-${var.distro}"
   chart = "../../charts/nr_backend"
 
   create_namespace  = true
@@ -55,7 +56,7 @@ resource "helm_release" "ci_e2e_nightly_nr_backend" {
 
   set {
     name  = "testKey"
-    value = "${var.test_environment}${local.fips_str}-${random_string.deploy_id.result}-${var.distro}-k8s_node"
+    value = "${local.test_env_name}-${random_string.deploy_id.result}-${var.distro}-k8s_node"
   }
 
   set {
@@ -71,7 +72,7 @@ resource "helm_release" "ci_e2e_nightly_nr_backend" {
 
 resource "helm_release" "ci_e2e_nightly_nr_k8s_otel_collector" {
   count      = local.chart_name == "newrelic/nr-k8s-otel-collector" ? 1 : 0
-  name       = "nightly${local.fips_str}-nr-k8s-otel-${var.distro}"
+  name       = "${local.test_env_name}-nr-k8s-otel-${var.distro}"
   repository = "https://helm-charts.newrelic.com"
   chart      = "nr-k8s-otel-collector"
   version    = local.chart_version
@@ -121,6 +122,7 @@ resource "helm_release" "ci_e2e_nightly_nr_k8s_otel_collector" {
 module "ci_e2e_ec2" {
   count                = local.ec2_enabled ? 1 : 0
   source               = "../modules/ec2"
+  test_environment     = local.test_env_name
   releases_bucket_name = local.releases_bucket_name
   collector_distro     = var.distro
   nr_ingest_key        = var.nr_ingest_key

@@ -10,7 +10,6 @@ variable "releases_bucket_name" {
 variable "test_environment" {
   type        = string
   description = "Name of test environment to distinguish entities"
-  default     = "nightly"
 }
 
 variable "deploy_id" {
