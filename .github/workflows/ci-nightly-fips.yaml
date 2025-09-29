@@ -156,6 +156,8 @@ jobs:
     if: ${{ !github.event.act }}
     needs: publish
     strategy:
+      # prevent failing distro A failing to corrupt distro B state by cancelling mid-apply
+      fail-fast: false
       matrix:
         distribution:
           - nrdot-collector
