@@ -112,15 +112,20 @@ jobs:
             files+=("fips.go")
           fi  
           cd "$SOURCE_PATH"
+          missing_files=()
           for file in "${files[@]}"; do
             if [ ! -f "$file" ]; then
-              echo "❌ $file not found!"
-              exit 1
+              missing_files+=("$file")
             else
               echo "Found: $file"
             fi
           done
-          echo "✅ All source files found!"
+          if [ ${#missing_files[@]} -eq 0 ]; then
+            echo "✅ All source files found!"
+          else
+            echo "❌ files not found: ${missing_files[*]}"
+            exit 1
+          fi
 
       - name: Login to Docker
         uses: docker/login-action@v3
