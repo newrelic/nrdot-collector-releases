@@ -105,11 +105,11 @@ jobs:
 
       - name: Build Args
         run: |
-          if [ ${{ inputs.nightly }} ] && [ ${{ inputs.fips }} ]; then
+          if [ ${{ inputs.nightly }} = "true" ] && [ ${{ inputs.fips }} = "true" ]; then
             echo "goreleaser_args=--snapshot --clean --skip=publish,validate --timeout 2h --config .goreleaser-nightly-fips.yaml" >> $GITHUB_ENV
-          elif [ ${{ inputs.nightly }} ]; then
+          elif [ ${{ inputs.nightly }} = "true" ]; then
             echo "goreleaser_args=--snapshot --clean --skip=publish,validate --timeout 2h --config .goreleaser-nightly.yaml" >> $GITHUB_ENV
-          elif [ ${{ inputs.fips }} ]; then
+          elif [ ${{ inputs.fips }} = "true" ]; then
             echo "goreleaser_args=--snapshot --clean --skip=publish,validate --timeout 2h --config .goreleaser-fips.yaml" >> $GITHUB_ENV
           elif [ ${{github.event.pull_request.user.login == 'dependabot[bot]' }} ]; then
             echo "goreleaser_args=--snapshot --clean --skip=publish,validate,sign --timeout 2h" >> $GITHUB_ENV
@@ -138,11 +138,11 @@ jobs:
           ARCH=${ARCH@L}
           echo "version=$VERSION" >> $GITHUB_ENV
           echo "arch=$ARCH" >> $GITHUB_ENV
-          if [ ${{ inputs.nightly }} ] && [ ${{ inputs.fips }} ]; then
+          if [ ${{ inputs.nightly }} = "true" ] && [ ${{ inputs.fips }} = "true" ]; then
             echo "image_tag=$VERSION-nightly-fips-$ARCH" >> $GITHUB_ENV
-          elif [ ${{ inputs.nightly }} ]; then
+          elif [ ${{ inputs.nightly }} = "true" ]; then
             echo "image_tag=$VERSION-nightly-$ARCH" >> $GITHUB_ENV
-          elif [ ${{ inputs.fips }} ]; then
+          elif [ ${{ inputs.fips }} = "true" ]; then
             echo "image_tag=$VERSION-fips-$ARCH" >> $GITHUB_ENV
           else
             echo "image_tag=$VERSION-$ARCH" >> $GITHUB_ENV
