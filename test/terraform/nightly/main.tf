@@ -22,7 +22,7 @@ data "aws_ecr_repository" "ecr_repo" {
 
 resource "helm_release" "ci_e2e_nightly_nr_backend" {
   count = local.chart_name == "nr_backend" ? 1 : 0
-  name  = "${local.test_env_name}${local.fips_str}-nr-backend-${var.distro}"
+  name  = "${local.test_env_name}-nr-backend-${var.distro}"
   chart = "../../charts/nr_backend"
 
   create_namespace  = true
