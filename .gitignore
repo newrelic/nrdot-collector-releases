@@ -27,3 +27,6 @@ distributions/**/manifest-fips.yaml
 .scratch
 
 test/**/charts/*.tgz
+
+# tmp directory used in act builds
+.tmp
