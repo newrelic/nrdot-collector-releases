@@ -72,7 +72,8 @@ jobs:
           SOURCES_HASH="${{ hashFiles(
             format('distributions/{0}/manifest.yaml', inputs.distribution),
             'scripts/build.sh',
-            'Makefile'
+            'Makefile',
+            'fips/fips.go'
           ) }}"
           echo "sources_key=sources-${{ inputs.distribution }}-${SOURCES_HASH}" >> $GITHUB_OUTPUT
 
