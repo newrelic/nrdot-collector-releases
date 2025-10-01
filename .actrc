@@ -4,3 +4,4 @@
 -e event.json
 --artifact-server-path $PWD/.artifacts
 --bind
+--cache-server-addr host.docker.internal

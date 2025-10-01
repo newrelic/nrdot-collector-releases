@@ -41,6 +41,9 @@ on:
 permissions:
   contents: read
 
+env:
+  caching_enabled: ${{ !inputs.nightly }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -54,12 +57,76 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: "~1.24"
+          cache: ${{ env.caching_enabled }}
 
       - name: Tidy go.mod files
         run: go mod tidy
 
-      - name: Verify build
+      - name: Ensure goreleaser up to date
+        run: make check
+
+      - name: Generate sources cache key
+        id: sources-cache-key
+        if: ${{ env.caching_enabled }}
+        run: |
+          SOURCES_HASH="${{ hashFiles(
+            format('distributions/{0}/manifest.yaml', inputs.distribution),
+            'scripts/build.sh',
+            'Makefile',
+            'fips/fips.go'
+          ) }}"
+          echo "sources_key=sources-${{ inputs.distribution }}-${SOURCES_HASH}" >> $GITHUB_OUTPUT
+
+      - name: Cache sources
+        id: cache-sources
+        uses: actions/cache@v4
+        if: ${{ env.caching_enabled }}
+        with:
+          path: |
+            distributions/${{ inputs.distribution }}/_build
+            distributions/${{ inputs.distribution }}/_build-fips
+          key: ${{ steps.sources-cache-key.outputs.sources_key }}
+
+      - name: Generate sources
+        if: steps.cache-sources.outputs.cache-hit != 'true'
         run: make ci DISTRIBUTIONS=${{ inputs.distribution }}
+
+      - name: Skip source generation (cached)
+        if: steps.cache-sources.outputs.cache-hit == 'true'
+        run: echo "✅ Source generation skipped - no source changes detected"
+
+      - name: Verify source files exist
+        run: |
+          SOURCE_PATH="distributions/${{inputs.distribution}}/_build"
+          if [ ${{ inputs.fips }} = "true" ]; then
+            SOURCE_PATH="${SOURCE_PATH}-fips"
+          fi
+          if [ ! -d "$SOURCE_PATH" ]; then
+            echo "❌ $SOURCE_PATH not found!"
+            exit 1
+          fi
+          files=(
+            "build.log" "components.go" "go.mod" "go.sum"
+            "main_others.go" "main_windows.go" "main.go"
+          )
+          if [ ${{ inputs.fips }} = "true" ]; then
+            files+=("fips.go")
+          fi  
+          cd "$SOURCE_PATH"
+          missing_files=()
+          for file in "${files[@]}"; do
+            if [ ! -f "$file" ]; then
+              missing_files+=("$file")
+            else
+              echo "Found: $file"
+            fi
+          done
+          if [ ${#missing_files[@]} -eq 0 ]; then
+            echo "✅ All source files found!"
+          else
+            echo "❌ files not found: ${missing_files[*]}"
+            exit 1
+          fi
 
       - name: Login to Docker
         uses: docker/login-action@v3
