@@ -63,7 +63,7 @@ jobs:
         run: go mod tidy
 
       - name: Run checks
-        run: make check
+        run: make pre-sourcegen-check
 
       - name: Generate sources cache key
         id: sources-cache-key

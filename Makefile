@@ -19,13 +19,13 @@ GO_LICENCE_DETECTOR_CONFIG   := $(SRC_ROOT)/internal/assets/license/rules.json
 DISTRIBUTION ?= nrdot-collector-host
 
 .PHONY: ci
-ci: pre-compile-check generate-sources-$(DISTRIBUTION) generate-sources-$(DISTRIBUTION)-fips post-compile-check
+ci: pre-sourcegen-check generate-sources-$(DISTRIBUTION) generate-sources-$(DISTRIBUTION)-fips post-sourcegen-check
 
-.PHONY: pre-compile-check
-pre-compile-check: ensure-goreleaser-up-to-date version-check
+.PHONY: pre-sourcegen-check
+pre-sourcegen-check: ensure-goreleaser-up-to-date version-check
 
-.PHONY: post-compile-check
-post-compile-check: licenses-check
+.PHONY: post-sourcegen-check
+post-sourcegen-check: licenses-check
 
 .PHONY: generate-sources-$(DISTRIBUTION)
 generate-sources-$(DISTRIBUTION): go ocb
