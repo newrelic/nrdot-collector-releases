@@ -172,17 +172,20 @@ jobs:
 
       - name: Build Args
         run: |
+          GORELEASER_SKIP_SUFFIX=''
+          GORELEASER_CONFIG_SUFFIX=''
           if [ ${{ inputs.nightly }} = "true" ] && [ ${{ inputs.fips }} = "true" ]; then
-            echo "goreleaser_args=--snapshot --clean --skip=publish,validate --timeout 2h --config .goreleaser-nightly-fips.yaml" >> $GITHUB_ENV
+            GORELEASER_CONFIG_SUFFIX='-nightly-fips'
           elif [ ${{ inputs.nightly }} = "true" ]; then
-            echo "goreleaser_args=--snapshot --clean --skip=publish,validate --timeout 2h --config .goreleaser-nightly.yaml" >> $GITHUB_ENV
+            GORELEASER_CONFIG_SUFFIX='-nightly'
           elif [ ${{ inputs.fips }} = "true" ]; then
-            echo "goreleaser_args=--snapshot --clean --skip=publish,validate --timeout 2h --config .goreleaser-fips.yaml" >> $GITHUB_ENV
+            GORELEASER_CONFIG_SUFFIX='-fips'
           elif [ ${{github.event.pull_request.user.login == 'dependabot[bot]' }} ]; then
-            echo "goreleaser_args=--snapshot --clean --skip=publish,validate,sign --timeout 2h" >> $GITHUB_ENV
-          else
-            echo "goreleaser_args=--snapshot --clean --skip=publish,validate --timeout 2h" >> $GITHUB_ENV
+            GORELEASER_SKIP_SUFFIX=",sign"
           fi
+          GORELEASER_ARGS="--snapshot --clean --timeout=2h --config=.goreleaser${GORELEASER_CONFIG_SUFFIX}.yaml --skip=publish,validate${GORELEASER_SKIP_SUFFIX}"
+          echo "Using goreleaser_args: ${GORELEASER_ARGS}"
+          echo "goreleaser_args=${GORELEASER_ARGS}" >> $GITHUB_ENV
 
       - name: Build binaries & packages with GoReleaser
         id: goreleaser
