@@ -65,10 +65,20 @@ jobs:
             exit 1
           fi
 
+          if ! docker manifest inspect "${image_name}:${version}-fips" > /dev/null 2>&1; then
+            echo "Error: Docker manifest for ${image_name}:${version}-fips does not exist"
+            exit 1
+          fi
+
           docker buildx imagetools create \
             --tag "newrelic/${{ matrix.distribution }}:${version}" \
             --tag "newrelic/${{ matrix.distribution }}:latest" \
             "${image_name}:${version}"
+
+          docker buildx imagetools create \
+            --tag "newrelic/${{ matrix.distribution }}:${version}-fips" \
+            --tag "newrelic/${{ matrix.distribution }}:latest-fips" \
+            "${image_name}:${version}-fips"
 
   create-docs-pr:
     name: Create PR with Release Notes
