@@ -6,10 +6,33 @@ This repository assembles various [custom distributions](https://opentelemetry.i
 
 Generated assets are available in the corresponding Github release page and as docker images published within the [newrelic organization on Docker Hub](https://hub.docker.com/u/newrelic).
 
-Current list of distributions:
+### Current list of distributions:
 
 - [nrdot-collector-host](./distributions/nrdot-collector-host/): distribution focused on monitoring host metrics and logs
 - [nrdot-collector-k8s](./distributions/nrdot-collector-k8s/): distribution focused on monitoring a Kubernetes cluster
+- [nrdot-collector](./distributions/nrdot-collector)
+
+### Additional Tags:
+
+The name of a distribution also contains tags for OS, Architecture, Version, and FIPS compliance.
+The name of a given distribution will follow this pattern:
+
+```
+nrdot-collector{DISTRO_TYPE}{FIPS}_{OS}_{ARCH}_{VERSION}
+```
+
+where 
+
+- DISTRO_TYPE is either `-host` or `-k8s` or an empty string as applicable
+- FIPS is `-fips` if the distribution is FIPS compliant and empty if not
+- OS is either `linux` or `windows`
+- ARCH is either `amd64` or `arm64`
+
+_Note:_
+
+- _FIPS-compliant distributions are only available for linux_
+- _non-compliant distributions are available in all combinations of OS and ARCH listed above except for windows and arm64_
+
 
 Please refer to [this README](./distributions/README.md) for documentation.
 
