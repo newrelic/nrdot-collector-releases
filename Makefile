@@ -38,7 +38,9 @@ generate-sources-$(DISTRIBUTION)-fips: go ocb
 
 .PHONY: generate-goreleaser
 generate-goreleaser:
-	@$(foreach distro, $(ALL_DISTRIBUTIONS), DISTRIBUTION=$(distro) $(MAKE) generate-goreleaser-$(distro);)
+	@for d in $(ALL_DISTRIBUTIONS); do \
+		make generate-goreleaser-$$d DISTRIBUTION=$$d; \
+	done
 
 .PHONY: generate-goreleaser-$(DISTRIBUTION)
 generate-goreleaser-$(DISTRIBUTION): go
@@ -163,7 +165,9 @@ NOTICE_OUTPUT?=THIRD_PARTY_NOTICES.md
 
 .PHONY: licenses
 licenses:
-	@$(foreach distro, $(ALL_DISTRIBUTIONS), DISTRIBUTION=$(distro) $(MAKE) licenses-$(distro);)
+	@for d in $(ALL_DISTRIBUTIONS); do \
+		make licenses-$$d DISTRIBUTION=$$d; \
+	done
 
 .PHONY: licenses-$(DISTRIBUTION)
 licenses-$(DISTRIBUTION): go $(GO_LICENCE_DETECTOR)
