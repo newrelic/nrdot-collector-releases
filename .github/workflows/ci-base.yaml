@@ -222,18 +222,36 @@ jobs:
         if: steps.cache-goreleaser.outputs.cache-hit == 'true'
         run: echo "✅ GoReleaser build skipped - using cached binaries"
 
+      - name: Validate GoReleaser build files exist
+        if: steps.cache-goreleaser.outputs.cache-hit == 'true'
+        run: |
+          DIST_PATH="distributions/${{ inputs.distribution }}/dist"
+          if [ ! -d "$DIST_PATH" ]; then
+            echo "❌ $DIST_PATH not found!"
+            exit 1
+          fi
+          cd "$DIST_PATH"
+          echo "📋 Checking for common files..."
+          files=("artifacts.json" "config.yaml" "metadata.json")
+          missing_files=()
+          for file in "${files[@]}"; do
+            if [ ! -f "$file" ]; then
+              missing_files+=("$file")
+            else
+              echo "Found: $file"
+            fi
+          done
+          if [ ${#missing_files[@]} -eq 0 ]; then
+            echo "✅ All common build files found!"
+          else
+            echo "❌ files not found: ${missing_files[*]}"
+            exit 1
+          fi
+
       - name: Extract relevant metadata
         run: |
-          if [ "${{ steps.cache-goreleaser.outputs.cache-hit }}" = "true" ]; then            
-            # Try to find version from dist folder structure or metadata file
-            if [ -f "distributions/${{ inputs.distribution }}/dist/metadata.json" ]; then
-              VERSION=$(jq -r '.version' distributions/${{ inputs.distribution }}/dist/metadata.json)
-            else
-              # Fallback version
-              VERSION="cached-$(date +%Y%m%d-%H%M)"
-              echo "⚠️ Warning: No metadata found, using fallback version: $VERSION"
-            fi
-            
+          if [ "${{ steps.cache-goreleaser.outputs.cache-hit }}" = "true" ]; then
+            VERSION=$(jq -r '.version' distributions/${{ inputs.distribution }}/dist/metadata.json)
             echo "Using cached version: $VERSION"
           else
             # Extract from fresh GoReleaser build
@@ -255,7 +273,7 @@ jobs:
           fi
 
       - name: Copy GoReleaser binary to Docker context
-        if: ${{ env.caching_enabled }} && steps.cache-goreleaser.outputs.cache-hit == 'true'
+        if: steps.cache-goreleaser.outputs.cache-hit == 'true'
         run: |
           cd distributions/${{ inputs.distribution }}
           BINARY_FILE="${{ inputs.distribution }}"
@@ -283,7 +301,7 @@ jobs:
             ${{ secrets.registry }}/${{ inputs.distribution }}:${{ env.image_tag }}
 
       - name: Clean up binary file (Act)
-        if: ${{ env.ACT }} && ${{ env.caching_enabled }} && steps.cache-goreleaser.outputs.cache-hit == 'true'
+        if: ${{ env.ACT }} && steps.cache-goreleaser.outputs.cache-hit == 'true'
         run: rm distributions/${{ inputs.distribution }}/${{ inputs.distribution }}
 
       - name: Validate Usage of BoringCrypto
