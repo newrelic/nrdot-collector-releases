@@ -23,7 +23,7 @@ ALL_DISTROS = nrdot-collector-host nrdot-collector-k8s nrdot-collector
 ci: pre-sourcegen-check-$(DISTRO) generate-sources-$(DISTRO) generate-sources-$(DISTRO)-fips post-sourcegen-check-$(DISTRO)
 
 .PHONY: pre-sourcegen-check-$(DISTRO)
-pre-sourcegen-check: ensure-goreleaser-up-to-date-$(DISTRO) version-check
+pre-sourcegen-check-$(DISTRO): ensure-goreleaser-up-to-date-$(DISTRO) version-check
 
 .PHONY: post-sourcegen-check-$(DISTRO)
 post-sourcegen-check-$(DISTRO): licenses-check-$(DISTRO)
