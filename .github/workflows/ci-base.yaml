@@ -282,6 +282,10 @@ jobs:
           tags: |
             ${{ secrets.registry }}/${{ inputs.distribution }}:${{ env.image_tag }}
 
+      - name: Clean up binary file (Act)
+        if: ${{ env.ACT }} && ${{ env.caching_enabled }} && steps.cache-goreleaser.outputs.cache-hit == 'true'
+        run: rm distributions/${{ inputs.distribution }}/${{ inputs.distribution }}
+
       - name: Validate Usage of BoringCrypto
         if: inputs.fips
         run: |
