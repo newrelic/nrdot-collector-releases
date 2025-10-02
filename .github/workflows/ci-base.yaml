@@ -337,17 +337,17 @@ jobs:
           license_key: ${{ secrets.nr_ingest_key }}
           region: 'US'
 
-      # - name: Trivy security check
-      #   if: ${{ !inputs.nightly }}
-      #   uses: aquasecurity/trivy-action@0.29.0
-      #   with:
-      #     image-ref: "${{ secrets.registry }}/${{ inputs.distribution}}:${{ env.image_tag }}"
-      #     format: 'table'
-      #     exit-code: '1'
-      #     ignore-unfixed: true
-      #     vuln-type: 'os,library'
-      #     severity: "HIGH,CRITICAL"
-      #   env:
-      #     # dbs are downloaded async in trivy-cache.yml
-      #     TRIVY_SKIP_DB_UPDATE: ${{ !env.ACT }}
-      #     TRIVY_SKIP_JAVA_DB_UPDATE: true
+      - name: Trivy security check
+        if: ${{ !inputs.nightly }}
+        uses: aquasecurity/trivy-action@0.29.0
+        with:
+          image-ref: "${{ secrets.registry }}/${{ inputs.distribution}}:${{ env.image_tag }}"
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: "HIGH,CRITICAL"
+        env:
+          # dbs are downloaded async in trivy-cache.yml
+          TRIVY_SKIP_DB_UPDATE: ${{ !env.ACT }}
+          TRIVY_SKIP_JAVA_DB_UPDATE: true
