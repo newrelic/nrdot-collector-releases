@@ -184,7 +184,27 @@ jobs:
             echo "goreleaser_args=--snapshot --clean --skip=publish,validate --timeout 2h" >> $GITHUB_ENV
           fi
 
+      - name: Generate binary cache key
+        id: generate_binary_key
+        run: |
+          BINARY_HASH="${{ hashFiles(
+            format('distributions/{0}/.goreleaser*.yaml', inputs.distribution),
+            format('distributions/{0}/_build*/*', inputs.distribution)
+          ) }}"
+          ARGS_HASH=$(echo "${{ env.goreleaser_args }}" | sha256sum | cut -d' ' -f1)
+          echo binary_key=goreleaser-build-${{ inputs.distribution }}-${BINARY_HASH}-${ARGS_HASH} >> $GITHUB_OUTPUT
+
+      - name: Cache goreleaser build
+        id: cache-goreleaser
+        if: ${{ env.caching_enabled }}
+        uses: actions/cache@v4
+        with:
+          path: |
+            distributions/${{ inputs.distribution }}/dist
+          key: ${{ steps.generate_binary_key.outputs.binary_key }}
+
       - name: Build binaries & packages with GoReleaser
+        if: steps.cache-goreleaser.outputs.cache-hit != 'true'
         id: goreleaser
         uses: goreleaser/goreleaser-action@v6
         env:
@@ -197,10 +217,29 @@ jobs:
           version: '2.11.2'
           args: ${{ env.goreleaser_args }}
           workdir: distributions/${{ inputs.distribution }}
+      
+      - name: Skip GoReleaser build (cached)
+        if: steps.cache-goreleaser.outputs.cache-hit == 'true'
+        run: echo "✅ GoReleaser build skipped - using cached binaries"
 
       - name: Extract relevant metadata
         run: |
-          VERSION=$(echo '${{ steps.goreleaser.outputs.metadata }}' | jq -r '.version')
+          if [ "${{ steps.cache-goreleaser.outputs.cache-hit }}" = "true" ]; then            
+            # Try to find version from dist folder structure or metadata file
+            if [ -f "distributions/${{ inputs.distribution }}/dist/metadata.json" ]; then
+              VERSION=$(jq -r '.version' distributions/${{ inputs.distribution }}/dist/metadata.json)
+            else
+              # Fallback version
+              VERSION="cached-$(date +%Y%m%d-%H%M)"
+              echo "⚠️ Warning: No metadata found, using fallback version: $VERSION"
+            fi
+            
+            echo "Using cached version: $VERSION"
+          else
+            # Extract from fresh GoReleaser build
+            VERSION=$(echo '${{ steps.goreleaser.outputs.metadata }}' | jq -r '.version')
+            echo "Using fresh build version: $VERSION"
+          fi
           ARCH=$(echo '${{ runner.arch }}' | sed 's/X/amd/g')
           ARCH=${ARCH@L}
           echo "version=$VERSION" >> $GITHUB_ENV
