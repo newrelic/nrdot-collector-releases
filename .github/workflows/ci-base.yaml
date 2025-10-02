@@ -63,7 +63,7 @@ jobs:
         run: go mod tidy
 
       - name: Run checks
-        run: make pre-sourcegen-check
+        run: make pre-sourcegen-check-${{ inputs.distribution }} DISTRO=${{ inputs.distribution }}
 
       - name: Generate sources cache key
         id: sources-cache-key

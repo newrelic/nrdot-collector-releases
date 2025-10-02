@@ -16,7 +16,7 @@ TOOLS_BIN_NAMES := $(addprefix $(TOOLS_BIN_DIR)/, $(notdir $(shell echo $(TOOLS_
 GO_LICENCE_DETECTOR        := $(TOOLS_BIN_DIR)/go-licence-detector
 GO_LICENCE_DETECTOR_CONFIG   := $(SRC_ROOT)/internal/assets/license/rules.json
 
-DISTRIBUTION ?= nrdot-collector-host
+DISTRO ?= nrdot-collector-host
 ALL_DISTROS = nrdot-collector-host nrdot-collector-k8s nrdot-collector
 
 .PHONY: ci
@@ -39,7 +39,7 @@ generate-sources-$(DISTRO)-fips: go ocb
 .PHONY: generate-goreleaser
 generate-goreleaser:
 	@for d in $(ALL_DISTROS); do \
-		make generate-goreleaser-$$d DISTRIBUTION=$$d; \
+		make generate-goreleaser-$$d DISTRO=$$d; \
 	done
 
 .PHONY: generate-goreleaser-$(DISTRO)
@@ -166,7 +166,7 @@ NOTICE_OUTPUT?=THIRD_PARTY_NOTICES.md
 .PHONY: licenses
 licenses:
 	@for d in $(ALL_DISTROS); do \
-		make licenses-$$d DISTRIBUTION=$$d; \
+		make licenses-$$d DISTRO=$$d; \
 	done
 
 .PHONY: licenses-$(DISTRO)
