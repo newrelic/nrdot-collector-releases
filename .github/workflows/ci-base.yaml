@@ -89,7 +89,7 @@ jobs:
 
       - name: Generate sources
         if: steps.cache-sources.outputs.cache-hit != 'true'
-        run: make ci DISTRIBUTION=${{ inputs.distribution }}
+        run: make ci DISTRO=${{ inputs.distribution }}
 
       - name: Skip source generation (cached)
         if: steps.cache-sources.outputs.cache-hit == 'true'

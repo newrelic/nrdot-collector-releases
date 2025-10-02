@@ -17,37 +17,37 @@ GO_LICENCE_DETECTOR        := $(TOOLS_BIN_DIR)/go-licence-detector
 GO_LICENCE_DETECTOR_CONFIG   := $(SRC_ROOT)/internal/assets/license/rules.json
 
 DISTRIBUTION ?= nrdot-collector-host
-ALL_DISTRIBUTIONS = nrdot-collector-host nrdot-collector-k8s nrdot-collector
+ALL_DISTROS = nrdot-collector-host nrdot-collector-k8s nrdot-collector
 
 .PHONY: ci
-ci: pre-sourcegen-check generate-sources-$(DISTRIBUTION) generate-sources-$(DISTRIBUTION)-fips post-sourcegen-check-$(DISTRIBUTION)
+ci: pre-sourcegen-check-$(DISTRO) generate-sources-$(DISTRO) generate-sources-$(DISTRO)-fips post-sourcegen-check-$(DISTRO)
 
-.PHONY: pre-sourcegen-check
-pre-sourcegen-check: ensure-goreleaser-up-to-date version-check
+.PHONY: pre-sourcegen-check-$(DISTRO)
+pre-sourcegen-check: ensure-goreleaser-up-to-date-$(DISTRO) version-check
 
-.PHONY: post-sourcegen-check-$(DISTRIBUTION)
-post-sourcegen-check-$(DISTRIBUTION): licenses-check-$(DISTRIBUTION)
+.PHONY: post-sourcegen-check-$(DISTRO)
+post-sourcegen-check-$(DISTRO): licenses-check-$(DISTRO)
 
-.PHONY: generate-sources-$(DISTRIBUTION)
-generate-sources-$(DISTRIBUTION): go ocb
-	@./scripts/build.sh -d "${DISTRIBUTION}" -b ${OTELCOL_BUILDER}
+.PHONY: generate-sources-$(DISTRO)
+generate-sources-$(DISTRO): go ocb
+	@./scripts/build.sh -d "$(DISTRO)" -b ${OTELCOL_BUILDER}
 
-.PHONY: generate-sources-$(DISTRIBUTION)-fips
-generate-sources-$(DISTRIBUTION)-fips: go ocb
-	@./scripts/build.sh -d "${DISTRIBUTION}" -b ${OTELCOL_BUILDER} -f true
+.PHONY: generate-sources-$(DISTRO)-fips
+generate-sources-$(DISTRO)-fips: go ocb
+	@./scripts/build.sh -d "$(DISTRO)" -b ${OTELCOL_BUILDER} -f true
 
 .PHONY: generate-goreleaser
 generate-goreleaser:
-	@for d in $(ALL_DISTRIBUTIONS); do \
+	@for d in $(ALL_DISTROS); do \
 		make generate-goreleaser-$$d DISTRIBUTION=$$d; \
 	done
 
-.PHONY: generate-goreleaser-$(DISTRIBUTION)
-generate-goreleaser-$(DISTRIBUTION): go
-	@./scripts/generate-goreleaser.sh -d "${DISTRIBUTION}" -g ${GO}
+.PHONY: generate-goreleaser-$(DISTRO)
+generate-goreleaser-$(DISTRO): go
+	@./scripts/generate-goreleaser.sh -d "$(DISTRO)" -g ${GO}
 
-.PHONY: ensure-goreleaser-up-to-date
-ensure-goreleaser-up-to-date: generate-goreleaser
+.PHONY: ensure-goreleaser-up-to-date-$(DISTRO)
+ensure-goreleaser-up-to-date-$(DISTRO): generate-goreleaser-$(DISTRO)
 	@{ \
 		git diff -s --exit-code distributions/*/.goreleaser*.yaml || \
 		(echo "📋 Check failed: The goreleaser templates have changed but the .goreleaser.yamls haven't. Run 'make generate-goreleaser' and update your PR." && exit 1) \
@@ -165,17 +165,17 @@ NOTICE_OUTPUT?=THIRD_PARTY_NOTICES.md
 
 .PHONY: licenses
 licenses:
-	@for d in $(ALL_DISTRIBUTIONS); do \
+	@for d in $(ALL_DISTROS); do \
 		make licenses-$$d DISTRIBUTION=$$d; \
 	done
 
-.PHONY: licenses-$(DISTRIBUTION)
-licenses-$(DISTRIBUTION): go $(GO_LICENCE_DETECTOR)
-	@{ if [ ! -d "distributions/$(DISTRIBUTION)/_build" ]; then $(MAKE) generate-sources-$(DISTRIBUTION); fi }
-	@./scripts/licenses.sh -d "${DISTRIBUTION}" -b ${GO_LICENCE_DETECTOR} -n ${NOTICE_OUTPUT} -g ${GO}
+.PHONY: licenses-$(DISTRO)
+licenses-$(DISTRO): go $(GO_LICENCE_DETECTOR)
+	@{ if [ ! -d "distributions/$(DISTRO)/_build" ]; then $(MAKE) generate-sources-$(DISTRO); fi }
+	@./scripts/licenses.sh -d "$(DISTRO)" -b ${GO_LICENCE_DETECTOR} -n ${NOTICE_OUTPUT} -g ${GO}
 
-.PHONY: licenses-check-$(DISTRIBUTION)
-licenses-check-$(DISTRIBUTION): licenses-$(DISTRIBUTION)
+.PHONY: licenses-check-$(DISTRO)
+licenses-check-$(DISTRO): licenses-$(DISTRO)
 	@git diff --name-only | grep -q $(NOTICE_OUTPUT) \
 		&& { \
 			echo "📜 Third party notices out of date, please run \"make licenses\" and commit the changes in this PR.";\

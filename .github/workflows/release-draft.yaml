@@ -56,7 +56,7 @@ jobs:
         run: go mod tidy
 
       - name: Verify build
-        run: make ci DISTRIBUTION=${{ matrix.distribution }}
+        run: make ci DISTRO=${{ matrix.distribution }}
 
       - name: Login to Docker
         uses: docker/login-action@v3
