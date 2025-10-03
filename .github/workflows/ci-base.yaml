@@ -291,7 +291,7 @@ jobs:
 
       - name: Build and load Docker image
         uses: docker/build-push-action@v5
-        if: ${{ env.caching_enabled }} && steps.cache-goreleaser.outputs.cache-hit == 'true'
+        if: steps.cache-goreleaser.outputs.cache-hit == 'true'
         with:
           context: distributions/${{ inputs.distribution }}
           platforms: linux/${{ env.arch }}
@@ -301,7 +301,7 @@ jobs:
             ${{ secrets.registry }}/${{ inputs.distribution }}:${{ env.image_tag }}
 
       - name: Clean up binary file (Act)
-        if: ${{ env.ACT }} && steps.cache-goreleaser.outputs.cache-hit == 'true'
+        if: ${{ env.ACT && steps.cache-goreleaser.outputs.cache-hit == 'true' }}
         run: rm distributions/${{ inputs.distribution }}/${{ inputs.distribution }}
 
       - name: Validate Usage of BoringCrypto
