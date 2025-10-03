@@ -12,29 +12,9 @@ Generated assets are available in the corresponding Github release page and as d
 - [nrdot-collector-k8s](./distributions/nrdot-collector-k8s/): distribution focused on monitoring a Kubernetes cluster
 - [nrdot-collector](./distributions/nrdot-collector)
 
-### Additional Tags:
+We also provide [FIPS-compliant docker images](../fips/README.md).
 
-The name of a distribution also contains tags for OS, Architecture, Version, and FIPS compliance.
-The name of a given distribution will follow this pattern:
-
-```
-nrdot-collector{DISTRO_TYPE}{FIPS}_{OS}_{ARCH}_{VERSION}
-```
-
-where 
-
-- DISTRO_TYPE is either `-host` or `-k8s` or an empty string as applicable
-- FIPS is `-fips` if the distribution is FIPS compliant and empty if not
-- OS is either `linux` or `windows`
-- ARCH is either `amd64` or `arm64`
-
-_Note:_
-
-- _FIPS-compliant distributions are only available for linux_
-- _non-compliant distributions are available in all combinations of OS and ARCH listed above except for windows and arm64_
-
-
-Please refer to [this README](./distributions/README.md) for documentation.
+Please refer to [this README](./distributions/README.md) for documentation on our distributions.
 
 ## Distribution Governance
 Our intention is that each distribution we maintain serves a specific use case powering a particular slice of the New Relic experience. This ensures that each distribution is easy to understand, has a small attack surface and can be updated quickly to patch security issues or bugs.

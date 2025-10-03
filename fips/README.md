@@ -9,7 +9,7 @@ We are currently targeting FIPS version 1.40.2 .
 ## How does NRDOT achieve FIPS compliance?
 
 NRDOT achieves FIPS compliance by having dependencies that are also FIPS compliant.
-Go 1.24 is not verified as FIPS compliant, but we can force our distro to only use cryptographic functions from BoringCrypto, which is an [approved encryption library](https://newrelic.atlassian.net/wiki/spaces/STAN/pages/2788884481/Approved+Encryption+Libraries).
+Go 1.24 is not verified as FIPS compliant, but we can force our distro to only use cryptographic functions from BoringCrypto, which is an approved encryption library.
 
 ## Which distributions are FIPS compliant?
 
@@ -24,6 +24,8 @@ The corresponding FIPS-compliant distribution would have `fips` added in the nam
 ```
 nrdot-collector-host-fips_linux_amb64_v1
 ```
+
+_Note: FIPS-compliant distributions are only available for linux_
 
 ## Validation
 

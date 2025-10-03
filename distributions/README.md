@@ -5,6 +5,8 @@ This README covers topics that apply to all distributions. For distribution-spec
 - [nrdot-collector-k8s](./nrdot-collector-k8s/README.md)
 - [nrdot-collector](./nrdot-collector/README.md)
 
+We also provide [FIPS-compliant docker images](../fips/README.md).
+
 ## Installation
 
 ### Docker
