@@ -8,9 +8,9 @@ Generated assets are available in the corresponding Github release page and as d
 
 ### Current list of distributions:
 
-- [nrdot-collector-host](./distributions/nrdot-collector-host/): distribution focused on monitoring host metrics and logs
-- [nrdot-collector-k8s](./distributions/nrdot-collector-k8s/): distribution focused on monitoring a Kubernetes cluster
-- [nrdot-collector](./distributions/nrdot-collector)
+- [nrdot-collector-host](./distributions/nrdot-collector-host/): Host monitoring
+- [nrdot-collector-k8s](./distributions/nrdot-collector-k8s/): k8s cluster and resource monitoring
+- [nrdot-collector](./distributions/nrdot-collector): Gateway capabilities and host monitoring
 
 We also provide [FIPS-compliant docker images](../fips/README.md).
 
