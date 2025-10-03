@@ -246,7 +246,7 @@ jobs:
           else
             echo "✅ All common build files found!"
           fi
-          echo "📋 Checking if binaries exist..."
+          echo "📋 Checking if binaries / executables exist..."
           binary_dirs=($(find . -name "${{ inputs.distribution }}*_*" -type d))
           if [ ${#binary_dirs[@]} -eq 0 ]; then
             echo "❌ No binary directories found!"
@@ -258,15 +258,15 @@ jobs:
           fi
           missing_binaries=()
           for dir in "${binary_dirs[@]}"; do
-            binary="$dir/$BINARY_FILE"
-            if [ ! -f "$binary" ]; then
+            binary="$(find $dir -name "${BINARY_FILE}*" -type f)"
+            if [ -z "$binary" ]; then
               missing_binaries+=("$binary")
             else
               echo "Found: $binary"
             fi
           done
           if [ ${#missing_binaries[@]} -ne 0 ]; then
-            echo "❌ Binaries not found: ${missing_binaries[*]}"
+            echo "❌ Binaries / Executables not found: ${missing_binaries[*]}"
             exit 1
           else
             echo "✅ All found directories contain binaries!"
