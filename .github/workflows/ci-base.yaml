@@ -315,7 +315,7 @@ jobs:
             BINARY_TMP+="-fips"
           fi
           mkdir -p ${BINARY_TMP}
-          cp "$BINARY_PATH" ${BINARY_TMP}
+          cp "$BINARY_PATH" "${BINARY_TMP}/${{ inputs.distribution }}"
           cp Dockerfile ${BINARY_TMP}
           [ -f "config.yaml" ] && cp "config.yaml" ${BINARY_TMP}
           echo "✅ Binary copied: $(ls -la ${BINARY_TMP})"
