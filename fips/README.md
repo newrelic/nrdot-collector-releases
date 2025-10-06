@@ -105,7 +105,7 @@ nmap -sV --script ssl-enum-ciphers -p 8443 localhost
 And finally, run docker.
 
 ``` 
-docker run -d --name "nrdot-fips" --network host --platform linux/amd64\
+docker run -d --name "nrdot-fips" --network host \
         -v "./:/certs:ro" -v "./config.yaml:/config.yaml:ro" \
         "$DOCKER_IMAGE" --config=/config.yaml >/dev/null
 ```
