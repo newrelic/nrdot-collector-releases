@@ -13,17 +13,8 @@ Go 1.24 is not verified as FIPS compliant, but we can force our distro to only u
 
 ## Which distributions are FIPS compliant?
 
-Where a given non-compliant distribution may be named something like:
-
-```
-nrdot-collector-host_linux_amb64_v1
-```
-
-The corresponding FIPS-compliant distribution would have `fips` added in the name:
-
-```
-nrdot-collector-host-fips_linux_amb64_v1
-```
+Where a given non-compliant distribution may have a simple version tag like `1.5.0`, 
+the corresponding FIPS-compliant distribution would have `-fips` tacked onto the end of the tag like `1.5.0-fips`.
 
 _Note: FIPS-compliant distributions are only available for linux_
 
@@ -33,20 +24,27 @@ _Note: FIPS-compliant distributions are only available for linux_
 
 If you run the following command, you can verify that BoringCrypto functions are being used.
 
+```
+docker build --progress=plain -t fips-analyzer - << 'EOF'
+FROM golang:1.24-bullseye
+COPY --from=new-relic/nrdot-collector-host:nightly-fips /nrdot-collector-host /nrdot-collector-host
+RUN go tool nm /nrdot-collector-host | grep goboringcrypto
+EOF
+```
 
+The resulting output should be similar to the following: 
+
+``` 
+5053220 T _cgo_39a3e70c2c46_Cfunc__goboringcrypto_AES_cbc_encrypt
+5053250 T _cgo_39a3e70c2c46_Cfunc__goboringcrypto_AES_ctr128_encrypt
+5053280 T _cgo_39a3e70c2c46_Cfunc__goboringcrypto_AES_decrypt
+50532a0 T _cgo_39a3e70c2c46_Cfunc__goboringcrypto_AES_encrypt
 ```
-$ go tool nm nrdot-collector-host-fips_linux_amb64_v1 | grep '_Cfunc__goboringcrypto_'
- 5053220 T _cgo_39a3e70c2c46_Cfunc__goboringcrypto_AES_cbc_encrypt
- 5053250 T _cgo_39a3e70c2c46_Cfunc__goboringcrypto_AES_ctr128_encrypt
- 5053280 T _cgo_39a3e70c2c46_Cfunc__goboringcrypto_AES_decrypt
- 50532a0 T _cgo_39a3e70c2c46_Cfunc__goboringcrypto_AES_encrypt
-```
+
 ## TLS Handshake
-First, make sure you install nmap. 
+First, make sure you install a security scanner. We use nmap. 
 
-```
-brew install nmap
-```
+Please refer to install instructions [here](https://nmap.org/book/install.html)
 
 Next, generate your certificate.
 
@@ -107,8 +105,8 @@ nmap -sV --script ssl-enum-ciphers -p 8443 localhost
 And finally, run docker.
 
 ``` 
-docker run -d --name "$CONTAINER_NAME" --network host \
-        -v "$CERT_DIR:/certs:ro" -v "$CONFIG_FILE:/config.yaml:ro" \
+docker run -d --name "nrdot-fips" --network host --platform linux/amd64\
+        -v "./:/certs:ro" -v "./config.yaml:/config.yaml:ro" \
         "$DOCKER_IMAGE" --config=/config.yaml >/dev/null
 ```
 
