@@ -1,10 +1,10 @@
-name: 🔄 CI | Nightly Tests
+name: 🔄 CI | Nightly Tests (Regular & FIPS)
 
 on:
   workflow_dispatch:
   schedule:
     # Scheduled to run in the morning (PT) on every day-of-week from Monday through Friday.
-    - cron: '0 15 * * 1-5'
+    - cron: "0 15 * * 1-5"
 
 concurrency:
   group: ci-nightly
@@ -14,43 +14,93 @@ permissions:
   contents: read
 
 env:
-  REGISTRY: '${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com'
+  REGISTRY: "${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com"
 
 jobs:
-  build:
-    name: Build & Validate
-    strategy:
-      matrix:
-        distribution:
-          - nrdot-collector
-          - nrdot-collector-host
-          - nrdot-collector-k8s
-    uses: ./.github/workflows/ci-base.yaml
-    with:
-      nightly: true
-      distribution: ${{ matrix.distribution }}
-      test_cluster_name: '${{ matrix.distribution }}-${{ github.run_id }}-${{ github.run_attempt }}'
-    secrets:
-      docker_hub_username: ${{ secrets.OTELCOMM_DOCKER_HUB_USERNAME }}
-      docker_hub_password: ${{ secrets.OTELCOMM_DOCKER_HUB_PASSWORD }}
-      gpg_private_key: ${{ secrets.OTELCOMM_GPG_PRIVATE_KEY_BASE64 }}
-      gpg_passphrase: ${{ secrets.OTELCOMM_GPG_PASSPHRASE }}
-      registry: '${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com'
-      nr_backend_url: ${{ secrets.NR_STAGING_BACKEND_URL }}
-      nr_ingest_key: ${{ secrets.OTELCOMM_NR_INGEST_KEY }}
-      nr_account_id: ${{ secrets.OTELCOMM_NR_TEST_ACCOUNT_ID }}
-      nr_api_key: ${{ secrets.OTELCOMM_NR_API_KEY }}
-
-  publish:
-    name: Build & Publish Nightly
+  setup:
+    name: Setup Workflow
     runs-on: ubuntu-latest
-    needs: build
+    outputs:
+      distributions: ${{ steps.discover.outputs.distributions }}
+      successful-sha: ${{ steps.get-commit.outputs.sha }}
+      short-sha: ${{ steps.get-commit.outputs.short-sha }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github/actions
+            distributions/*/manifest.yaml
+
+      - name: Discover Distributions
+        id: discover
+        uses: ./.github/actions/discover-distributions
+
+      - name: Get Last Successful Commit
+        id: get-commit
+        uses: ./.github/actions/get-successful-commit
+        with:
+          github-token: ${{ github.token }}
+          branch: main
+          max-commits: 10
+
+  verify-artifacts:
+    name: Verify Artifacts (${{ matrix.distribution }}${{ matrix.fips && ' - FIPS' || '' }})
+    runs-on: ubuntu-latest
+    needs: setup
     strategy:
       matrix:
-        distribution:
-          - nrdot-collector
-          - nrdot-collector-host
-          - nrdot-collector-k8s
+        distribution: ${{ fromJson(needs.setup.outputs.distributions) }}
+        fips: [false, true]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github/actions
+
+      - name: Verify Artifacts Exist for ${{ matrix.distribution }}${{ matrix.fips && ' - FIPS' || '' }}
+        uses: ./.github/actions/verify-artifacts
+        with:
+          github-token: ${{ github.token }}
+          distribution: ${{ matrix.distribution }}
+          commit-sha: ${{ needs.setup.outputs.successful-sha }}
+          fips: ${{ matrix.fips }}
+
+  deploy-nightly:
+    name: Deploy Nightly (${{ matrix.distribution }}${{ matrix.fips && ' - FIPS' || '' }})
+    uses: ./.github/workflows/terraform.yaml
+    if: ${{ !github.event.act }}
+    needs: [setup, verify-artifacts]
+    strategy:
+      fail-fast: false
+      matrix:
+        distribution: ${{ fromJson(needs.setup.outputs.distributions) }}
+        fips: [false, true]
+    with:
+      branch: ${{ github.ref }}
+      tf_work_subdir: nightly
+      workspace: "nightly${{ matrix.fips && '-fips' || '' }}-${{ matrix.distribution }}"
+      execute_plan: true
+      execute_apply: true
+      distro: ${{ matrix.distribution }}
+      fips: ${{ matrix.fips }}
+      nightly_docker_manifest_sha_artifact_name: ${{ format('goreleaser_output_{0}{1}_{2}', matrix.distribution, matrix.fips && '-fips' || '', needs.setup.outputs.successful-sha) }}
+    secrets:
+      aws_access_key_id: ${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCESS_KEY_ID }}
+      aws_secret_access_key: ${{secrets.OTELCOMM_AWS_TEST_ACC_SECRET_ACCESS_KEY}}
+      aws_account_id: ${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCOUNT_ID }}
+      nr_backend_url: ${{secrets.NR_STAGING_BACKEND_URL}}
+      nr_ingest_key: ${{ secrets.OTELCOMM_NR_INGEST_KEY }}
+
+  test-nightly:
+    name: Test Nightly (${{ matrix.distribution }}${{ matrix.fips && ' - FIPS' || '' }})
+    runs-on: ubuntu-latest
+    needs: [setup, verify-artifacts, deploy-nightly]
+    strategy:
+      matrix:
+        distribution: ${{ fromJson(needs.setup.outputs.distributions) }}
+        fips: [false, true]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -62,130 +112,33 @@ jobs:
         with:
           go-version: "~1.24"
 
-      - name: Tidy go.mod files
-        run: go mod tidy
-
-      - name: Verify build
-        run: make ci DISTRIBUTIONS=${{ matrix.distribution }}
-
-      - name: Login to Docker
-        uses: docker/login-action@v3
-        if: ${{ env.ACT }}
+      - name: Download GoReleaser Artifacts
+        uses: actions/download-artifact@v4
         with:
-          registry: docker.io
-          username: ${{ secrets.OTELCOMM_DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.OTELCOMM_DOCKER_HUB_PASSWORD }}
+          name: ${{ format('goreleaser_output_{0}{1}_{2}', matrix.distribution, matrix.fips && '-fips' || '', needs.setup.outputs.successful-sha) }}
+          path: ./artifacts/
 
-      - uses: docker/setup-qemu-action@v2
-
-      - uses: docker/setup-buildx-action@v2
-
-      - name: Import GPG key
-        id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@v6
-        with:
-          gpg_private_key: ${{ secrets.OTELCOMM_GPG_PRIVATE_KEY_BASE64 }}
-          passphrase: ${{ secrets.OTELCOMM_GPG_PASSPHRASE }}
-
-      - name: Write GPG to path in memory for signing rpm/deb
-        id: write_gpg_to_path
+      - name: Show Downloaded Artifacts
         run: |
-          GPG_KEY_PATH="$(mktemp /dev/shm/gpg.XXXXXX)"
-          echo "$GPG_PRIVATE_KEY" | base64 -d >> "$GPG_KEY_PATH"
-          echo "gpg_key_path=$GPG_KEY_PATH" >> $GITHUB_OUTPUT
+          echo "Testing ${{ matrix.fips && 'FIPS' || 'regular' }} build for ${{ matrix.distribution }}"
+          echo "Build from commit: ${{ needs.setup.outputs.successful-sha }} (${{ needs.setup.outputs.short-sha }})"
+          echo "Available artifacts:"
+          ls -la ./artifacts/
+
+          # Check for docker manifest SHA file
+          if [ -f "./artifacts/docker_manifest_sha" ]; then
+            echo "Docker SHA: $(cat ./artifacts/docker_manifest_sha)"
+          else
+            echo "Error: docker_manifest_sha file not found"
+            exit 1
+          fi
+
+      - name: Run nightly tests for ${{ matrix.distribution }}${{ matrix.fips && ' - FIPS' || '' }}
+        run: make -f ./test/e2e/Makefile ci_test-nightly
         env:
-          GPG_PRIVATE_KEY: ${{ secrets.OTELCOMM_GPG_PRIVATE_KEY_BASE64 }}
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.OTELCOMM_AWS_TEST_ACC_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-          role-to-assume: arn:aws:iam::${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCOUNT_ID }}:role/resource-provisioner
-          role-skip-session-tagging: true
-
-      - name: Login to ECR
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY}}/${{ matrix.distribution }}
-
-      - name: Build and publish ${{ matrix.distribution }} nightly binaries & packages with GoReleaser
-        id: goreleaser_publish
-        if: ${{ !env.ACT }}
-        uses: goreleaser/goreleaser-action@v6
-        env:
-          NFPM_PASSPHRASE: ${{ secrets.OTELCOMM_GPG_PASSPHRASE }}
-          GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
-          GPG_KEY_PATH: ${{ steps.write_gpg_to_path.outputs.gpg_key_path }}
-          REGISTRY: ${{ env.REGISTRY }}
-        with:
-          distribution: goreleaser
-          version: '2.11.2'
-          args: --skip=announce,validate --clean --timeout 2h --config .goreleaser-nightly.yaml
-          workdir: distributions/${{ matrix.distribution }}
-      - name: Extract Docker Manifest SHA
-        run: | 
-          docker_manifest_sha=$(echo '${{ steps.goreleaser_publish.outputs.artifacts }}' |
-            jq -r '.[] | select(.type == "Docker Manifest") | select(.name | endswith(":nightly")) | .extra.Digest')
-          echo "docker manifest sha: ${docker_manifest_sha}"
-          echo -n "${docker_manifest_sha}" > docker_manifest_sha_${{ matrix.distribution }}
-      - name: Upload Docker Manifest SHA
-        uses: actions/upload-artifact@v4
-        with:
-          name: docker_manifest_sha_${{ matrix.distribution }}
-          path: docker_manifest_sha_${{ matrix.distribution }}
-
-  deploy-nightly:
-    name: Deploy Nightly
-    uses: ./.github/workflows/terraform.yaml
-    if: ${{ !github.event.act }}
-    needs: publish
-    strategy:
-      matrix:
-        distribution:
-          - nrdot-collector
-          - nrdot-collector-host
-          - nrdot-collector-k8s
-    with:
-      branch: ${{ github.ref }}
-      tf_work_subdir: nightly
-      workspace: 'nightly-${{ matrix.distribution }}'
-      execute_plan: true
-      execute_apply: true
-      distro: ${{ matrix.distribution }}
-      nightly_docker_manifest_sha_artifact_name: docker_manifest_sha_${{ matrix.distribution }}
-    secrets:
-      aws_access_key_id: ${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCESS_KEY_ID }}
-      aws_secret_access_key: ${{secrets.OTELCOMM_AWS_TEST_ACC_SECRET_ACCESS_KEY}}
-      aws_account_id: ${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCOUNT_ID }}
-      nr_backend_url: ${{secrets.NR_STAGING_BACKEND_URL}}
-      nr_ingest_key: ${{ secrets.OTELCOMM_NR_INGEST_KEY }}
-
-  test-nightly:
-    name: Test Nightly
-    runs-on: ubuntu-latest
-    needs: deploy-nightly
-    strategy:
-      matrix:
-        distribution:
-          - nrdot-collector
-          - nrdot-collector-host
-          - nrdot-collector-k8s
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: "~1.24"
-
-      - name: Run nightly tests for ${{ matrix.distribution }}
-        run: |
-          NR_API_KEY=${{ secrets.OTELCOMM_NR_API_KEY }} \
-          NR_ACCOUNT_ID=${{ secrets.OTELCOMM_NR_TEST_ACCOUNT_ID }} \
-          NR_API_BASE_URL=${{ secrets.NR_STAGING_API_BASE_URL }} \
-          DISTRO=${{ matrix.distribution }} \
-          K8S_CONTEXT_NAME=aws-ci-e2etest \
-          make -f ./test/e2e/Makefile ci_test-nightly
+          NR_API_KEY: ${{ secrets.OTELCOMM_NR_API_KEY }}
+          NR_ACCOUNT_ID: ${{ secrets.OTELCOMM_NR_TEST_ACCOUNT_ID }}
+          NR_API_BASE_URL: ${{ secrets.NR_STAGING_API_BASE_URL }}
+          DISTRO: ${{ matrix.distribution }}
+          K8S_CONTEXT_NAME: aws-ci-e2etest
+          FIPS: ${{ matrix.fips && 'true' || '' }}

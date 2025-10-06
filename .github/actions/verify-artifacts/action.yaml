@@ -1,0 +1,61 @@
+name: "Verify Artifacts Exist"
+description: "Verify that published artifacts exist for a specific distribution and commit SHA"
+inputs:
+  github-token:
+    description: "GitHub token for API access"
+    required: false
+    default: ${{ github.token }}
+  distribution:
+    description: "Distribution name to verify artifacts for"
+    required: true
+  commit-sha:
+    description: "Commit SHA to verify artifacts for"
+    required: true
+  fips:
+    description: "Whether this is a FIPS build"
+    required: false
+    default: "false"
+  artifact-prefix:
+    description: "Prefix for artifact names"
+    required: false
+    default: "goreleaser_output"
+outputs:
+  artifact-name:
+    description: "Full name of the verified artifact"
+    value: ${{ steps.verify.outputs.artifact_name }}
+  found:
+    description: "Whether artifacts were found (true/false)"
+    value: ${{ steps.verify.outputs.found }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Verify Artifacts
+      id: verify
+      shell: bash
+      run: |
+        if [[ "${{ inputs.fips }}" == "true" ]]; then
+          ARTIFACT_NAME="${{ inputs.artifact-prefix }}_${{ inputs.distribution }}-fips_${{ inputs.commit-sha }}"
+          BUILD_TYPE="FIPS"
+        else
+          ARTIFACT_NAME="${{ inputs.artifact-prefix }}_${{ inputs.distribution }}_${{ inputs.commit-sha }}"
+          BUILD_TYPE="regular"
+        fi
+
+        echo "Verifying $BUILD_TYPE artifacts exist for ${{ inputs.distribution }} with SHA: ${{ inputs.commit-sha }}"
+        echo "Looking for artifact: $ARTIFACT_NAME"
+
+        if gh api "/repos/${{ github.repository }}/actions/artifacts" \
+           --jq ".artifacts[] | select(.name == \"$ARTIFACT_NAME\")" \
+           | grep -q .; then
+          echo "found=true" >> $GITHUB_OUTPUT
+          echo "artifact_name=$ARTIFACT_NAME" >> $GITHUB_OUTPUT
+          echo "✅ Artifacts verified for ${{ inputs.distribution }} with SHA ${{ inputs.commit-sha }}"
+        else
+          echo "found=false" >> $GITHUB_OUTPUT
+          echo "❌ No artifacts found for ${{ inputs.distribution }} with SHA ${{ inputs.commit-sha }}"
+          echo "::error::Missing artifacts for ${{ inputs.distribution }} (SHA: ${{ inputs.commit-sha }})"
+          exit 1
+        fi
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
