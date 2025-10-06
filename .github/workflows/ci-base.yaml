@@ -14,10 +14,14 @@ on:
         required: false
         type: boolean
         default: false
+      publish:
+        required: false
+        type: boolean
+        default: false
       test_cluster_name:
         required: false
         type: string
-        default: 'ci-${{ github.run_id }}-${{ github.run_attempt }}'
+        default: "ci-${{ github.run_id }}-${{ github.run_attempt }}"
     secrets:
       registry:
         required: false
@@ -36,6 +40,12 @@ on:
       nr_account_id:
         required: false
       nr_api_key:
+        required: false
+      aws_access_key_id:
+        required: false
+      aws_secret_access_key:
+        required: false
+      aws_account_id:
         required: false
 
 permissions:
@@ -97,14 +107,12 @@ jobs:
 
       - name: Verify source files exist
         run: ./scripts/validate-source-files.sh -d ${{ inputs.distribution }} -f ${{ inputs.fips }}
-          
-      - name: Login to Docker
+      
+      - name: Login to ECR
+        if: ${{ inputs.publish }}
         uses: docker/login-action@v3
-        if: ${{ env.ACT }}
         with:
-          registry: docker.io
-          username: ${{ secrets.docker_hub_username }}
-          password: ${{ secrets.docker_hub_password }}
+          registry: ${{ secrets.registry }}/${{ inputs.distribution }}
 
       - uses: docker/setup-qemu-action@v2
 
@@ -140,24 +148,35 @@ jobs:
         env:
           GPG_PRIVATE_KEY: ${{ secrets.gpg_private_key }}
 
+      - name: Configure AWS Credentials
+        if: ${{ inputs.publish }}
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.aws_access_key_id }}
+          aws-secret-access-key: ${{ secrets.aws_secret_access_key }}
+          aws-region: us-east-1
+          role-to-assume: arn:aws:iam::${{ secrets.aws_account_id }}:role/resource-provisioner
+          role-skip-session-tagging: true
+
       - name: Build Args
         run: |
-          if [ ${{ inputs.nightly }} = "true" ] && [ ${{ inputs.fips }} = "true" ]; then
-            echo "goreleaser_args=--snapshot --clean --skip=publish,validate --timeout 2h --config .goreleaser-nightly-fips.yaml" >> $GITHUB_ENV
-            echo "goreleaser_file=.goreleaser-nightly-fips.yaml" >> $GITHUB_ENV
-          elif [ ${{ inputs.nightly }} = "true" ]; then
-            echo "goreleaser_args=--snapshot --clean --skip=publish,validate --timeout 2h --config .goreleaser-nightly.yaml" >> $GITHUB_ENV
-            echo "goreleaser_file=.goreleaser-nightly.yaml" >> $GITHUB_ENV
-          elif [ ${{ inputs.fips }} = "true" ]; then
-            echo "goreleaser_args=--snapshot --clean --skip=publish,validate --timeout 2h --config .goreleaser-fips.yaml" >> $GITHUB_ENV
-            echo "goreleaser_file=.goreleaser-fips.yaml" >> $GITHUB_ENV
-          elif [ ${{github.event.pull_request.user.login == 'dependabot[bot]' }} ]; then
-            echo "goreleaser_args=--snapshot --clean --skip=publish,validate,sign --timeout 2h" >> $GITHUB_ENV
-            echo "goreleaser_file=.goreleaser.yaml" >> $GITHUB_ENV
+          # Determine base skip flags based on publish input
+          if [ ${{ inputs.publish }} = "true" ]; then
+            BASE_SKIP="--skip=announce,validate"
+            SNAPSHOT_FLAG=""  # No --snapshot for publishing builds to get proper versions
           else
-            echo "goreleaser_args=--snapshot --clean --skip=publish,validate --timeout 2h" >> $GITHUB_ENV
-            echo "goreleaser_file=.goreleaser.yaml" >> $GITHUB_ENV
+            BASE_SKIP="--skip=publish,validate"
+            SNAPSHOT_FLAG="--snapshot"  # Use --snapshot for dev builds to get SNAPSHOT versions
           fi
+
+          if [ ${{github.event.pull_request.user.login == 'dependabot[bot]' }} ]; then
+            BASE_SKIP="--skip=publish,validate,sign"
+          fi
+
+          GORELEASER_CONFIG="${{ format('.goreleaser{0}.yaml', inputs.fips && '-fips') }}"
+
+          echo "goreleaser_args=$SNAPSHOT_FLAG --clean $BASE_SKIP --timeout 2h --config $GORELEASER_CONFIG" >> $GITHUB_ENV
+          echo "goreleaser_file=$GORELEASER_CONFIG" >> $GITHUB_ENV
 
       - name: Generate binary cache key
         id: generate_binary_key
@@ -189,7 +208,7 @@ jobs:
           REGISTRY: "${{ secrets.registry }}"
         with:
           distribution: goreleaser
-          version: '2.11.2'
+          version: "2.11.2"
           args: ${{ env.goreleaser_args }}
           workdir: distributions/${{ inputs.distribution }}
       
@@ -279,7 +298,7 @@ jobs:
           fi
           go tool nm ${BINARY} | grep '_Cfunc__goboringcrypto_' || (echo 'fips distro should not use standard crypto' && exit 1)
 
-      - name: Validate FIPS ciphers 
+      - name: Validate FIPS ciphers
         if: inputs.fips
         run: |
           ./fips/validation/validate.sh "${{ secrets.registry }}/${{ inputs.distribution }}:${{ env.image_tag }}"
@@ -296,7 +315,7 @@ jobs:
           kind load docker-image "${{ secrets.registry }}/${{ inputs.distribution }}:${{ env.image_tag }}" --name ${{ inputs.test_cluster_name }}
 
       - uses: azure/setup-helm@v4.2.0
- 
+
       - name: Run local e2e tests
         if: ${{ hashFiles(format('distributions/{0}/test/spec-local.yaml', inputs.distribution)) != '' }}
         uses: newrelic/newrelic-integration-e2e-action@v1
@@ -312,19 +331,34 @@ jobs:
           account_id: ${{ secrets.nr_account_id }}
           api_key: ${{ secrets.nr_api_key }}
           license_key: ${{ secrets.nr_ingest_key }}
-          region: 'US'
+          region: "US"
 
       - name: Trivy security check
         if: ${{ !inputs.nightly }}
         uses: aquasecurity/trivy-action@0.29.0
         with:
           image-ref: "${{ secrets.registry }}/${{ inputs.distribution}}:${{ env.image_tag }}"
-          format: 'table'
-          exit-code: '1'
+          format: "table"
+          exit-code: "1"
           ignore-unfixed: true
-          vuln-type: 'os,library'
+          vuln-type: "os,library"
           severity: "HIGH,CRITICAL"
         env:
           # dbs are downloaded async in trivy-cache.yml
           TRIVY_SKIP_DB_UPDATE: ${{ !env.ACT }}
           TRIVY_SKIP_JAVA_DB_UPDATE: true
+
+      - name: Extract Docker Manifest SHA
+        if: ${{ inputs.publish }}
+        run: |
+          docker_manifest_sha=$(echo '${{ steps.goreleaser.outputs.artifacts }}' |
+            jq -r '.[] | select(.type == "Docker Manifest") | select(.name | endswith(":nightly")) | .extra.Digest')
+          echo "docker manifest sha: ${docker_manifest_sha}"
+          echo -n "${docker_manifest_sha}" > docker_manifest_sha_${{ inputs.distribution }}
+
+      - name: Upload Docker Manifest SHA
+        if: ${{ inputs.publish }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker_manifest_sha_${{ inputs.distribution }}
+          path: docker_manifest_sha_${{ inputs.distribution }}
