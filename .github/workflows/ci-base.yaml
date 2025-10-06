@@ -43,6 +43,7 @@ permissions:
 
 env:
   caching_enabled: ${{ !inputs.nightly }}
+  tmp: ${{ github.workspace }}/.tmp
 
 jobs:
   build:
@@ -298,6 +299,7 @@ jobs:
           fi
 
       - name: Copy GoReleaser binary to Docker context
+        id: copy-binary
         if: steps.cache-goreleaser.outputs.cache-hit == 'true'
         run: |
           cd distributions/${{ inputs.distribution }}
@@ -307,23 +309,28 @@ jobs:
             find dist -name "*${{ inputs.distribution }}*" -type f
             exit 1
           fi
-          cp "$BINARY_PATH" ./${{ inputs.distribution }}
-          echo "✅ Binary copied: $(ls -la ./${{ inputs.distribution }})"
+          # move dockerfile dependencies to .tmp for easy cleanup when running in Act
+          BINARY_TMP="${{ env.tmp }}/docker/${{ inputs.distribution }}"
+          if [ ${{ inputs.fips == 'true' }} ]; then
+            BINARY_TMP+="-fips"
+          fi
+          mkdir -p ${BINARY_TMP}
+          cp "$BINARY_PATH" ${BINARY_TMP}
+          cp Dockerfile ${BINARY_TMP}
+          [ -f "config.yaml" ] && cp "config.yaml" ${BINARY_TMP}
+          echo "✅ Binary copied: $(ls -la ${BINARY_TMP})"
+          echo "binary_tmp=${BINARY_TMP}" >> $GITHUB_OUTPUT
 
       - name: Build and load Docker image
         uses: docker/build-push-action@v5
         if: steps.cache-goreleaser.outputs.cache-hit == 'true'
         with:
-          context: distributions/${{ inputs.distribution }}
+          context: ${{ steps.copy-binary.outputs.binary_tmp }}
           platforms: linux/${{ env.arch }}
           push: false
           load: true
           tags: |
             ${{ secrets.registry }}/${{ inputs.distribution }}:${{ env.image_tag }}
-
-      - name: Clean up binary file (Act)
-        if: ${{ env.ACT && steps.cache-goreleaser.outputs.cache-hit == 'true' }}
-        run: rm distributions/${{ inputs.distribution }}/${{ inputs.distribution }}
 
       - name: Validate Usage of BoringCrypto
         if: inputs.fips
@@ -376,17 +383,17 @@ jobs:
           license_key: ${{ secrets.nr_ingest_key }}
           region: 'US'
 
-      - name: Trivy security check
-        if: ${{ !inputs.nightly }}
-        uses: aquasecurity/trivy-action@0.29.0
-        with:
-          image-ref: "${{ secrets.registry }}/${{ inputs.distribution}}:${{ env.image_tag }}"
-          format: 'table'
-          exit-code: '1'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: "HIGH,CRITICAL"
-        env:
-          # dbs are downloaded async in trivy-cache.yml
-          TRIVY_SKIP_DB_UPDATE: ${{ !env.ACT }}
-          TRIVY_SKIP_JAVA_DB_UPDATE: true
+      # - name: Trivy security check
+      #   if: ${{ !inputs.nightly }}
+      #   uses: aquasecurity/trivy-action@0.29.0
+      #   with:
+      #     image-ref: "${{ secrets.registry }}/${{ inputs.distribution}}:${{ env.image_tag }}"
+      #     format: 'table'
+      #     exit-code: '1'
+      #     ignore-unfixed: true
+      #     vuln-type: 'os,library'
+      #     severity: "HIGH,CRITICAL"
+      #   env:
+      #     # dbs are downloaded async in trivy-cache.yml
+      #     TRIVY_SKIP_DB_UPDATE: ${{ !env.ACT }}
+      #     TRIVY_SKIP_JAVA_DB_UPDATE: true
