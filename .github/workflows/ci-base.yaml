@@ -277,35 +277,40 @@ jobs:
             echo "✅ All found directories contain binaries!"
           fi
           echo "binary_file=$BINARY_FILE" >> $GITHUB_ENV
-          echo "📋 Validating archives..."
-          archives=$( jq -r '.[] | select(.type == "Archive") | .path' dist/artifacts.json )
-          for archive in $archives; do
-            echo "Validating ${archive}"
-            if [ ! -f "${archive}" ]; then
-              echo "❌ ${archive} not found!"
+          echo "📋 Validating Archives and Packages"
+          artifacts=$( jq -r '.[] | select(.type == "Archive" or .type == "Linux Package") | .path' dist/artifacts.json )
+          for artifact in $artifacts; do
+            echo "Validating ${artifact}"
+            if [ ! -f "${artifact}" ]; then
+              echo "❌ ${artifact} not found!"
               exit 1
             else
-              echo "  Found ${archive}"
+              echo "  Found artifact: ${artifact}"
             fi
-            sum_file=$( jq -r ".[] | select(.type == \"Checksum\" and .extra.ChecksumOf == \"${archive}\") | .path" dist/artifacts.json )
+            sum_file=$( jq -r ".[] | select(.type == \"Checksum\" and .extra.ChecksumOf == \"${artifact}\") | .path" dist/artifacts.json )
+            if [ -z "${sum_file}" ]; then
+              echo "⚠️ Checksum not defined for ${artifact}"
+              continue
+            fi
             if [ ! -f "${sum_file}" ]; then
               echo "❌ ${$sum_file} not found!"
               exit 1
             else
-              echo "  Found ${sum_file}"
+              echo "  Found checksum: ${sum_file}"
             fi
-            archive_sum=$(sha256sum ${archive} | cut -d' ' -f1)
+            artifact_sum=$(sha256sum ${artifact} | cut -d' ' -f1)
             expected_sum=$(cat ${sum_file})
-            if [ "${archive_sum}" != "${expected_sum}" ]; then
+            if [ "${artifact_sum}" != "${expected_sum}" ]; then
               echo "❌ Checksums do not match!"
-              echo "Checksum: ${archive_sum}"
+              echo "Checksum: ${artifact_sum}"
               echo "Expected: ${expected_sum}"
               exit 1
             else
               echo "  Checksum validated"
             fi
           done
-          echo "✅ All archives validated!"
+          echo "✅ Archives and Packages validated!"
+          exit 1
 
       - name: Extract relevant metadata
         run: |
