@@ -232,10 +232,11 @@ jobs:
         run: |
           cd "distributions/${{ inputs.distribution }}"
           if [ ! -d "dist" ]; then
-            echo "❌ $DIST_PATH not found!"
+            echo "❌ dist directory not found!"
             exit 1
           fi
-          echo "📋 Verifying common files exist..."
+
+          echo "📋 Verifying metadata files exist..."
           files=("dist/artifacts.json" "dist/metadata.json")
           missing_files=()
           for file in "${files[@]}"; do
@@ -251,37 +252,43 @@ jobs:
           else
             echo "✅ All common build files found!"
           fi
+
           echo "📋 Verifying Binaries exist..."
           binaries=$( jq -r '.[] | select(.type == "Binary") | .path' dist/artifacts.json )
           for binary in $binaries; do
             if [ ! -f "${binary}" ]; then
               echo "❌ ${binary} not found!"
+              exit 1
             else
               echo "Found: ${binary}"
             fi
           done
           echo "✅ All binaries found!"
+
           echo "📋 Validating Archives and Packages"
           artifacts=$( jq -r '.[] | select(.type == "Archive" or .type == "Linux Package") | .path' dist/artifacts.json )
           for artifact in $artifacts; do
             echo "Validating ${artifact}"
+            # Verify the artifact file exists
             if [ ! -f "${artifact}" ]; then
               echo "❌ ${artifact} not found!"
               exit 1
             else
               echo "  Found artifact: ${artifact}"
             fi
+            # Search for the corresponding checksum file and verify it exists
             sum_file=$( jq -r ".[] | select(.type == \"Checksum\" and .extra.ChecksumOf == \"${artifact}\") | .path" dist/artifacts.json )
             if [ -z "${sum_file}" ]; then
               echo "⚠️ Checksum not defined for ${artifact}"
               continue
             fi
             if [ ! -f "${sum_file}" ]; then
-              echo "❌ ${$sum_file} not found!"
+              echo "❌ ${sum_file} not found!"
               exit 1
             else
               echo "  Found checksum: ${sum_file}"
             fi
+            # Compare checksums to ensure file integrity
             artifact_sum=$(sha256sum ${artifact} | cut -d' ' -f1)
             expected_sum=$(cat ${sum_file})
             if [ "${artifact_sum}" != "${expected_sum}" ]; then
