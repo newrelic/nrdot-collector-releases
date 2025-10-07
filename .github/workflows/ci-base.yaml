@@ -294,7 +294,6 @@ jobs:
             fi
           done
           echo "✅ Archives and Packages validated!"
-          exit 1
 
       - name: Extract relevant metadata
         run: |
