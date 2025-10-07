@@ -6,12 +6,15 @@ This repository assembles various [custom distributions](https://opentelemetry.i
 
 Generated assets are available in the corresponding Github release page and as docker images published within the [newrelic organization on Docker Hub](https://hub.docker.com/u/newrelic).
 
-Current list of distributions:
+### Current list of distributions:
 
-- [nrdot-collector-host](./distributions/nrdot-collector-host/): distribution focused on monitoring host metrics and logs
-- [nrdot-collector-k8s](./distributions/nrdot-collector-k8s/): distribution focused on monitoring a Kubernetes cluster
+- [nrdot-collector-host](./distributions/nrdot-collector-host/): Host monitoring
+- [nrdot-collector-k8s](./distributions/nrdot-collector-k8s/): k8s cluster and resource monitoring
+- [nrdot-collector](./distributions/nrdot-collector): Gateway capabilities and host monitoring
 
-Please refer to [this README](./distributions/README.md) for documentation.
+We also provide [FIPS-compliant docker images](../fips/README.md).
+
+Please refer to [this README](./distributions/README.md) for documentation on our distributions.
 
 ## Distribution Governance
 Our intention is that each distribution we maintain serves a specific use case powering a particular slice of the New Relic experience. This ensures that each distribution is easy to understand, has a small attack surface and can be updated quickly to patch security issues or bugs.
