@@ -324,7 +324,10 @@ jobs:
         if: steps.cache-goreleaser.outputs.cache-hit == 'true'
         run: |
           cd distributions/${{ inputs.distribution }}
-          BINARY_PATH="$(find dist -name "${{ inputs.distribution }}*_linux_${{ env.arch }}*" -type d)/${{ env.binary_file }}"
+          BINARY_PATH="$(find dist -name "${{ inputs.distribution }}*_linux_${{ env.arch }}*" -type d)/${{ inputs.distribution }}"
+          if [ ${{ inputs.fips }} = "true" ]; then
+            BINARY_PATH+="-fips"
+          fi
           if [ ! -f "$BINARY_PATH" ]; then
             echo "❌ Error: Binary not found at $BINARY_PATH"
             find dist -name "*${{ inputs.distribution }}*" -type f
