@@ -235,7 +235,7 @@ jobs:
             echo "❌ $DIST_PATH not found!"
             exit 1
           fi
-          echo "📋 Checking for common files..."
+          echo "📋 Verifying common files exist..."
           files=("dist/artifacts.json" "dist/metadata.json")
           missing_files=()
           for file in "${files[@]}"; do
@@ -251,32 +251,16 @@ jobs:
           else
             echo "✅ All common build files found!"
           fi
-          echo "📋 Checking if binaries / executables exist..."
-          binary_dirs=($(find dist -name "${{ inputs.distribution }}*_*" -type d))
-          if [ ${#binary_dirs[@]} -eq 0 ]; then
-            echo "❌ No binary directories found!"
-            exit 1
-          fi
-          BINARY_FILE="${{ inputs.distribution }}"
-          if [ ${{ inputs.fips }} = "true" ]; then
-            BINARY_FILE="${BINARY_FILE}-fips"
-          fi
-          missing_binaries=()
-          for dir in "${binary_dirs[@]}"; do
-            binary="$(find $dir -name "${BINARY_FILE}*" -type f)"
-            if [ -z "$binary" ]; then
-              missing_binaries+=("$binary")
+          echo "📋 Verifying Binaries exist..."
+          binaries=$( jq -r '.[] | select(.type == "Binary") | .path' dist/artifacts.json )
+          for binary in $binaries; do
+            if [ ! -f "${binary}" ]; then
+              echo "❌ ${binary} not found!"
             else
-              echo "Found: $binary"
+              echo "Found: ${binary}"
             fi
           done
-          if [ ${#missing_binaries[@]} -ne 0 ]; then
-            echo "❌ Binaries / Executables not found: ${missing_binaries[*]}"
-            exit 1
-          else
-            echo "✅ All found directories contain binaries!"
-          fi
-          echo "binary_file=$BINARY_FILE" >> $GITHUB_ENV
+          echo "✅ All binaries found!"
           echo "📋 Validating Archives and Packages"
           artifacts=$( jq -r '.[] | select(.type == "Archive" or .type == "Linux Package") | .path' dist/artifacts.json )
           for artifact in $artifacts; do
