@@ -316,7 +316,7 @@ jobs:
           fi
           # move dockerfile dependencies to .tmp for easy cleanup when running in Act
           BINARY_TMP="${{ env.tmp }}/docker/${{ inputs.distribution }}"
-          if [ ${{ inputs.fips == 'true' }} ]; then
+          if [ ${{ inputs.fips }} = "true" ]; then
             BINARY_TMP+="-fips"
           fi
           mkdir -p ${BINARY_TMP}
