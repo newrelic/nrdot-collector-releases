@@ -175,14 +175,19 @@ jobs:
         run: |
           if [ ${{ inputs.nightly }} = "true" ] && [ ${{ inputs.fips }} = "true" ]; then
             echo "goreleaser_args=--snapshot --clean --skip=publish,validate --timeout 2h --config .goreleaser-nightly-fips.yaml" >> $GITHUB_ENV
+            echo "goreleaser_file=.goreleaser-nightly-fips.yaml" >> $GITHUB_ENV
           elif [ ${{ inputs.nightly }} = "true" ]; then
             echo "goreleaser_args=--snapshot --clean --skip=publish,validate --timeout 2h --config .goreleaser-nightly.yaml" >> $GITHUB_ENV
+            echo "goreleaser_file=.goreleaser-nightly.yaml" >> $GITHUB_ENV
           elif [ ${{ inputs.fips }} = "true" ]; then
             echo "goreleaser_args=--snapshot --clean --skip=publish,validate --timeout 2h --config .goreleaser-fips.yaml" >> $GITHUB_ENV
+            echo "goreleaser_file=.goreleaser-fips.yaml" >> $GITHUB_ENV
           elif [ ${{github.event.pull_request.user.login == 'dependabot[bot]' }} ]; then
             echo "goreleaser_args=--snapshot --clean --skip=publish,validate,sign --timeout 2h" >> $GITHUB_ENV
+            echo "goreleaser_file=.goreleaser.yaml" >> $GITHUB_ENV
           else
             echo "goreleaser_args=--snapshot --clean --skip=publish,validate --timeout 2h" >> $GITHUB_ENV
+            echo "goreleaser_file=.goreleaser.yaml" >> $GITHUB_ENV
           fi
 
       - name: Generate binary cache key
@@ -317,7 +322,9 @@ jobs:
           mkdir -p ${BINARY_TMP}
           cp "$BINARY_PATH" "${BINARY_TMP}/${{ inputs.distribution }}"
           cp Dockerfile ${BINARY_TMP}
-          [ -f "config.yaml" ] && cp "config.yaml" ${BINARY_TMP}
+          for file in $(yq ".dockers[] | select(.goarch == \"${{ env.arch }}\") | .extra_files[]" ${{ env.goreleaser_file }}); do
+            cp "${file}" ${BINARY_TMP}
+          done
           echo "✅ Binary copied: $(ls -la ${BINARY_TMP})"
           echo "binary_tmp=${BINARY_TMP}" >> $GITHUB_OUTPUT
 
