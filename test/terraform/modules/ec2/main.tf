@@ -1,13 +1,12 @@
 locals {
-  collector_reported_hostname_prefix = "${var.test_environment}-${var.deploy_id}-${var.collector_distro}"
   instance_config = [
     {
-      hostname_suffix    = "ec2_ubuntu22_04-0"
+      test_key_suffix    = "ec2_ubuntu22_04-0"
       release_verion     = "22.04"
       release_short_name = "jammy"
     },
     {
-      hostname_suffix    = "ec2_ubuntu24_04-0"
+      test_key_suffix    = "ec2_ubuntu24_04-0"
       release_verion     = "24.04"
       release_short_name = "noble"
     },
@@ -139,7 +138,7 @@ resource "aws_instance" "ubuntu" {
               ################################################
               echo 'Configuring Collector'
               echo 'NEW_RELIC_LICENSE_KEY=${var.nr_ingest_key}' >> /etc/${var.collector_distro}/${var.collector_distro}.conf
-              echo "OTEL_RESOURCE_ATTRIBUTES='testKey=${local.collector_reported_hostname_prefix}-${local.instance_config[count.index].hostname_suffix}'" >> /etc/${var.collector_distro}/${var.collector_distro}.conf
+              echo "OTEL_RESOURCE_ATTRIBUTES='testKey=${var.test_key_prefix}-${local.instance_config[count.index].test_key_suffix}'" >> /etc/${var.collector_distro}/${var.collector_distro}.conf
               systemctl reload-or-restart ${var.collector_distro}.service
               EOF
 }

@@ -56,7 +56,7 @@ jobs:
         run: go mod tidy
 
       - name: Verify build
-        run: make ci DISTRIBUTIONS=${{ matrix.distribution }}
+        run: make ci DISTRO=${{ matrix.distribution }}
 
       - name: Install cross-compilation toolchain
         run: |

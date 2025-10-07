@@ -7,7 +7,8 @@ locals {
   chart_version                                   = try(local.test_spec.nightly.collectorChart.version, null)
   releases_bucket_name                            = "nr-releases"
   required_permissions_boundary_arn_for_new_roles = "arn:aws:iam::${var.aws_account_id}:policy/resource-provisioner-boundary"
-  k8s_namespace                                   = "nightly${local.fips_str}-${var.distro}"
+  k8s_namespace                                   = "${local.test_env_name}-${var.distro}"
+  test_key_prefix                                 = "${var.test_environment}-${random_string.deploy_id.result}-${var.distro}"
 }
 
 resource "random_string" "deploy_id" {
@@ -56,17 +57,7 @@ resource "helm_release" "ci_e2e_nightly_nr_backend" {
 
   set {
     name  = "testKey"
-    value = "${local.test_env_name}-${random_string.deploy_id.result}-${var.distro}-k8s_node"
-  }
-
-  set {
-    name  = "clusterName"
-    value = data.aws_eks_cluster.eks_cluster.name
-  }
-
-  set {
-    name  = "demoService.enabled"
-    value = "true"
+    value = "${local.test_key_prefix}-k8s_node"
   }
 }
 
@@ -128,6 +119,6 @@ module "ci_e2e_ec2" {
   nr_ingest_key        = var.nr_ingest_key
   # reuse vpc to avoid having to pay for second NAT gateway for this simple use case
   vpc_id              = data.aws_eks_cluster.eks_cluster.vpc_config[0].vpc_id
-  deploy_id           = random_string.deploy_id.result
+  test_key_prefix     = local.test_key_prefix
   permission_boundary = local.required_permissions_boundary_arn_for_new_roles
 }
