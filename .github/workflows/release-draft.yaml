@@ -58,6 +58,17 @@ jobs:
       - name: Verify build
         run: make ci DISTRIBUTIONS=${{ matrix.distribution }}
 
+      - name: Install cross-compilation toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            gcc-aarch64-linux-gnu \
+            g++-aarch64-linux-gnu \
+            gcc-x86-64-linux-gnu \
+            g++-x86-64-linux-gnu \
+            libc6-dev-arm64-cross \
+            libc6-dev-amd64-cross
+
       - name: Login to Docker
         uses: docker/login-action@v3
         if: ${{ env.ACT }}
@@ -112,4 +123,18 @@ jobs:
           distribution: goreleaser
           version: '2.11.2'
           args: --clean --skip=announce --timeout 2h
+          workdir: distributions/${{ matrix.distribution }}
+      
+      - name: Build FIPS binaries & packages with GoReleaser
+        id: goreleaser-fips
+        uses: goreleaser/goreleaser-action@v6
+        env:
+          NFPM_PASSPHRASE: ${{ secrets.OTELCOMM_GPG_PASSPHRASE }}
+          GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
+          GPG_KEY_PATH: ${{ steps.write_gpg_to_path.outputs.gpg_key_path }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          distribution: goreleaser
+          version: '2.11.2'
+          args: --clean --skip=announce --timeout 2h --config .goreleaser-fips.yaml
           workdir: distributions/${{ matrix.distribution }}
