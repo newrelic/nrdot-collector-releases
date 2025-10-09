@@ -43,7 +43,6 @@ permissions:
 
 env:
   caching_enabled: ${{ !inputs.nightly }}
-  tmp: ${{ github.workspace }}/.tmp
 
 jobs:
   build:
@@ -240,7 +239,7 @@ jobs:
             exit 1
           fi
           # move dockerfile dependencies to .tmp for easy cleanup when running in Act
-          BINARY_TMP="${{ env.tmp }}/docker/${{ inputs.distribution }}"
+          BINARY_TMP="${{ runner.temp }}/docker/${{ inputs.distribution }}"
           if [ ${{ inputs.fips }} = "true" ]; then
             BINARY_TMP+="-fips"
           fi
