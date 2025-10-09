@@ -96,38 +96,8 @@ jobs:
         run: echo "✅ Source generation skipped - no source changes detected"
 
       - name: Verify source files exist
-        run: |
-          SOURCE_PATH="distributions/${{inputs.distribution}}/_build"
-          if [ ${{ inputs.fips }} = "true" ]; then
-            SOURCE_PATH="${SOURCE_PATH}-fips"
-          fi
-          if [ ! -d "$SOURCE_PATH" ]; then
-            echo "❌ $SOURCE_PATH not found!"
-            exit 1
-          fi
-          files=(
-            "build.log" "components.go" "go.mod" "go.sum"
-            "main_others.go" "main_windows.go" "main.go"
-          )
-          if [ ${{ inputs.fips }} = "true" ]; then
-            files+=("fips.go")
-          fi  
-          cd "$SOURCE_PATH"
-          missing_files=()
-          for file in "${files[@]}"; do
-            if [ ! -f "$file" ]; then
-              missing_files+=("$file")
-            else
-              echo "Found: $file"
-            fi
-          done
-          if [ ${#missing_files[@]} -eq 0 ]; then
-            echo "✅ All source files found!"
-          else
-            echo "❌ files not found: ${missing_files[*]}"
-            exit 1
-          fi
-
+        run: ./scripts/validate-source-files.sh -d ${{ inputs.distribution }} -f ${{ inputs.fips }}
+          
       - name: Login to Docker
         uses: docker/login-action@v3
         if: ${{ env.ACT }}
@@ -174,17 +144,42 @@ jobs:
         run: |
           if [ ${{ inputs.nightly }} = "true" ] && [ ${{ inputs.fips }} = "true" ]; then
             echo "goreleaser_args=--snapshot --clean --skip=publish,validate --timeout 2h --config .goreleaser-nightly-fips.yaml" >> $GITHUB_ENV
+            echo "goreleaser_file=.goreleaser-nightly-fips.yaml" >> $GITHUB_ENV
           elif [ ${{ inputs.nightly }} = "true" ]; then
             echo "goreleaser_args=--snapshot --clean --skip=publish,validate --timeout 2h --config .goreleaser-nightly.yaml" >> $GITHUB_ENV
+            echo "goreleaser_file=.goreleaser-nightly.yaml" >> $GITHUB_ENV
           elif [ ${{ inputs.fips }} = "true" ]; then
             echo "goreleaser_args=--snapshot --clean --skip=publish,validate --timeout 2h --config .goreleaser-fips.yaml" >> $GITHUB_ENV
+            echo "goreleaser_file=.goreleaser-fips.yaml" >> $GITHUB_ENV
           elif [ ${{github.event.pull_request.user.login == 'dependabot[bot]' }} ]; then
             echo "goreleaser_args=--snapshot --clean --skip=publish,validate,sign --timeout 2h" >> $GITHUB_ENV
+            echo "goreleaser_file=.goreleaser.yaml" >> $GITHUB_ENV
           else
             echo "goreleaser_args=--snapshot --clean --skip=publish,validate --timeout 2h" >> $GITHUB_ENV
+            echo "goreleaser_file=.goreleaser.yaml" >> $GITHUB_ENV
           fi
 
+      - name: Generate binary cache key
+        id: generate_binary_key
+        run: |
+          BINARY_HASH="${{ hashFiles(
+            format('distributions/{0}/.goreleaser*.yaml', inputs.distribution),
+            format('distributions/{0}/_build*/*', inputs.distribution)
+          ) }}"
+          ARGS_HASH=$(echo "${{ env.goreleaser_args }}" | sha256sum | cut -d' ' -f1)
+          echo binary_key=goreleaser-build-${{ inputs.distribution }}-${ARGS_HASH}-${BINARY_HASH} >> $GITHUB_OUTPUT
+
+      - name: Cache goreleaser build
+        id: cache-goreleaser
+        if: ${{ env.caching_enabled }}
+        uses: actions/cache@v4
+        with:
+          path: |
+            distributions/${{ inputs.distribution }}/dist
+          key: ${{ steps.generate_binary_key.outputs.binary_key }}
+
       - name: Build binaries & packages with GoReleaser
+        if: steps.cache-goreleaser.outputs.cache-hit != 'true'
         id: goreleaser
         uses: goreleaser/goreleaser-action@v6
         env:
@@ -197,10 +192,24 @@ jobs:
           version: '2.11.2'
           args: ${{ env.goreleaser_args }}
           workdir: distributions/${{ inputs.distribution }}
+      
+      - name: Skip GoReleaser build (cached)
+        if: steps.cache-goreleaser.outputs.cache-hit == 'true'
+        run: echo "✅ GoReleaser build skipped - using cached binaries"
 
+      - name: Validate GoReleaser build
+        run: ./scripts/validate-goreleaser-build.sh -d ${{ inputs.distribution }}
+          
       - name: Extract relevant metadata
         run: |
-          VERSION=$(echo '${{ steps.goreleaser.outputs.metadata }}' | jq -r '.version')
+          if [ "${{ steps.cache-goreleaser.outputs.cache-hit }}" = "true" ]; then
+            VERSION=$(jq -r '.version' distributions/${{ inputs.distribution }}/dist/metadata.json)
+            echo "Using cached version: $VERSION"
+          else
+            # Extract from fresh GoReleaser build
+            VERSION=$(echo '${{ steps.goreleaser.outputs.metadata }}' | jq -r '.version')
+            echo "Using fresh build version: $VERSION"
+          fi
           ARCH=$(echo '${{ runner.arch }}' | sed 's/X/amd/g')
           ARCH=${ARCH@L}
           echo "version=$VERSION" >> $GITHUB_ENV
@@ -214,6 +223,45 @@ jobs:
           else
             echo "image_tag=$VERSION-$ARCH" >> $GITHUB_ENV
           fi
+
+      - name: Copy GoReleaser binary to Docker context
+        id: copy-binary
+        if: steps.cache-goreleaser.outputs.cache-hit == 'true'
+        run: |
+          cd distributions/${{ inputs.distribution }}
+          BINARY_PATH="$(find dist -name "${{ inputs.distribution }}*_linux_${{ env.arch }}*" -type d)/${{ inputs.distribution }}"
+          if [ ${{ inputs.fips }} = "true" ]; then
+            BINARY_PATH+="-fips"
+          fi
+          if [ ! -f "$BINARY_PATH" ]; then
+            echo "❌ Error: Binary not found at $BINARY_PATH"
+            find dist -name "*${{ inputs.distribution }}*" -type f
+            exit 1
+          fi
+          # move dockerfile dependencies to .tmp for easy cleanup when running in Act
+          BINARY_TMP="${{ runner.temp }}/docker/${{ inputs.distribution }}"
+          if [ ${{ inputs.fips }} = "true" ]; then
+            BINARY_TMP+="-fips"
+          fi
+          mkdir -p ${BINARY_TMP}
+          cp "$BINARY_PATH" "${BINARY_TMP}/${{ inputs.distribution }}"
+          cp Dockerfile ${BINARY_TMP}
+          for file in $(yq ".dockers[] | select(.goarch == \"${{ env.arch }}\") | .extra_files[]" ${{ env.goreleaser_file }}); do
+            cp "${file}" ${BINARY_TMP}
+          done
+          echo "✅ Binary copied: $(ls -la ${BINARY_TMP})"
+          echo "binary_tmp=${BINARY_TMP}" >> $GITHUB_OUTPUT
+
+      - name: Build and load Docker image
+        uses: docker/build-push-action@v5
+        if: steps.cache-goreleaser.outputs.cache-hit == 'true'
+        with:
+          context: ${{ steps.copy-binary.outputs.binary_tmp }}
+          platforms: linux/${{ env.arch }}
+          push: false
+          load: true
+          tags: |
+            ${{ secrets.registry }}/${{ inputs.distribution }}:${{ env.image_tag }}
 
       - name: Validate Usage of BoringCrypto
         if: inputs.fips
