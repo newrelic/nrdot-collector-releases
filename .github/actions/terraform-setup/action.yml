@@ -1,0 +1,34 @@
+name: "Terraform Setup"
+description: "Initializes Terraform and selects/creates the workspace."
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ inputs.terraform_version }}
+    - name: Terraform Init
+      shell: bash
+      run: |
+        terraform init -backend-config="role_arn=arn:aws:iam::${{ inputs.aws_account_id }}:role/resource-provisioner" -backend-config="bucket=nr-terraform-states-${{ inputs.aws_account_id }}"
+      working-directory: ${{ inputs.working_directory }}
+    - name: Select/Create Workspace
+      shell: bash
+      env:
+        TF_CLI_ARGS: ""
+      run: |
+        terraform workspace select -or-create=true ${{ inputs.workspace }}
+      working-directory: ${{ inputs.working_directory }}
+inputs:
+  terraform_version:
+    description: "Terraform version to use"
+    required: true
+  aws_account_id:
+    description: "AWS account ID for backend config"
+    required: true
+  working_directory:
+    description: "Terraform working directory"
+    required: true
+  workspace:
+    description: "Terraform workspace name"
+    required: true

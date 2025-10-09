@@ -26,7 +26,6 @@ outputs:
   found:
     description: "Whether artifacts were found (true/false)"
     value: ${{ steps.verify.outputs.found }}
-
 runs:
   using: "composite"
   steps:

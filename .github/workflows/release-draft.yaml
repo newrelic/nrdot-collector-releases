@@ -121,7 +121,7 @@ jobs:
       - name: List Downloaded Artifacts
         run: |
           echo "Downloaded artifacts for ${{ matrix.distribution }}${{ matrix.fips && ' (FIPS)' || '' }}:"
-          find artifacts -type f | head -20
+          find artifacts -type f | head -100
 
       - name: Upload Artifacts to Release
         run: |

@@ -20,7 +20,6 @@ outputs:
   short-sha:
     description: "Short SHA of the last successful commit"
     value: ${{ steps.get-commit.outputs.short_sha }}
-
 runs:
   using: "composite"
   steps:

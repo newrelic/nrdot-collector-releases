@@ -7,7 +7,6 @@ outputs:
   count:
     description: "Number of distributions found"
     value: ${{ steps.find.outputs.count }}
-
 runs:
   using: "composite"
   steps:

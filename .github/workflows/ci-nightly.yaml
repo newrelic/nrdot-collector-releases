@@ -1,21 +1,16 @@
 name: 🔄 CI | Nightly Tests (Regular & FIPS)
-
 on:
   workflow_dispatch:
   schedule:
     # Scheduled to run in the morning (PT) on every day-of-week from Monday through Friday.
     - cron: "0 15 * * 1-5"
-
 concurrency:
   group: ci-nightly
   cancel-in-progress: false
-
 permissions:
   contents: read
-
 env:
   REGISTRY: "${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com"
-
 jobs:
   setup:
     name: Setup Workflow
@@ -31,11 +26,9 @@ jobs:
           sparse-checkout: |
             .github/actions
             distributions/*/manifest.yaml
-
       - name: Discover Distributions
         id: discover
         uses: ./.github/actions/discover-distributions
-
       - name: Get Last Successful Commit
         id: get-commit
         uses: ./.github/actions/get-successful-commit
@@ -43,7 +36,6 @@ jobs:
           github-token: ${{ github.token }}
           branch: main
           max-commits: 10
-
   verify-artifacts:
     name: Verify Artifacts (${{ matrix.distribution }}${{ matrix.fips && ' - FIPS' || '' }})
     runs-on: ubuntu-latest
@@ -58,7 +50,6 @@ jobs:
         with:
           sparse-checkout: |
             .github/actions
-
       - name: Verify Artifacts Exist for ${{ matrix.distribution }}${{ matrix.fips && ' - FIPS' || '' }}
         uses: ./.github/actions/verify-artifacts
         with:
@@ -66,10 +57,8 @@ jobs:
           distribution: ${{ matrix.distribution }}
           commit-sha: ${{ needs.setup.outputs.successful-sha }}
           fips: ${{ matrix.fips }}
-
-  deploy-nightly:
-    name: Deploy Nightly (${{ matrix.distribution }}${{ matrix.fips && ' - FIPS' || '' }})
-    uses: ./.github/workflows/terraform.yaml
+  e2e-tests:
+    name: Nightly E2E (${{ matrix.distribution }}${{ matrix.fips && ' - FIPS' || '' }})
     if: ${{ !github.event.act }}
     needs: [setup, verify-artifacts]
     strategy:
@@ -77,68 +66,19 @@ jobs:
       matrix:
         distribution: ${{ fromJson(needs.setup.outputs.distributions) }}
         fips: [false, true]
+    uses: ./.github/workflows/deploy-and-e2e.yaml
     with:
-      branch: ${{ github.ref }}
-      tf_work_subdir: nightly
-      workspace: "nightly${{ matrix.fips && '-fips' || '' }}-${{ matrix.distribution }}"
-      execute_plan: true
-      execute_apply: true
+      ref: ${{ needs.setup.outputs.successful-sha }}
+      workspace_prefix: nightly
       distro: ${{ matrix.distribution }}
       fips: ${{ matrix.fips }}
-      nightly_docker_manifest_sha_artifact_name: ${{ format('goreleaser_output_{0}{1}_{2}', matrix.distribution, matrix.fips && '-fips' || '', needs.setup.outputs.successful-sha) }}
+      execute_destroy: false
     secrets:
       aws_access_key_id: ${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCESS_KEY_ID }}
-      aws_secret_access_key: ${{secrets.OTELCOMM_AWS_TEST_ACC_SECRET_ACCESS_KEY}}
+      aws_secret_access_key: ${{ secrets.OTELCOMM_AWS_TEST_ACC_SECRET_ACCESS_KEY }}
       aws_account_id: ${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCOUNT_ID }}
-      nr_backend_url: ${{secrets.NR_STAGING_BACKEND_URL}}
+      nr_backend_url: ${{ secrets.NR_STAGING_BACKEND_URL }}
       nr_ingest_key: ${{ secrets.OTELCOMM_NR_INGEST_KEY }}
-
-  test-nightly:
-    name: Test Nightly (${{ matrix.distribution }}${{ matrix.fips && ' - FIPS' || '' }})
-    runs-on: ubuntu-latest
-    needs: [setup, verify-artifacts, deploy-nightly]
-    strategy:
-      matrix:
-        distribution: ${{ fromJson(needs.setup.outputs.distributions) }}
-        fips: [false, true]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # required for tag metadata
-
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: "~1.24"
-
-      - name: Download GoReleaser Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ format('goreleaser_output_{0}{1}_{2}', matrix.distribution, matrix.fips && '-fips' || '', needs.setup.outputs.successful-sha) }}
-          path: ./artifacts/
-
-      - name: Show Downloaded Artifacts
-        run: |
-          echo "Testing ${{ matrix.fips && 'FIPS' || 'regular' }} build for ${{ matrix.distribution }}"
-          echo "Build from commit: ${{ needs.setup.outputs.successful-sha }} (${{ needs.setup.outputs.short-sha }})"
-          echo "Available artifacts:"
-          ls -la ./artifacts/
-
-          # Check for docker manifest SHA file
-          if [ -f "./artifacts/docker_manifest_sha" ]; then
-            echo "Docker SHA: $(cat ./artifacts/docker_manifest_sha)"
-          else
-            echo "Error: docker_manifest_sha file not found"
-            exit 1
-          fi
-
-      - name: Run nightly tests for ${{ matrix.distribution }}${{ matrix.fips && ' - FIPS' || '' }}
-        run: make -f ./test/e2e/Makefile ci_test-nightly
-        env:
-          NR_API_KEY: ${{ secrets.OTELCOMM_NR_API_KEY }}
-          NR_ACCOUNT_ID: ${{ secrets.OTELCOMM_NR_TEST_ACCOUNT_ID }}
-          NR_API_BASE_URL: ${{ secrets.NR_STAGING_API_BASE_URL }}
-          DISTRO: ${{ matrix.distribution }}
-          K8S_CONTEXT_NAME: aws-ci-e2etest
-          FIPS: ${{ matrix.fips && 'true' || '' }}
+      nr_api_key: ${{ secrets.OTELCOMM_NR_API_KEY }}
+      nr_account_id: ${{ secrets.OTELCOMM_NR_TEST_ACCOUNT_ID }}
+      nr_api_base_url: ${{ secrets.NR_STAGING_API_BASE_URL }}
