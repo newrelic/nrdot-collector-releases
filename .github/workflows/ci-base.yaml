@@ -180,7 +180,7 @@ jobs:
             BASE_SKIP="--skip=publish,validate,sign"
           fi
 
-          GORELEASER_CONFIG="${{ format('.goreleaser{0}.yaml', inputs.fips && '-fips') }}"
+          GORELEASER_CONFIG="${{ format('.goreleaser{0}.yaml', inputs.fips && '-fips' || '') }}"
 
           echo "goreleaser_args=$SNAPSHOT_FLAG --clean $BASE_SKIP --timeout 2h --config $GORELEASER_CONFIG" >> $GITHUB_ENV
           echo "goreleaser_file=$GORELEASER_CONFIG" >> $GITHUB_ENV
