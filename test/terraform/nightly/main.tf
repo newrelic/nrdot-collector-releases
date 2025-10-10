@@ -7,7 +7,7 @@ locals {
   chart_version                                   = try(local.test_spec.nightly.collectorChart.version, null)
   releases_bucket_name                            = "nr-releases"
   required_permissions_boundary_arn_for_new_roles = "arn:aws:iam::${var.aws_account_id}:policy/resource-provisioner-boundary"
-  k8s_namespace                                   = "nightly${local.fips_str}-${var.distro}"
+  k8s_namespace                                   = "${var.k8s_namespace_prefix}${local.fips_str}-${var.distro}"
 }
 
 resource "random_string" "deploy_id" {

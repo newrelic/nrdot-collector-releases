@@ -1,21 +1,66 @@
 name: 🏷️ Release | Tag
-
 on:
-  push:
-    branches:
-      - main
-
+  workflow_run:
+    workflows: ["🔄 CI | PR / Merge"]
+    types:
+      - completed
+    branches: [main]
 jobs:
+  setup-e2e:
+    name: Setup E2E Gating
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (sparse)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          sparse-checkout: |
+            .github/actions
+            distributions/*/manifest.yaml
+      - name: Discover Distributions
+        id: discover
+        uses: ./.github/actions/discover-distributions
+      - name: Export Distributions
+        id: set-output
+        run: echo "distributions=${{ steps.discover.outputs.distributions }}" >> $GITHUB_OUTPUT
+    outputs:
+      distributions: ${{ steps.set-output.outputs.distributions }}
+  e2e-gate:
+    name: E2E Gate (${{ matrix.distribution }}${{ matrix.fips && ' - FIPS' || '' }})
+    # Only run if upstream CI succeeded
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    needs: setup-e2e
+    strategy:
+      fail-fast: false
+      matrix:
+        distribution: ${{ fromJson(needs.setup-e2e.outputs.distributions) }}
+        fips: [false, true]
+    uses: ./.github/workflows/deploy-and-e2e.yaml
+    with:
+      ref: ${{ github.sha }}
+      distro: ${{ matrix.distribution }}
+      fips: ${{ matrix.fips }}
+      execute_destroy: true
+    secrets:
+      aws_access_key_id: ${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCESS_KEY_ID }}
+      aws_secret_access_key: ${{ secrets.OTELCOMM_AWS_TEST_ACC_SECRET_ACCESS_KEY }}
+      aws_account_id: ${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCOUNT_ID }}
+      nr_backend_url: ${{ secrets.NR_STAGING_BACKEND_URL }}
+      nr_ingest_key: ${{ secrets.OTELCOMM_NR_INGEST_KEY }}
+      nr_api_key: ${{ secrets.OTELCOMM_NR_API_KEY }}
+      nr_account_id: ${{ secrets.OTELCOMM_NR_TEST_ACCOUNT_ID }}
+      nr_api_base_url: ${{ secrets.NR_STAGING_API_BASE_URL }}
   tag-release:
     runs-on: ubuntu-latest
-
+    # Only run if upstream CI succeeded AND all E2E gate jobs passed
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    needs: [e2e-gate]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0 # required for tag metadata
           token: ${{ secrets.RELEASE_TOKEN }} # Uses a PAT to ensure subsequent workflows get triggered
-
       - name: Import GPG key
         uses: crazy-max/ghaction-import-gpg@v6
         with:
@@ -23,17 +68,14 @@ jobs:
           passphrase: ${{ secrets.OTELCOMM_BOT_GPG_PASSPHRASE }}
           git_user_signingkey: true
           git_commit_gpgsign: true
-
       - name: Set up Git
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-
       - name: Get current version
         run: |
           version=$(./scripts/get-version.sh)
           echo "version=$version" >> $GITHUB_ENV
-
       - name: Check if tag already exists
         run: |
           if git rev-parse "${{ env.version }}" >/dev/null 2>&1; then
@@ -43,7 +85,6 @@ jobs:
             echo "Tag does not exist."
             echo "exists=false" >> $GITHUB_ENV
           fi
-
       - name: Create and push tag
         if: env.exists == 'false'
         run: |

@@ -3,14 +3,59 @@ name: 🏷️ Release | Draft
 on:
   push:
     tags:
-      - '*.*.*'
+      - "*.*.*"
 
 env:
   REGISTRY: ${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
+  setup:
+    name: Setup Workflow
+    runs-on: ubuntu-latest
+    outputs:
+      distributions: ${{ steps.discover.outputs.distributions }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github/actions
+
+      - name: Discover Distributions
+        id: discover
+        uses: ./.github/actions/discover-distributions
+
+  verify-artifacts:
+    runs-on: ubuntu-latest
+    needs: setup
+    strategy:
+      matrix:
+        distribution: ${{ fromJson(needs.setup.outputs.distributions) }}
+        fips: [false, true]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github/actions/verify-artifacts
+
+      - name: Verify CI Artifacts Exist
+        uses: ./.github/actions/verify-artifacts
+        with:
+          distribution: ${{ matrix.distribution }}
+          fips: ${{ matrix.fips }}
+          sha: ${{ github.sha }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
   draft-release:
     runs-on: ubuntu-latest
+    needs: [setup, verify-artifacts]
+    outputs:
+      release-tag: ${{ steps.get-release.outputs.release-tag }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -27,12 +72,36 @@ jobs:
         uses: goreleaser/goreleaser-action@v6
         with:
           distribution: goreleaser
-          version: '2.11.2'
+          version: "2.11.2"
           args: --clean --timeout 2h
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  build-artifacts:
+      - name: Get Release Information
+        id: get-release
+        run: |
+          # Extract tag from GoReleaser metadata
+          tag=$(echo '${{ steps.goreleaser.outputs.metadata }}' | jq -r '.tag')
+          version=$(echo '${{ steps.goreleaser.outputs.metadata }}' | jq -r '.version')
+          echo "Looking up release for tag: $tag"
+
+          # Get the specific release by tag
+          release_info=$(gh api repos/${{ github.repository }}/releases/tags/$tag)
+
+          release_id=$(echo "$release_info" | jq -r '.id')
+          release_url=$(echo "$release_info" | jq -r '.html_url')
+
+          echo "release-tag=$tag" >> $GITHUB_OUTPUT
+
+          echo "🚀 Release Draft Created!"
+          echo "Release ID: $release_id"
+          echo "Release URL: $release_url"
+          echo "Release Tag: $tag"
+          echo "Release Version: $version"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  upload-artifacts:
     runs-on: ubuntu-latest
     needs: draft-release
     strategy:
@@ -41,100 +110,38 @@ jobs:
           - nrdot-collector
           - nrdot-collector-host
           - nrdot-collector-k8s
+        fips: [false, true]
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Download CI Artifacts
+        uses: actions/download-artifact@v4
         with:
-          fetch-depth: 0 # required for tag metadata
+          name: goreleaser_output_${{ matrix.distribution }}${{ matrix.fips && '-fips' || '' }}_${{ github.sha }}
+          path: artifacts/
 
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: "~1.24"
-
-      - name: Tidy go.mod files
-        run: go mod tidy
-
-      - name: Verify build
-        run: make ci DISTRIBUTIONS=${{ matrix.distribution }}
-
-      - name: Install cross-compilation toolchain
+      - name: List Downloaded Artifacts
         run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            gcc-aarch64-linux-gnu \
-            g++-aarch64-linux-gnu \
-            gcc-x86-64-linux-gnu \
-            g++-x86-64-linux-gnu \
-            libc6-dev-arm64-cross \
-            libc6-dev-amd64-cross
+          echo "Downloaded artifacts for ${{ matrix.distribution }}${{ matrix.fips && ' (FIPS)' || '' }}:"
+          find artifacts -type f | head -100
 
-      - name: Login to Docker
-        uses: docker/login-action@v3
-        if: ${{ env.ACT }}
-        with:
-          registry: docker.io
-          username: ${{ secrets.OTELCOMM_DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.OTELCOMM_DOCKER_HUB_PASSWORD }}
-
-      - uses: docker/setup-qemu-action@v2
-
-      - uses: docker/setup-buildx-action@v2
-
-      - name: Import GPG key
-        id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@v6
-        with:
-          gpg_private_key: ${{ secrets.OTELCOMM_GPG_PRIVATE_KEY_BASE64 }}
-          passphrase: ${{ secrets.OTELCOMM_GPG_PASSPHRASE }}
-
-      - name: Write GPG to path in memory for signing rpm/deb
-        id: write_gpg_to_path
+      - name: Upload Artifacts to Release
         run: |
-          GPG_KEY_PATH="$(mktemp /dev/shm/gpg.XXXXXX)"
-          echo "$GPG_PRIVATE_KEY" | base64 -d >> "$GPG_KEY_PATH"
-          echo "gpg_key_path=$GPG_KEY_PATH" >> $GITHUB_OUTPUT
+          if [ ! -f "artifacts/dist/artifacts.json" ]; then
+            echo "❌ artifacts.json not found"
+            exit 1
+          fi
+
+          echo "📦 Uploading artifacts for ${{ matrix.distribution }}${{ matrix.fips && ' (FIPS)' || '' }}"
+
+          # Read artifacts.json and upload each file with a path
+          jq -r '.[] | select(has("path")) | .path' artifacts/dist/artifacts.json | while IFS= read -r artifact_path; do
+            if [ -f "artifacts/$artifact_path" ]; then
+              echo "⬆️  Uploading: $artifact_path"
+              gh release upload ${{ needs.draft-release.outputs.release-tag }} \
+                "artifacts/$artifact_path" \
+                --clobber
+            else
+              echo "⚠️  File not found: artifacts/$artifact_path"
+            fi
+          done
         env:
-          GPG_PRIVATE_KEY: ${{ secrets.OTELCOMM_GPG_PRIVATE_KEY_BASE64 }}
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.OTELCOMM_AWS_TEST_ACC_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-          role-to-assume: arn:aws:iam::${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCOUNT_ID }}:role/resource-provisioner
-          role-skip-session-tagging: true
-
-      - name: Login to ECR
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY}}/${{ matrix.distribution }}
-
-      - name: Build binaries & packages with GoReleaser
-        id: goreleaser
-        uses: goreleaser/goreleaser-action@v6
-        env:
-          NFPM_PASSPHRASE: ${{ secrets.OTELCOMM_GPG_PASSPHRASE }}
-          GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
-          GPG_KEY_PATH: ${{ steps.write_gpg_to_path.outputs.gpg_key_path }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          distribution: goreleaser
-          version: '2.11.2'
-          args: --clean --skip=announce --timeout 2h
-          workdir: distributions/${{ matrix.distribution }}
-      
-      - name: Build FIPS binaries & packages with GoReleaser
-        id: goreleaser-fips
-        uses: goreleaser/goreleaser-action@v6
-        env:
-          NFPM_PASSPHRASE: ${{ secrets.OTELCOMM_GPG_PASSPHRASE }}
-          GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
-          GPG_KEY_PATH: ${{ steps.write_gpg_to_path.outputs.gpg_key_path }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          distribution: goreleaser
-          version: '2.11.2'
-          args: --clean --skip=announce --timeout 2h --config .goreleaser-fips.yaml
-          workdir: distributions/${{ matrix.distribution }}

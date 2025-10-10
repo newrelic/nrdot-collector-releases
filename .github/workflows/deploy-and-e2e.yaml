@@ -1,0 +1,180 @@
+name: ♻️ Deploy & E2E Tests
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: "Git ref (commit SHA, tag, or branch) to use for artifact retrieval"
+        type: string
+        required: false
+        default: ""
+      workspace_prefix:
+        description: "Optional prefix for generated workspace (e.g. 'nightly'). If empty, generation uses ref only."
+        type: string
+        required: false
+        default: ""
+      distro:
+        description: "Distribution under test (e.g. nrdot-collector-host)"
+        type: string
+        required: true
+      fips:
+        description: "Run in FIPS mode"
+        type: boolean
+        required: false
+        default: false
+      execute_destroy:
+        description: "Execute terraform destroy after tests"
+        type: boolean
+        required: false
+        default: false
+    secrets:
+      aws_access_key_id:
+        required: true
+        description: AWS access key id for terraform
+      aws_secret_access_key:
+        required: true
+        description: AWS secret access key for terraform
+      aws_account_id:
+        required: true
+        description: AWS account id for terraform
+      nr_backend_url:
+        required: false
+        description: New Relic backend URL (terraform variable)
+      nr_ingest_key:
+        required: false
+        description: New Relic ingest key (terraform variable)
+      nr_api_key:
+        required: true
+        description: New Relic API key for e2e tests
+      nr_account_id:
+        required: true
+        description: New Relic account id for e2e tests
+      nr_api_base_url:
+        required: true
+        description: New Relic API base URL for e2e tests
+
+permissions:
+  contents: read
+
+jobs:
+  setup:
+    name: Setup Workflow
+    runs-on: ubuntu-latest
+    outputs:
+      workspace: ${{ format('{0}{1}-{2}', inputs.workspace_prefix, inputs.fips && '-fips' || '', inputs.distro) }}
+      docker-manifest-sha: ${{ steps.get-docker-manifest-sha.outputs.sha }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get commit SHA from ref
+        id: get-sha
+        run: |
+          sha=$(git ls-remote origin ${{ inputs.ref }} | awk '{print $1}')
+          echo "sha=$sha" >> $GITHUB_OUTPUT
+          
+      - name: Download artifact from successful build
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ format('goreleaser_output_{0}{1}_{2}', inputs.distro, inputs.fips && '-fips' || '', steps.get-sha.outputs.sha) }}
+          path: ./artifacts/
+
+      - name: Output docker manifest sha
+        id: get-docker-manifest-sha
+        run: |
+          docker_manifest_sha=$(cat ./artifacts/docker_manifest_sha)
+          echo "Using docker manifest sha: ${docker_manifest_sha}"
+          echo "sha=${docker_manifest_sha}" >> $GITHUB_OUTPUT
+  
+  terraform-deploy:
+    name: Terraform Deploy
+    needs: setup
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
+      TF_VAR_aws_account_id: ${{ secrets.aws_account_id }}
+      TF_VAR_nr_backend_url: ${{ secrets.nr_backend_url }}
+      TF_VAR_nr_ingest_key: ${{ secrets.nr_ingest_key }}
+      TF_VAR_distro: ${{ inputs.distro }}
+      TF_VAR_fips: ${{ inputs.fips }}
+      TF_VAR_nightly_docker_manifest_sha: ${{ needs.setup.outputs.docker-manifest-sha }}
+      TF_VAR_k8s_namespace_prefix: ${{ inputs.workspace_prefix }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Terraform Setup & Workspace
+        uses: ./.github/actions/terraform-setup
+        with:
+          terraform_version: 1.9.8
+          aws_account_id: ${{ secrets.aws_account_id }}
+          working_directory: ./test/terraform/nightly
+          workspace: ${{ needs.setup.outputs.workspace }}
+
+      - name: Terraform Plan
+        run: terraform plan
+        working-directory: ./test/terraform/nightly
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+        working-directory: ./test/terraform/nightly
+
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: terraform-deploy
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "~1.24"
+
+      - name: Run Tests
+        run: make -f ./test/e2e/Makefile ci_test-nightly
+        env:
+          NR_API_KEY: ${{ secrets.nr_api_key }}
+          NR_ACCOUNT_ID: ${{ secrets.nr_account_id }}
+          NR_API_BASE_URL: ${{ secrets.nr_api_base_url }}
+          DISTRO: ${{ inputs.distro }}
+          K8S_CONTEXT_NAME: "aws-ci-e2etest"
+          FIPS: ${{ inputs.fips && 'true' || '' }}
+          # TEST_MODE is set internally by the ci_test-nightly target (nightlyOnly)
+
+  terraform-destroy:
+    name: Terraform Destroy
+    needs: [ setup, e2e-tests, terraform-deploy ]
+    if: ${{ inputs.execute_destroy && always() }}
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
+      TF_VAR_aws_account_id: ${{ secrets.aws_account_id }}
+      TF_VAR_nr_backend_url: ${{ secrets.nr_backend_url }}
+      TF_VAR_nr_ingest_key: ${{ secrets.nr_ingest_key }}
+      TF_VAR_distro: ${{ inputs.distro }}
+      TF_VAR_fips: ${{ inputs.fips }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+
+      - name: Terraform Setup & Workspace
+        uses: ./.github/actions/terraform-setup
+        with:
+          terraform_version: 1.9.8
+          aws_account_id: ${{ secrets.aws_account_id }}
+          working_directory: ./test/terraform/nightly
+          workspace: ${{ needs.compute-workspace.outputs.workspace_name }}
+
+      - name: Terraform Destroy
+        run: terraform destroy -auto-approve
+        working-directory: ./test/terraform/nightly

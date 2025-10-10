@@ -1,0 +1,27 @@
+name: "Discover Distributions"
+description: "Find all distributions with manifest.yaml files"
+outputs:
+  distributions:
+    description: "JSON array of distribution names"
+    value: ${{ steps.find.outputs.distributions }}
+  count:
+    description: "Number of distributions found"
+    value: ${{ steps.find.outputs.count }}
+runs:
+  using: "composite"
+  steps:
+    - name: Find Distributions
+      id: find
+      shell: bash
+      run: |
+        # Find all directories with manifest.yaml files
+        distributions=$(find distributions -name "manifest.yaml" -type f | \
+                       sed 's|distributions/||; s|/manifest.yaml||' | \
+                       sort | \
+                       jq -R -s -c 'split("\n")[:-1]')
+
+        count=$(echo "$distributions" | jq 'length')
+
+        echo "Found $count distributions: $distributions"
+        echo "distributions=$distributions" >> $GITHUB_OUTPUT
+        echo "count=$count" >> $GITHUB_OUTPUT

@@ -1,5 +1,4 @@
 name: 🧩 Terraform
-
 on:
   workflow_call:
     inputs:
@@ -46,16 +45,6 @@ on:
         type: string
         required: false
         default: "nrdot-collector-host"
-      nightly_docker_manifest_sha_artifact_name:
-        description: "artifact name containing SHA256 to identify nightly docker manifest to use"
-        type: string
-        required: false
-        default: ""
-      fips:
-        description: "whether or not fips compliant"
-        type: boolean
-        required: false
-        default: false
     secrets:
       aws_access_key_id:
         description: "AWS credentials for tf with permission to assume resource-provider"
@@ -66,13 +55,6 @@ on:
       aws_account_id:
         description: "AWS account for test purposes with existing role resource-provider"
         required: true
-      nr_backend_url:
-        description: "NR backend url for test purposes"
-        required: false
-      nr_ingest_key:
-        description: "NR ingest key for test purposes"
-        required: false
-
 jobs:
   terraform:
     runs-on: ubuntu-latest
@@ -83,61 +65,30 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
       TF_VAR_aws_account_id: ${{ secrets.aws_account_id }}
-      TF_VAR_nr_backend_url: ${{ secrets.nr_backend_url }}
-      TF_VAR_nr_ingest_key: ${{ secrets.nr_ingest_key }}
-      TF_VAR_distro: ${{ inputs.distro }}
-      TF_VAR_fips: ${{ inputs.fips }}
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           ref: ${{ inputs.branch }}
-
-      - name: Download artifact for docker manifest sha
-        if: ${{ inputs.nightly_docker_manifest_sha_artifact_name != '' }}
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ inputs.nightly_docker_manifest_sha_artifact_name }}
-
-      - name: Export docker manifest sha to TF_VAR
-        if: ${{ inputs.nightly_docker_manifest_sha_artifact_name != '' }}
-        run: |
-          docker_manifest_sha=$(cat ${{ inputs.nightly_docker_manifest_sha_artifact_name }})
-          echo "using docker manifest sha: ${docker_manifest_sha}"
-          echo "TF_VAR_nightly_docker_manifest_sha=${docker_manifest_sha}" >> $GITHUB_ENV
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+      - name: Terraform Setup & Workspace
+        uses: ./.github/actions/terraform-setup
         with:
           terraform_version: 1.9.8
-
-      - name: Terraform Init
-        working-directory: ./test/terraform/${{ inputs.tf_work_subdir }}
-        run: terraform init -backend-config='role_arn=arn:aws:iam::${{ secrets.aws_account_id }}:role/resource-provisioner' -backend-config='bucket=nr-terraform-states-${{ secrets.aws_account_id}}'
-
-      - name: Select Workspace
-        working-directory: ./test/terraform/${{ inputs.tf_work_subdir }}
-        env:
-          TF_CLI_ARGS: "" # workspace does not properly support global options
-        run: |
-          terraform workspace select -or-create=true ${{ inputs.workspace }}
-
+          aws_account_id: ${{ secrets.aws_account_id }}
+          working_directory: ./test/terraform/${{ inputs.tf_work_subdir }}
+          workspace: ${{ inputs.workspace }}
       - name: Terraform Plan
         if: ${{ inputs.execute_plan }}
         working-directory: ./test/terraform/${{ inputs.tf_work_subdir }}
         run: terraform plan
-
       - name: Terraform Apply
         if: ${{ inputs.execute_apply }}
         working-directory: ./test/terraform/${{ inputs.tf_work_subdir }}
         run: terraform apply -auto-approve
-
       - name: Terraform Plan Destroy
         if: ${{ inputs.execute_plan_destroy }}
         working-directory: ./test/terraform/${{ inputs.tf_work_subdir }}
         run: terraform plan -destroy
-
       - name: Terraform Destroy
         if: ${{ inputs.execute_destroy }}
         working-directory: ./test/terraform/${{ inputs.tf_work_subdir }}

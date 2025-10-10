@@ -43,3 +43,8 @@ variable "fips"  {
   default     = false
 }
 
+variable "k8s_namespace_prefix" {
+  type        = string
+  description = "K8s namespace to deploy to"
+  default     = "nightly"
+}

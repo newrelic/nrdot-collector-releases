@@ -1,0 +1,62 @@
+name: "Get Successful Commit"
+description: "Find the last successful commit on a branch where all checks passed"
+inputs:
+  github-token:
+    description: "GitHub token for API access"
+    required: false
+    default: ${{ github.token }}
+  branch:
+    description: "Branch to check for successful commits"
+    required: false
+    default: "main"
+  max-commits:
+    description: "Maximum number of commits to check"
+    required: false
+    default: "10"
+outputs:
+  sha:
+    description: "SHA of the last successful commit"
+    value: ${{ steps.get-commit.outputs.successful_sha }}
+  short-sha:
+    description: "Short SHA of the last successful commit"
+    value: ${{ steps.get-commit.outputs.short_sha }}
+runs:
+  using: "composite"
+  steps:
+    - name: Get Last Successful Commit
+      id: get-commit
+      shell: bash
+      run: |
+        echo "Finding last successful commit on ${{ inputs.branch }}..."
+
+        # Get recent commits into an array to avoid subshell issues
+        commits=($(gh api "/repos/${{ github.repository }}/commits?sha=${{ inputs.branch }}&per_page=${{ inputs.max-commits }}" --jq '.[].sha'))
+
+        # Check each commit
+        for sha in "${commits[@]}"; do
+          echo "Checking commit: $sha"
+          
+          # Count failed and pending checks
+          failed_count=$(gh api "/repos/${{ github.repository }}/commits/$sha/check-runs" \
+            --jq '[.check_runs[] | select(.conclusion == "failure" or .conclusion == "cancelled" or .conclusion == "timed_out")] | length')
+          
+          pending_count=$(gh api "/repos/${{ github.repository }}/commits/$sha/check-runs" \
+            --jq '[.check_runs[] | select(.status != "completed")] | length')
+          
+          if [[ "$failed_count" -gt "0" ]]; then
+            echo "❌ $failed_count failed checks"
+          elif [[ "$pending_count" -gt "0" ]]; then
+            echo "⏳ $pending_count pending checks"
+          else
+            short_sha=${sha:0:7}
+            echo "successful_sha=$sha" >> $GITHUB_OUTPUT
+            echo "short_sha=$short_sha" >> $GITHUB_OUTPUT
+            echo "✅ Found successful commit: $short_sha"
+            exit 0
+          fi
+        done
+
+        echo "::error::No successful commits found"
+        exit 1
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
