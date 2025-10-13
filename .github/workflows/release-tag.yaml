@@ -16,19 +16,31 @@ jobs:
           fetch-depth: 0
           sparse-checkout: |
             .github/actions
+            scripts
             distributions
       - name: Discover Distributions
         id: discover
         uses: ./.github/actions/discover-distributions
-      - name: Export Distributions
-        id: set-output
-        run: echo "distributions=${{ steps.discover.outputs.distributions }}" >> $GITHUB_OUTPUT
+      - name: Set Outputs
+        id: set-outputs
+        run: |
+          version=$(./scripts/get-version.sh)
+          if git rev-parse "$version" >/dev/null 2>&1; then
+            echo "Tag already exists."
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "Tag does not exist."
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+          echo "version=$version" >> $GITHUB_OUTPUT
     outputs:
-      distributions: ${{ steps.set-output.outputs.distributions }}
+      distributions: ${{ steps.discover.outputs.distributions }}
+      version: ${{ steps.set-outputs.outputs.version }}
+      exists: ${{ steps.set-outputs.outputs.exists }}
   e2e-gate:
     name: E2E Gate (${{ matrix.distribution }}${{ matrix.fips && ' - FIPS' || '' }})
     # Only run if upstream CI succeeded
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ needs.setup-e2e.outputs.exists == 'false' && github.event.workflow_run.conclusion == 'success' }}
     needs: setup-e2e
     strategy:
       fail-fast: false
@@ -52,9 +64,11 @@ jobs:
       nr_api_base_url: ${{ secrets.NR_STAGING_API_BASE_URL }}
   tag-release:
     runs-on: ubuntu-latest
-    # Only run if upstream CI succeeded AND all E2E gate jobs passed
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    needs: [e2e-gate]
+    # Only run if all E2E gate jobs passed
+    needs: [e2e-gate, setup-e2e]
+    concurrency:
+      group: tag-release-${{ needs.setup-e2e.outputs.version }}
+      cancel-in-progress: false
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -67,26 +81,11 @@ jobs:
           gpg_private_key: ${{ secrets.OTELCOMM_BOT_GPG_PRIVATE_KEY_BASE64 }}
           passphrase: ${{ secrets.OTELCOMM_BOT_GPG_PASSPHRASE }}
           git_user_signingkey: true
-          git_commit_gpgsign: true
-      - name: Set up Git
+          git_commit_gpgsign: true          
+      - name: Create and push tag
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-      - name: Get current version
-        run: |
-          version=$(./scripts/get-version.sh)
-          echo "version=$version" >> $GITHUB_ENV
-      - name: Check if tag already exists
-        run: |
-          if git rev-parse "${{ env.version }}" >/dev/null 2>&1; then
-            echo "Tag already exists."
-            echo "exists=true" >> $GITHUB_ENV
-          else
-            echo "Tag does not exist."
-            echo "exists=false" >> $GITHUB_ENV
-          fi
-      - name: Create and push tag
-        if: env.exists == 'false'
-        run: |
-          git tag -s -a "${{ env.version }}" -m "Release version ${{ env.version }}"
-          git push origin "${{ env.version }}"
+          
+          git tag -s -a "${{ needs.setup-e2e.outputs.version }}" -m "Release version ${{ needs.setup-e2e.outputs.version }}"
+          git push origin "${{ needs.setup-e2e.outputs.version }}"
