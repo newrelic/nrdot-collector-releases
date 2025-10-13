@@ -16,7 +16,7 @@ jobs:
           fetch-depth: 0
           sparse-checkout: |
             .github/actions
-            distributions/*/manifest.yaml
+            distributions
       - name: Discover Distributions
         id: discover
         uses: ./.github/actions/discover-distributions
