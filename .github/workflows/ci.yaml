@@ -47,11 +47,8 @@ jobs:
       aws_access_key_id: ${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCESS_KEY_ID }}
       aws_secret_access_key: ${{ secrets.OTELCOMM_AWS_TEST_ACC_SECRET_ACCESS_KEY }}
       aws_account_id: ${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCOUNT_ID }}
-      docker_hub_username: ${{ secrets.OTELCOMM_DOCKER_HUB_USERNAME }}
-      docker_hub_password: ${{ secrets.OTELCOMM_DOCKER_HUB_PASSWORD }}
       gpg_private_key: ${{ secrets.OTELCOMM_GPG_PRIVATE_KEY_BASE64 }}
       gpg_passphrase: ${{ secrets.OTELCOMM_GPG_PASSPHRASE }}
-      registry: "newrelic"
       nr_backend_url: ${{ secrets.NR_STAGING_BACKEND_URL }}
       nr_ingest_key: ${{ secrets.OTELCOMM_NR_INGEST_KEY }}
       nr_account_id: ${{ secrets.OTELCOMM_NR_TEST_ACCOUNT_ID }}
