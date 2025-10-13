@@ -35,7 +35,6 @@ const (
 type Distribution struct {
 	BaseName      string
 	FullName      string // dist or dist-fips
-	Nightly       bool
 	Fips          bool
 	Goos          []string
 	IgnoredBuilds []config.IgnoredBuild
@@ -50,16 +49,9 @@ var (
 	FipsGoTags    = []string{"netgo"}
 )
 
-func Generate(distFlag string, nightly bool, fips bool) config.Project {
+func Generate(distFlag string, fips bool) config.Project {
 	projectName := "nrdot-collector-releases"
-	disableRelease := "false"
-
-	if nightly {
-		projectName = "nrdot-collector-releases-nightly"
-		disableRelease = "true"
-	}
-
-	dist := NewDistribution(distFlag, nightly, fips)
+	dist := NewDistribution(distFlag, fips)
 
 	return config.Project{
 		ProjectName: projectName,
@@ -81,7 +73,7 @@ func Generate(distFlag string, nightly bool, fips bool) config.Project {
 		},
 		Blobs: Blobs(dist),
 		Release: config.Release{
-			Disable:              disableRelease,
+			Disable:              "true",
 			Draft:                true,
 			UseExistingDraft:     true,
 			ReplaceExistingDraft: false,
@@ -89,7 +81,7 @@ func Generate(distFlag string, nightly bool, fips bool) config.Project {
 	}
 }
 
-func NewDistribution(baseDist string, nightly bool, fips bool) Distribution {
+func NewDistribution(baseDist string, fips bool) Distribution {
 	fullName := baseDist
 
 	if fips {
@@ -99,7 +91,6 @@ func NewDistribution(baseDist string, nightly bool, fips bool) Distribution {
 	dist := Distribution{
 		BaseName: baseDist,
 		FullName: fullName,
-		Nightly:  nightly,
 		Fips:     fips,
 		Goos:     []string{"linux", "windows"},
 		IgnoredBuilds: []config.IgnoredBuild{
@@ -139,11 +130,6 @@ func Blobs(dist Distribution) []config.Blob {
 
 func Blob(dist Distribution) config.Blob {
 	version := "{{ .Version }}"
-
-	if dist.Nightly {
-		version = "nightly"
-	}
-
 	return config.Blob{
 		Provider:  "s3",
 		Region:    "us-east-1",
@@ -328,14 +314,8 @@ func Package(dist Distribution) config.NFPM {
 
 func DockerImageTags(dist Distribution) []string {
 	tags := []string{}
-	if dist.Nightly && dist.Fips {
-		tags = append(tags, "{{ .Version }}-nightly-fips")
-		tags = append(tags, "nightly-fips")
-	} else if dist.Fips {
+	if dist.Fips {
 		tags = append(tags, "{{ .Version }}-fips")
-	} else if dist.Nightly {
-		tags = append(tags, "{{ .Version }}-nightly")
-		tags = append(tags, "nightly")
 	} else {
 		tags = append(tags, "{{ .Version }}")
 		tags = append(tags, "latest")

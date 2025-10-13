@@ -30,7 +30,7 @@ yq -e '.processors.resourcedetection.system.resource_attributes["host.id"].enabl
 
 
 # assert binary name
-goreleaser_yamls=('.goreleaser.yaml' '.goreleaser-nightly.yaml')
+goreleaser_yamls=('.goreleaser.yaml')
 for goreleaser_yaml in "${goreleaser_yamls[@]}"; do
   echo "Checking ${goreleaser_yaml}"
   yq -e '.builds[].binary == "nrdot-collector-host"' "${host_distro_dir}/${goreleaser_yaml}" ||
