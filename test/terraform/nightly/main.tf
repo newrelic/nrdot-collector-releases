@@ -36,7 +36,7 @@ resource "helm_release" "ci_e2e_nightly_nr_backend" {
 
   set {
     name  = "image.tag"
-    value = "nightly${local.fips_str}@${var.nightly_docker_manifest_sha}"
+    value = var.image_tag
   }
 
   set {
@@ -88,7 +88,7 @@ resource "helm_release" "ci_e2e_nightly_nr_k8s_otel_collector" {
 
   set {
     name  = "image.tag"
-    value = "nightly${local.fips_str}@${var.nightly_docker_manifest_sha}"
+    value = var.image_tag
   }
 
   set {

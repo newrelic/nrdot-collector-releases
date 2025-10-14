@@ -63,6 +63,7 @@ jobs:
     outputs:
       workspace: ${{ format('{0}{1}-{2}', inputs.workspace_prefix, inputs.fips && '-fips' || '', inputs.distro) }}
       docker-manifest-sha: ${{ steps.get-docker-manifest-sha.outputs.sha }}
+      image-tag: ${{ steps.get-docker-manifest-sha.outputs.image_tag }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -85,8 +86,10 @@ jobs:
         id: get-docker-manifest-sha
         run: |
           docker_manifest_sha=$(cat ./artifacts/docker_manifest_sha)
+          version=$(cat ./artifacts/dist/manifest.json | jq -r '.version')
           echo "Using docker manifest sha: ${docker_manifest_sha}"
           echo "sha=${docker_manifest_sha}" >> $GITHUB_OUTPUT
+          echo "image_tag=${version}${{ format('{0}',inputs.fips && '-fips' || '') }}@sha256:${docker_manifest_sha}" >> $GITHUB_OUTPUT
   
   terraform-deploy:
     name: Terraform Deploy
@@ -100,7 +103,7 @@ jobs:
       TF_VAR_nr_ingest_key: ${{ secrets.nr_ingest_key }}
       TF_VAR_distro: ${{ inputs.distro }}
       TF_VAR_fips: ${{ inputs.fips }}
-      TF_VAR_nightly_docker_manifest_sha: ${{ needs.setup.outputs.docker-manifest-sha }}
+      TF_VAR_image_tag: ${{ needs.setup.outputs.image-tag }}
       TF_VAR_k8s_namespace_prefix: ${{ inputs.workspace_prefix }}
     steps:
       - name: Checkout repository
