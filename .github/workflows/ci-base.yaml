@@ -172,7 +172,7 @@ jobs:
       - name: Build Args
         run: |
           # Determine base skip flags and snapshot mode based on publish input
-          if [ ${{ inputs.publish }} = "true" ]; then
+          if [ "${{ inputs.publish }}" = "true" ]; then
             BASE_SKIP="--skip=announce,validate"
             SNAPSHOT_FLAG=""  # No --snapshot for publishing builds to get proper versions
           else
@@ -180,7 +180,7 @@ jobs:
             SNAPSHOT_FLAG="--snapshot"  # Use --snapshot for dev builds to get SNAPSHOT versions
           fi
 
-          if [ ${{github.event.pull_request.user.login == 'dependabot[bot]' }} ]; then
+          if [ "${{ github.event.pull_request.user.login }}" = "dependabot[bot]" ]; then
             BASE_SKIP="--skip=publish,validate,sign"
           fi
 
