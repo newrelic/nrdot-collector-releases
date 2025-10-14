@@ -209,7 +209,8 @@ jobs:
           key: ${{ steps.generate_binary_key.outputs.binary_key }}
 
       - name: Build binaries & packages with GoReleaser
-        if: steps.cache-goreleaser.outputs.cache-hit != 'true'
+        # We need to ensure we run goreleaser in the event we're attempting to publish
+        if: inputs.publish || (!inputs.publish && steps.cache-goreleaser.outputs.cache-hit != 'true')
         id: goreleaser
         uses: goreleaser/goreleaser-action@v6
         env:
@@ -232,14 +233,9 @@ jobs:
           
       - name: Extract relevant metadata
         run: |
-          if [ "${{ steps.cache-goreleaser.outputs.cache-hit }}" = "true" ]; then
-            VERSION=$(jq -r '.version' distributions/${{ inputs.distribution }}/dist/metadata.json)
-            echo "Using cached version: $VERSION"
-          else
-            # Extract from fresh GoReleaser build
-            VERSION=$(echo '${{ steps.goreleaser.outputs.metadata }}' | jq -r '.version')
-            echo "Using fresh build version: $VERSION"
-          fi
+          # Always use metadata.json from the dist folder (works for both cached and fresh builds)
+          VERSION=$(jq -r '.version' distributions/${{ inputs.distribution }}/dist/metadata.json)
+          echo "Version from metadata.json: $VERSION"
           ARCH=$(echo '${{ runner.arch }}' | sed 's/X/amd/g')
           ARCH=${ARCH@L}
           echo "version=$VERSION" >> $GITHUB_ENV
@@ -357,11 +353,32 @@ jobs:
       - name: Prepare GoReleaser Artifacts
         id: set-outputs
         run: |
-          # Extract docker manifest SHA for backwards compatibility
-          docker_manifest_sha=$(echo '${{ steps.goreleaser.outputs.artifacts }}' |
-            jq -r '.[] | select(.type == "Docker Manifest") | select(.name | endswith(":latest")) | .extra.Digest')
-          echo "docker manifest sha${{ inputs.fips && ' (FIPS)' || '' }}: ${docker_manifest_sha}"
+          echo "=== Getting Docker Image SHA from Local Registry ==="
+          
+          # Get the SHA of the locally built/loaded Docker image
+          docker_image_name="${{ env.registry }}/${{ inputs.distribution }}:${{ env.image_tag }}"
+          echo "Looking for Docker image: ${docker_image_name}"
+          
+          # Get the image SHA from local Docker registry
+          docker_manifest_sha=$(docker image inspect "$docker_image_name" --format '{{.Id}}' | sed 's/sha256://')
+          
+          if [[ -z "$docker_manifest_sha" ]] || [[ "$docker_manifest_sha" == "null" ]]; then
+            echo "::error::Could not get Docker image SHA for: $docker_image_name"
+            echo "Available local images:"
+            docker images --filter "reference=${{ env.registry }}/${{ inputs.distribution }}" --format "table {{.Repository}}:{{.Tag}}\t{{.ID}}\t{{.CreatedAt}}"
+            exit 1
+          fi
+          
+          # Validate SHA format
+          if [[ ! "$docker_manifest_sha" =~ ^[a-f0-9]{64}$ ]]; then
+            echo "::error::Invalid Docker image SHA format: '$docker_manifest_sha'"
+            exit 1
+          fi
+          
+          echo "✅ Docker image: ${docker_image_name}"
+          echo "✅ Docker image SHA: ${docker_manifest_sha}"
           echo -n "${docker_manifest_sha}" > docker_manifest_sha
+
 
           # Set output names
           if [[ "${{ inputs.fips }}" == "true" ]]; then
