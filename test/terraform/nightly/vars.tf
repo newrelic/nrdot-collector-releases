@@ -14,11 +14,6 @@ variable "distro" {
   type        = string
 }
 
-variable "nightly_docker_manifest_sha" {
-  description = "SHA of the nightly docker manifest"
-  type        = string
-}
-
 variable "nr_backend_url" {
   type        = string
   description = "NR endpoint used in test cluster"
@@ -47,4 +42,9 @@ variable "k8s_namespace_prefix" {
   type        = string
   description = "K8s namespace to deploy to"
   default     = "nightly"
+}
+
+variable "image_tag" {
+  description = "Tag of the nightly docker image"
+  type        = string
 }
