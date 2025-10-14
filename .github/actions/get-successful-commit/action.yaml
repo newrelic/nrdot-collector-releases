@@ -9,10 +9,6 @@ inputs:
     description: "Branch to check for successful commits"
     required: false
     default: "main"
-  max-commits:
-    description: "Maximum number of commits to check"
-    required: false
-    default: "10"
 outputs:
   sha:
     description: "SHA of the last successful commit"
@@ -20,6 +16,9 @@ outputs:
   short-sha:
     description: "Short SHA of the last successful commit"
     value: ${{ steps.get-commit.outputs.short_sha }}
+  workflow-run-id:
+    description: "Workflow run ID that created artifacts for this commit"
+    value: ${{ steps.get-commit.outputs.workflow_run_id }}
 runs:
   using: "composite"
   steps:
@@ -27,36 +26,28 @@ runs:
       id: get-commit
       shell: bash
       run: |
-        echo "Finding last successful commit on ${{ inputs.branch }}..."
+        echo "Finding last successful CI workflow run on ${{ inputs.branch }}..."
+        echo "Repository: ${{ github.repository }}"
 
-        # Get recent commits into an array to avoid subshell issues
-        commits=($(gh api "/repos/${{ github.repository }}/commits?sha=${{ inputs.branch }}&per_page=${{ inputs.max-commits }}" --jq '.[].sha'))
+        # Get the most recent successful CI workflow run on the branch
+        echo "=== Searching for successful CI workflows ==="
+        workflow_data=$(gh api "/repos/${{ github.repository }}/actions/runs" \
+          -X GET \
+          --field branch="${{ inputs.branch }}" \
+          --field status="completed" \
+          --field conclusion="success" \
+          --field per_page="50" \
+          --jq '.workflow_runs[] | select(.name == "🔄 CI | PR / Merge") | {id, head_sha, conclusion}' 2>&1 \
+          | head -1)
 
-        # Check each commit
-        for sha in "${commits[@]}"; do
-          echo "Checking commit: $sha"
-          
-          # Count failed and pending checks
-          failed_count=$(gh api "/repos/${{ github.repository }}/commits/$sha/check-runs" \
-            --jq '[.check_runs[] | select(.conclusion == "failure" or .conclusion == "cancelled" or .conclusion == "timed_out")] | length')
-          
-          pending_count=$(gh api "/repos/${{ github.repository }}/commits/$sha/check-runs" \
-            --jq '[.check_runs[] | select(.status != "completed")] | length')
-          
-          if [[ "$failed_count" -gt "0" ]]; then
-            echo "❌ $failed_count failed checks"
-          elif [[ "$pending_count" -gt "0" ]]; then
-            echo "⏳ $pending_count pending checks"
-          else
-            short_sha=${sha:0:7}
-            echo "successful_sha=$sha" >> $GITHUB_OUTPUT
-            echo "short_sha=$short_sha" >> $GITHUB_OUTPUT
-            echo "✅ Found successful commit: $short_sha"
-            exit 0
-          fi
-        done
-
-        echo "::error::No successful commits found"
-        exit 1
+        echo "Raw workflow_data result: '$workflow_data'"
+        workflow_run_id=$(echo "$workflow_data" | jq -r '.id')
+        sha=$(echo "$workflow_data" | jq -r '.head_sha')
+        short_sha=${sha:0:7}
+        
+        echo "successful_sha=$sha" >> $GITHUB_OUTPUT
+        echo "short_sha=$short_sha" >> $GITHUB_OUTPUT
+        echo "workflow_run_id=$workflow_run_id" >> $GITHUB_OUTPUT
+        echo "✅ Found successful commit: $short_sha (workflow run: $workflow_run_id)"
       env:
         GH_TOKEN: ${{ inputs.github-token }}

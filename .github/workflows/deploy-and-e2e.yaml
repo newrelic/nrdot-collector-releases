@@ -27,6 +27,10 @@ on:
         type: boolean
         required: false
         default: false
+      workflow_run_id:
+        description: "Workflow run ID to use for artifact retrieval"
+        type: string
+        required: false
     secrets:
       aws_access_key_id:
         required: true
@@ -73,7 +77,12 @@ jobs:
       - name: Get commit SHA from ref
         id: get-sha
         run: |
-          sha=$(git ls-remote origin ${{ inputs.ref }} | awk '{print $1}')
+          ref="${{ inputs.ref || github.sha }}"
+          
+          # git rev-parse works for both SHAs and branch/tag names
+          sha=$(git rev-parse "$ref")
+          
+          echo "Resolved '$ref' to SHA: $sha"
           echo "sha=$sha" >> $GITHUB_OUTPUT
           
       - name: Download artifact from successful build
@@ -81,15 +90,49 @@ jobs:
         with:
           name: ${{ format('goreleaser_output_{0}{1}_{2}', inputs.distro, inputs.fips && '-fips' || '', steps.get-sha.outputs.sha) }}
           path: ./artifacts/
+          # Add this to download from a different workflow run
+          run-id: ${{ inputs.workflow_run_id || github.run_id }}
+          github-token: ${{ github.token }}
 
       - name: Output docker manifest sha
         id: get-docker-manifest-sha
         run: |
-          docker_manifest_sha=$(cat ./artifacts/docker_manifest_sha)
-          version=$(cat ./artifacts/dist/manifest.json | jq -r '.version')
-          echo "Using docker manifest sha: ${docker_manifest_sha}"
-          echo "sha=${docker_manifest_sha}" >> $GITHUB_OUTPUT
-          echo "image_tag=${version}${{ format('{0}',inputs.fips && '-fips' || '') }}@sha256:${docker_manifest_sha}" >> $GITHUB_OUTPUT
+          # Debug: Show metadata.json contents
+          echo "=== Debugging metadata.json ==="
+          if [[ -f "./artifacts/dist/metadata.json" ]]; then
+            echo "Metadata.json contents:"
+            cat ./artifacts/dist/metadata.json
+            echo "=========================="
+          else
+            echo "::error::metadata.json file not found in artifacts/dist/"
+            echo "Available files in artifacts/dist:"
+            ls -la ./artifacts/dist/ || echo "No dist directory found"
+            exit 1
+          fi
+          
+          version=$(cat ./artifacts/dist/metadata.json | jq -r '.version')
+          
+          # Check if version exists and is not null/empty
+          if [[ -z "$version" || "$version" == "null" ]]; then
+            echo "::error::Version not found or empty in metadata.json"
+            echo "Extracted version value: '$version'"
+            # List contents of ./artifacts with tree 
+            tree ./artifacts || echo "Could not list artifacts directory"
+            exit 1
+          fi
+          
+          docker_manifest_digest=$(jq -r '.[] | select(.type == "Docker Manifest") | .extra.Digest' ./artifacts/dist/artifacts.json | head -1)
+          # Check if docker_manifest_digest is valid
+          if [[ -z "$docker_manifest_digest" || "$docker_manifest_digest" == "null" ]]; then
+            echo "::error::Docker manifest digest not found or empty"
+            echo "Extracted docker_manifest_digest value: '$docker_manifest_digest'"
+            exit 1
+          fi
+          
+          echo "Using docker manifest digest: ${docker_manifest_digest}"
+          echo "digest=${docker_manifest_digest}" >> $GITHUB_OUTPUT
+          
+          echo "image_tag=${version}${{ format('{0}',inputs.fips && '-fips' || '') }}@${docker_manifest_digest}" >> $GITHUB_OUTPUT
   
   terraform-deploy:
     name: Terraform Deploy
@@ -176,7 +219,7 @@ jobs:
           terraform_version: 1.9.8
           aws_account_id: ${{ secrets.aws_account_id }}
           working_directory: ./test/terraform/nightly
-          workspace: ${{ needs.compute-workspace.outputs.workspace_name }}
+          workspace: ${{ needs.setup.outputs.workspace }}
 
       - name: Terraform Destroy
         run: terraform destroy -auto-approve
