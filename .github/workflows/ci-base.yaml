@@ -210,7 +210,7 @@ jobs:
 
       - name: Build binaries & packages with GoReleaser
         # We need to ensure we run goreleaser in the event we're attempting to publish
-        if: inputs.publish || (!inputs.publish && steps.cache-goreleaser.outputs.cache-hit != 'true')
+        if: inputs.publish || (steps.cache-goreleaser.outputs.cache-hit != 'true')
         id: goreleaser
         uses: goreleaser/goreleaser-action@v6
         env:
