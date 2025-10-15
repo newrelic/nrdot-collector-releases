@@ -29,6 +29,15 @@ scenarios:
         --set licenseKey=${LICENSE_KEY} \
         --set cluster=${SCENARIO_TAG} \
         --set nrStaging=${isStaging}
+        echo "Waiting for collector pods to become Ready..."
+        if ! kubectl wait --namespace nr-${SCENARIO_TAG} --for=condition=Ready pod \
+          -l app.kubernetes.io/name=nr-k8s-otel-collector --timeout=180s; then
+          echo "Initial wait failed. Showing pod status and retrying (soft fail)..."
+          kubectl get pods -n nr-${SCENARIO_TAG} -l app.kubernetes.io/name=nr-k8s-otel-collector -o wide
+          echo "Collecting current pod logs (first 200 lines per container)..."
+          kubectl logs -n nr-${SCENARIO_TAG} -l app.kubernetes.io/name=nr-k8s-otel-collector \
+            --all-containers --tail=200 || true
+        fi
     after:
       - kubectl logs -l app.kubernetes.io/name=nr-k8s-otel-collector --all-containers --prefix=true
       - kubectl get all -o wide
