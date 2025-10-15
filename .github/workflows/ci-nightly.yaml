@@ -7,8 +7,12 @@ on:
 concurrency:
   group: ci-nightly
   cancel-in-progress: false
+
 permissions:
   contents: read
+  actions: read
+  statuses: read
+
 env:
   REGISTRY: "${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com"
 jobs:
@@ -19,6 +23,7 @@ jobs:
       distributions: ${{ steps.discover.outputs.distributions }}
       successful-sha: ${{ steps.get-commit.outputs.sha }}
       short-sha: ${{ steps.get-commit.outputs.short-sha }}
+      workflow-run-id: ${{ steps.get-commit.outputs.workflow-run-id }}  
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,9 +38,7 @@ jobs:
         id: get-commit
         uses: ./.github/actions/get-successful-commit
         with:
-          github-token: ${{ github.token }}
           branch: main
-          max-commits: 10
   verify-artifacts:
     name: Verify Artifacts (${{ matrix.distribution }}${{ matrix.fips && ' - FIPS' || '' }})
     runs-on: ubuntu-latest
@@ -73,6 +76,7 @@ jobs:
       distro: ${{ matrix.distribution }}
       fips: ${{ matrix.fips }}
       execute_destroy: false
+      workflow_run_id: ${{ needs.setup.outputs.workflow-run-id }}
     secrets:
       aws_access_key_id: ${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCESS_KEY_ID }}
       aws_secret_access_key: ${{ secrets.OTELCOMM_AWS_TEST_ACC_SECRET_ACCESS_KEY }}
