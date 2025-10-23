@@ -220,7 +220,7 @@ scenarios:
         - query: FROM Span SELECT count(*) as spans_all
           expected_results:
             - key: spans_all
-              lowerBoundedValue: 1
+              value: 0 # traces are disabled by default
         # Process metrics
         - query: FROM Metric SELECT filter(count(*), service.instance.id is not null) as process_instance_id WHERE metricName like 'otelcol_process_%'
           expected_results:
