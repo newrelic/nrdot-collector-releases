@@ -216,7 +216,7 @@ scenarios:
           expected_results:
             - key: logs_signal
               lowerBoundedValue: 1
-        - query: FROM Log SELECT count(*) WHERE message like 'one or more paths were modified to include their context prefix, please rewrite them accordingly%' as logs_attributes
+        - query: FROM Log SELECT count(*) as logs_attributes WHERE message like 'one or more paths were modified to include their context prefix, please rewrite them accordingly%'
           expected_results:
             - key: logs_attributes
               upperBoundedValue: 0
