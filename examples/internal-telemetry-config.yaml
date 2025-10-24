@@ -13,7 +13,7 @@
 # - INTERNAL_TELEMETRY_METRICS_LEVEL: defaults to 'detailed', other values are 'normal', 'basic', 'none'
 # - INTERNAL_TELEMETRY_LOG_LEVEL: defaults to INFO, other values are DEBUG, WARN, ERROR
 # - INTERNAL_TELEMETRY_TRACE_LEVEL: defaults to 'basic', other value is 'none'
-# - INTERNAL_TELEMETRY_TRACE_SAMPLE_RATIO: defaults to 1.0, i.e. all spans get sampled, use float <1, e.g. 0.1 for 10% sampling
+# - INTERNAL_TELEMETRY_TRACE_SAMPLE_RATIO: defaults to 0.01, i.e. 1% of traces are sampled
 service:
   telemetry:
     metrics:
@@ -53,7 +53,7 @@ service:
         parent_based:
           root:
             trace_id_ratio_based:
-              ratio: ${env:INTERNAL_TELEMETRY_TRACE_SAMPLE_RATIO:-1.0}
+              ratio: ${env:INTERNAL_TELEMETRY_TRACE_SAMPLE_RATIO:-0.01}
       processors:
         - batch:
             exporter:
