@@ -8,12 +8,12 @@
 ## Required
 # - INTERNAL_TELEMETRY_NEW_RELIC_LICENSE_KEY
 ## Optional
-# - INTERNAL_TELEMETRY_SERVICE_NAME: defaults to 'otel-collector', determines entity name in New Relic
-# - INTERNAL_TELEMETRY_OTLP_ENDPOINT: defaults to 'https://otlp.nr-data.net', see https://docs.newrelic.com/docs/opentelemetry/best-practices/opentelemetry-otlp/ and https://docs.newrelic.com/docs/opentelemetry/best-practices/opentelemetry-otlp-troubleshooting/
-# - INTERNAL_TELEMETRY_METRICS_LEVEL: defaults to 'detailed', other values are 'normal', 'basic', 'none'
-# - INTERNAL_TELEMETRY_LOG_LEVEL: defaults to INFO, other values are DEBUG, WARN, ERROR
-# - INTERNAL_TELEMETRY_TRACE_LEVEL: defaults to 'basic', other value is 'none'
-# - INTERNAL_TELEMETRY_TRACE_SAMPLE_RATIO: defaults to 0.01, i.e. 1% of traces are sampled
+# - INTERNAL_TELEMETRY_SERVICE_NAME: defaults to 'otel-collector'; determines entity name in New Relic
+# - INTERNAL_TELEMETRY_OTLP_ENDPOINT: defaults to 'https://otlp.nr-data.net'; see https://docs.newrelic.com/docs/opentelemetry/best-practices/opentelemetry-otlp/ and https://docs.newrelic.com/docs/opentelemetry/best-practices/opentelemetry-otlp-troubleshooting/
+# - INTERNAL_TELEMETRY_METRICS_LEVEL: defaults to 'detailed'; other values are 'normal', 'basic', 'none'
+# - INTERNAL_TELEMETRY_LOG_LEVEL: defaults to INFO; other values are DEBUG, WARN, ERROR
+# - INTERNAL_TELEMETRY_TRACE_LEVEL: defaults to 'none' (traces disabled); other value is 'basic'
+# - INTERNAL_TELEMETRY_TRACE_SAMPLE_RATIO: defaults to 0.01, i.e. 1% sampling; has no effect if TRACE_LEVEL is 'none'
 service:
   telemetry:
     metrics:
@@ -48,7 +48,8 @@ service:
                   - name: api-key
                     value: "${env:INTERNAL_TELEMETRY_NEW_RELIC_LICENSE_KEY}"
     traces:
-      level: "${env:INTERNAL_TELEMETRY_TRACE_LEVEL:-basic}"
+      # traces are disabled by default due to experimental status and lack of default sampling rate that works across use cases
+      level: "${env:INTERNAL_TELEMETRY_TRACE_LEVEL:-none}"
       sampler:
         parent_based:
           root:
@@ -64,6 +65,6 @@ service:
                   - name: api-key
                     value: "${env:INTERNAL_TELEMETRY_NEW_RELIC_LICENSE_KEY}"
     resource:
-      newrelic.collector_telemetry.version: 0.3.0
+      newrelic.collector_telemetry.version: 0.4.0
       newrelic.service.type: otel_collector
       service.name: "${env:INTERNAL_TELEMETRY_SERVICE_NAME:-otel-collector}"
