@@ -147,8 +147,8 @@ processors:
     metric_statements:
       - context: metric
         statements:
-          - set(description, "")
-          - set(unit, "")
+          - set(metric.description, "")
+          - set(metric.unit, "")
 
   transform:
     trace_statements:
