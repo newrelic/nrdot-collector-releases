@@ -28,6 +28,7 @@ const (
 	HostDistro = "nrdot-collector-host"
 	K8sDistro  = "nrdot-collector-k8s"
 	CoreDistro = "nrdot-collector"
+	PlusDistro = "nrdot-collector-plus"
 
 	ConfigFile = "config.yaml"
 )
