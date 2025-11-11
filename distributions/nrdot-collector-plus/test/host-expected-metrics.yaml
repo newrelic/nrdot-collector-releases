@@ -1,0 +1,21 @@
+entities:
+  - entityType: EXT-SERVICE
+    metrics:
+      - name: system.cpu.load_average.15m
+      - name: system.cpu.load_average.1m
+      - name: system.cpu.load_average.5m
+      - name: system.cpu.utilization
+      - name: system.disk.io
+      - name: system.disk.io_time
+      - name: system.disk.operation_time
+      - name: system.disk.operations
+      - name: system.filesystem.inodes.usage
+      - name: system.filesystem.usage
+      - name: system.filesystem.utilization
+      - name: system.memory.usage
+      - name: system.memory.utilization
+      - name: system.network.dropped
+      - name: system.network.errors
+      - name: system.network.io
+      - name: system.network.packets
+      - name: system.paging.operations
