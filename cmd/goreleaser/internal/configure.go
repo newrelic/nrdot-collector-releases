@@ -29,6 +29,7 @@ const (
 	K8sDistro          = "nrdot-collector-k8s"
 	CoreDistro         = "nrdot-collector"
 	ExperimentalDistro = "nrdot-collector-experimental"
+	PlusDistro         = "nrdot-collector-plus"
 
 	ConfigFile = "config.yaml"
 )
