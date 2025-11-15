@@ -1,23 +1,27 @@
+.PHONY: warp
+warp:
+	./scripts/build-act-warp.sh
+
 .PHONY: ci
 ci:
 	act push -W .github/workflows/ci.yaml
 
-ci_custom_matrix:
+ci_custom_matrix: warp
 	@# repeat --matrix arg for multiple distros
 	act push -W .github/workflows/ci.yaml \
 		--matrix distribution:nrdot-collector-k8s
 
-ci_custom_fips_matrix:
+ci_custom_fips_matrix: warp
 	@# repeat --matrix arg for multiple distros
 	act push -W .github/workflows/ci-fips.yaml \
 		--matrix distribution:nrdot-collector-host
 
-ci_nightly_custom_matrix:
+ci_nightly_custom_matrix: warp
 	@# repeat --matrix arg for multiple distros
 	act schedule -W .github/workflows/ci-nightly.yaml \
 		--matrix distribution:nrdot-collector-host
 
-ci_nightly_fips_custom_matrix:
+ci_nightly_fips_custom_matrix: warp
 	@# repeat --matrix arg for multiple distros
 	act schedule -W .github/workflows/ci-nightly-fips.yaml \
 		--matrix distribution:nrdot-collector-host

@@ -1,6 +1,7 @@
 # .actrc
 --container-architecture=linux/arm64
--P ubuntu-latest=catthehacker/ubuntu:act-latest
+-P ubuntu-latest=act-warp
+--pull=false
 -e event.json
 --artifact-server-path $PWD/.artifacts
 --bind
