@@ -4,7 +4,7 @@
 |-----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Distro    | `nrdot-collector-host`                                                                                                                                                                                      |
 | Stability | `public` (deprecated in favor of [nrdot-collector](../nrdot-collector/README.md)) as drop-in replacement                                                                                                                                                                                                  |
-| Artifacts | [Docker images on DockerHub](https://hub.docker.com/r/newrelic/nrdot-collector-host)<br> [Linux packages and archives under GitHub Releases](https://github.com/newrelic/nrdot-collector-releases/releases) |
+| Artifacts | [Docker images on DockerHub](https://hub.docker.com/r/newrelic/nrdot-collector-host)<br> [Linux packages, Windows installer and archives under GitHub Releases](https://github.com/newrelic/nrdot-collector-releases/releases) |
 
 A distribution of the NRDOT collector focused on
 - monitoring the host the collector is deployed on via `hostmetricsreceiver` and `filelogreceiver`

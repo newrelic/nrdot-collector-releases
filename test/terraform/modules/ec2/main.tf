@@ -30,6 +30,24 @@ data "aws_ami" "ubuntu_ami" {
   owners = ["099720109477"] # Canonical
 }
 
+/* WINDOWS AMI */
+data "aws_ami" "windows_ami" {
+  most_recent = true
+
+  filter {
+    name = "name"
+    // TODO: Get 2025 Windows AMI
+    values = ["windows/ami/here"]
+  }
+
+  filter {
+    name = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  owners = [""] // TODO: Find windows owner
+}
+
 data "aws_vpc" "ec2_vpc" {
   id = var.vpc_id
 }
@@ -142,5 +160,29 @@ resource "aws_instance" "ubuntu" {
               systemctl reload-or-restart ${var.collector_distro}.service
               sleep 30
               journalctl | grep ${var.collector_distro}
+              EOF
+}
+
+resource "aws_instance" "windows" {
+  count = 1
+  ami = data.aws_ami.windows_ami.id
+  instance_type = "t2.micro"
+  subnet_id = data.aws_subnets.private_subnets.ids[0]
+  vpc_security_group_ids = [aws_security_group.ec2_allow_all_egress.id]
+  iam_instance_profile = aws_iam_instance_profile.s3_read_access.name
+
+  # TODO: set tag properly
+  tags = {
+    Name = "${var.test_environment}-${var.collector_distro}-windows_server_2025"
+  }
+
+  user_data_replace_on_change = true
+  user_data                   = <<-EOF
+              USE POWERSHELL VERSION OF ABOVE
+              - install awscli
+              - install s3 of msi
+              - install msi file
+                - the colletor config should be set on install
+                - what is otel_resource_attributes?
               EOF
 }
