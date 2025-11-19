@@ -102,11 +102,11 @@ func NewDistribution(baseDist string, fips bool) Distribution {
 		SkipArchives:  false,
 	}
 
-	if baseDist == K8sDistro {
+	if baseDist == K8sDistro || baseDist == PlusDistro {
 		dist.IncludeConfig = false
 	}
 
-	if baseDist == K8sDistro || fips {
+	if baseDist == K8sDistro || baseDist == PlusDistro || fips {
 		dist.Goos = []string{"linux"}
 		dist.IgnoredBuilds = nil
 		dist.SkipBinaries = true

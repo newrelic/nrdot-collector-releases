@@ -8,13 +8,9 @@ builds:
   - id: nrdot-collector-plus
     goos:
       - linux
-      - windows
     goarch:
       - amd64
       - arm64
-    ignore:
-      - goos: windows
-        goarch: arm64
     dir: _build
     binary: nrdot-collector-plus
     ldflags:
@@ -34,43 +30,6 @@ archives:
       - goos: windows
         formats:
           - zip
-    files:
-      - src: config.yaml
-nfpms:
-  - file_name_template: '{{ .PackageName }}_{{ .Version }}_{{ .Os }}_{{- if not (eq (filter .ConventionalFileName "\\.rpm$") "") }}{{- replace .Arch "amd64" "x86_64" }}{{- else }}{{- .Arch }}{{- end }}{{- with .Arm }}v{{ . }}{{- end }}{{- with .Mips }}_{{ . }}{{- end }}{{- if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{- end }}'
-    package_name: nrdot-collector-plus
-    contents:
-      - src: nrdot-collector-plus.service
-        dst: /lib/systemd/system/nrdot-collector-plus.service
-      - src: nrdot-collector-plus.conf
-        dst: /etc/nrdot-collector-plus/nrdot-collector-plus.conf
-        type: config|noreplace
-      - src: config.yaml
-        dst: /etc/nrdot-collector-plus/config.yaml
-        type: config
-    scripts:
-      preinstall: preinstall.sh
-      postinstall: postinstall.sh
-      preremove: preremove.sh
-    rpm:
-      signature:
-        key_file: '{{ .Env.GPG_KEY_PATH }}'
-    deb:
-      signature:
-        key_file: '{{ .Env.GPG_KEY_PATH }}'
-    overrides:
-      rpm:
-        dependencies:
-          - /bin/sh
-    id: nrdot-collector-plus
-    ids:
-      - nrdot-collector-plus
-    formats:
-      - deb
-      - rpm
-    maintainer: New Relic <otelcomm-team@newrelic.com>
-    description: NRDOT Collector - nrdot-collector-plus
-    license: Apache 2.0
 snapshot:
   version_template: '{{ incpatch .Version }}-SNAPSHOT-{{.ShortCommit}}'
 checksum:
@@ -84,8 +43,6 @@ dockers:
     image_templates:
       - '{{ .Env.REGISTRY }}/nrdot-collector-plus:{{ .Version }}-amd64'
       - '{{ .Env.REGISTRY }}/nrdot-collector-plus:latest-amd64'
-    extra_files:
-      - config.yaml
     build_flag_templates:
       - --pull
       - --platform=linux/amd64
@@ -103,8 +60,6 @@ dockers:
     image_templates:
       - '{{ .Env.REGISTRY }}/nrdot-collector-plus:{{ .Version }}-arm64'
       - '{{ .Env.REGISTRY }}/nrdot-collector-plus:latest-arm64'
-    extra_files:
-      - config.yaml
     build_flag_templates:
       - --pull
       - --platform=linux/arm64
@@ -125,11 +80,6 @@ docker_manifests:
     image_templates:
       - '{{ .Env.REGISTRY }}/nrdot-collector-plus:latest-amd64'
       - '{{ .Env.REGISTRY }}/nrdot-collector-plus:latest-arm64'
-blobs:
-  - bucket: nr-releases
-    provider: s3
-    region: us-east-1
-    directory: nrdot-collector-releases/nrdot-collector-plus/{{ .Version }}
 changelog:
   disable: "true"
 signs:
