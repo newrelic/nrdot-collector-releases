@@ -130,11 +130,11 @@ func NewDistribution(baseDist string, fips bool) Distribution {
 }
 
 func isNoConfigDistro(dist string) bool {
-	return dist == K8sDistro || dist == ExperimentalDistro
+	return dist == K8sDistro || dist == ExperimentalDistro || dist == PlusDistro
 }
 
 func isImageOnlyDistro(dist string, fips bool) bool {
-	return dist == K8sDistro || fips
+	return dist == K8sDistro || dist == PlusDistro || fips
 }
 
 func Blobs(dist Distribution) []config.Blob {
