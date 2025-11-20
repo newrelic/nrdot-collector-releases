@@ -48,8 +48,7 @@ jobs:
         distribution: ${{ fromJson(needs.setup.outputs.distributions) }}
         fips: [false, true]
         exclude:
-          - fips: true
-            distribution: nrdot-collector-plus
+          - distribution: nrdot-collector-plus 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -73,8 +72,7 @@ jobs:
         distribution: ${{ fromJson(needs.setup.outputs.distributions) }}
         fips: [false, true]
         exclude:
-          - fips: true
-            distribution: nrdot-collector-plus
+          - distribution: nrdot-collector-plus
     uses: ./.github/workflows/deploy-and-e2e.yaml
     with:
       ref: ${{ needs.setup.outputs.successful-sha }}
