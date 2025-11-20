@@ -42,12 +42,16 @@ jobs:
     
         - name: Tidy go.mod files
           run: go mod tidy
-    
-        - name: Bump component versions
+
+        - name: Bump component versions and generate licenses
           id: bump_component_versions
           run: |
             output=$(./scripts/bump-component-versions.sh)
             echo "output=${output}" >> $GITHUB_OUTPUT
+
+            # Generate third-party licenses
+            make licenses
+
             # Check for unstaged changes
             if git diff --quiet; then
               echo "No unstaged changes found. Exiting."
