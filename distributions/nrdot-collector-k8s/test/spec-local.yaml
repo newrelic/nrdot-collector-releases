@@ -29,6 +29,11 @@ scenarios:
         --set licenseKey=${LICENSE_KEY} \
         --set cluster=${SCENARIO_TAG} \
         --set nrStaging=${isStaging}
+      - kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=nr-k8s-otel-collector,component=daemonset --namespace nr-${SCENARIO_TAG} --timeout=300s
+      - |
+        echo "=== Daemonset Collector Configuration ==="
+        POD_NAME=$(kubectl get pods -n nr-${SCENARIO_TAG} -l app.kubernetes.io/name=nr-k8s-otel-collector,component=daemonset -o jsonpath='{.items[0].metadata.name}')
+        kubectl exec -n nr-${SCENARIO_TAG} ${POD_NAME} -c otel-collector-daemonset -- cat /config/daemonset-config.yaml
     after:
       - kubectl logs -l app.kubernetes.io/name=nr-k8s-otel-collector --all-containers --prefix=true
       - kubectl get all -o wide
