@@ -25,9 +25,10 @@ import (
 )
 
 const (
-	HostDistro = "nrdot-collector-host"
-	K8sDistro  = "nrdot-collector-k8s"
-	CoreDistro = "nrdot-collector"
+	HostDistro         = "nrdot-collector-host"
+	K8sDistro          = "nrdot-collector-k8s"
+	CoreDistro         = "nrdot-collector"
+	ExperimentalDistro = "nrdot-collector-experimental"
 
 	ConfigFile = "config.yaml"
 )
@@ -103,6 +104,11 @@ func NewDistribution(baseDist string, fips bool) Distribution {
 
 	if baseDist == K8sDistro {
 		dist.IncludeConfig = false
+	}
+
+	if baseDist == ExperimentalDistro {
+		dist.IncludeConfig = false
+		dist.SkipBinaries = true
 	}
 
 	if baseDist == K8sDistro || fips {
