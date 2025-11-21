@@ -36,6 +36,9 @@ jobs:
       matrix:
         fips: [false, true]
         distribution: ${{ fromJson(needs.setup.outputs.distributions) }}
+      exclude:
+        - fips: true
+          distribution: nrdot-collector-experimental
     uses: ./.github/workflows/ci-base.yaml
     with:
       distribution: ${{ matrix.distribution }}
