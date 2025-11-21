@@ -8,7 +8,6 @@ builds:
   - id: nrdot-collector-experimental
     goos:
       - linux
-      - windows
     goarch:
       - amd64
       - arm64
