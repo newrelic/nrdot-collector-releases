@@ -109,9 +109,6 @@ func NewDistribution(baseDist string, fips bool) Distribution {
 		dist.Goos = []string{"linux"}
 		dist.IgnoredBuilds = nil
 		dist.SkipBinaries = true
-	}
-
-	if fips {
 		dist.SkipArchives = true
 	}
 
