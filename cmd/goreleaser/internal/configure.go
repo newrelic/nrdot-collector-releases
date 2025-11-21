@@ -107,6 +107,7 @@ func NewDistribution(baseDist string, fips bool) Distribution {
 	}
 
 	if baseDist == ExperimentalDistro {
+		dist.Goos = []string{"linux"}
 		dist.IncludeConfig = false
 		dist.SkipBinaries = true
 	}
