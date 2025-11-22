@@ -2,7 +2,8 @@ locals {
   distros = toset(distinct(flatten([
     for _, v in fileset(path.module, "../../../distributions/*/**") :
     regex("../../../distributions/([^/]*).*", dirname(v))
-  ])))
+    if !strcontains(v, "nrdot-collector-experimental")
+  ]))) 
   releases_bucket_name                            = "nr-releases"
   required_permissions_boundary_arn_for_new_roles = "arn:aws:iam::${var.aws_account_id}:policy/resource-provisioner-boundary"
 }
