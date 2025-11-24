@@ -25,9 +25,10 @@ import (
 )
 
 const (
-	HostDistro = "nrdot-collector-host"
-	K8sDistro  = "nrdot-collector-k8s"
-	CoreDistro = "nrdot-collector"
+	HostDistro         = "nrdot-collector-host"
+	K8sDistro          = "nrdot-collector-k8s"
+	CoreDistro         = "nrdot-collector"
+	ExperimentalDistro = "nrdot-collector-experimental"
 
 	ConfigFile = "config.yaml"
 )
@@ -109,10 +110,14 @@ func NewDistribution(baseDist string, fips bool) Distribution {
 		dist.Goos = []string{"linux"}
 		dist.IgnoredBuilds = nil
 		dist.SkipBinaries = true
+		dist.SkipArchives = true
 	}
 
-	if fips {
-		dist.SkipArchives = true
+	if baseDist == ExperimentalDistro {
+		dist.Goos = []string{"linux"}
+		dist.IgnoredBuilds = nil
+		dist.IncludeConfig = false
+		dist.SkipBinaries = true
 	}
 
 	return dist

@@ -5,22 +5,36 @@ release:
   use_existing_draft: true
   disable: "true"
 builds:
-  - id: nrdot-collector-k8s
+  - id: nrdot-collector-experimental-fips
     goos:
       - linux
     goarch:
       - amd64
       - arm64
-    dir: _build
-    binary: nrdot-collector-k8s
+    dir: _build-fips
+    binary: nrdot-collector-experimental-fips
     ldflags:
-      - -s
       - -w
+      - -linkmode external
+      - -extldflags '-static'
+    tags:
+      - netgo
     flags:
       - -trimpath
     env:
-      - CGO_ENABLED=0
-      - GOEXPERIMENT=
+      - CGO_ENABLED=1
+      - GOEXPERIMENT=boringcrypto
+    overrides:
+      - goos: linux
+        goarch: amd64
+        env:
+          - CC=x86_64-linux-gnu-gcc
+          - CXX=x86_64-linux-gnu-g++
+      - goos: linux
+        goarch: arm64
+        env:
+          - CC=aarch64-linux-gnu-gcc
+          - CXX=aarch64-linux-gnu-g++
 snapshot:
   version_template: '{{ incpatch .Version }}-SNAPSHOT-{{.ShortCommit}}'
 checksum:
@@ -32,8 +46,7 @@ dockers:
     goarch: amd64
     dockerfile: Dockerfile
     image_templates:
-      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:{{ .Version }}-amd64'
-      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:latest-amd64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-experimental:{{ .Version }}-fips-amd64'
     build_flag_templates:
       - --pull
       - --platform=linux/amd64
@@ -43,14 +56,13 @@ dockers:
       - --label=org.opencontainers.image.version={{.Version}}
       - --label=org.opencontainers.image.source={{.GitURL}}
       - --label=org.opencontainers.image.licenses=Apache-2.0
-      - --build-arg=DIST_NAME=nrdot-collector-k8s
+      - --build-arg=DIST_NAME=nrdot-collector-experimental-fips
     use: buildx
   - goos: linux
     goarch: arm64
     dockerfile: Dockerfile
     image_templates:
-      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:{{ .Version }}-arm64'
-      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:latest-arm64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-experimental:{{ .Version }}-fips-arm64'
     build_flag_templates:
       - --pull
       - --platform=linux/arm64
@@ -60,17 +72,13 @@ dockers:
       - --label=org.opencontainers.image.version={{.Version}}
       - --label=org.opencontainers.image.source={{.GitURL}}
       - --label=org.opencontainers.image.licenses=Apache-2.0
-      - --build-arg=DIST_NAME=nrdot-collector-k8s
+      - --build-arg=DIST_NAME=nrdot-collector-experimental-fips
     use: buildx
 docker_manifests:
-  - name_template: '{{ .Env.REGISTRY }}/nrdot-collector-k8s:{{ .Version }}'
+  - name_template: '{{ .Env.REGISTRY }}/nrdot-collector-experimental:{{ .Version }}-fips'
     image_templates:
-      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:{{ .Version }}-amd64'
-      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:{{ .Version }}-arm64'
-  - name_template: '{{ .Env.REGISTRY }}/nrdot-collector-k8s:latest'
-    image_templates:
-      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:latest-amd64'
-      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:latest-arm64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-experimental:{{ .Version }}-fips-amd64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-experimental:{{ .Version }}-fips-arm64'
 changelog:
   disable: "true"
 signs:

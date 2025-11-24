@@ -16,7 +16,7 @@ TOOLS_BIN_NAMES := $(addprefix $(TOOLS_BIN_DIR)/, $(notdir $(shell echo $(TOOLS_
 GO_LICENCE_DETECTOR        := $(TOOLS_BIN_DIR)/go-licence-detector
 GO_LICENCE_DETECTOR_CONFIG   := $(SRC_ROOT)/internal/assets/license/rules.json
 
-DISTRIBUTIONS ?= "nrdot-collector-host,nrdot-collector-k8s,nrdot-collector"
+DISTRIBUTIONS ?= "nrdot-collector-host,nrdot-collector-k8s,nrdot-collector,nrdot-collector-experimental"
 
 ci: check build build-fips version-check licenses-check
 check: ensure-goreleaser-up-to-date
