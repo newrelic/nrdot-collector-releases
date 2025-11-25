@@ -71,7 +71,7 @@ jobs:
           cache: ${{ env.caching_enabled }}
 
       - name: Test get-successful-commit
-        uses: ./.github/actions/get_successful_commit
+        uses: ./.github/actions/get-successful-commit
 
       - name: Tidy go.mod files
         run: go mod tidy
