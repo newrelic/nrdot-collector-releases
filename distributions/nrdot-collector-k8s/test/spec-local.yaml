@@ -30,8 +30,8 @@ scenarios:
         --set cluster=${SCENARIO_TAG} \
         --set nrStaging=${isStaging}
     after:
-      - kubectl logs -l app.kubernetes.io/name=nr-k8s-otel-collector --all-containers --prefix=true
-      - kubectl get all -o wide
+      - kubectl logs -l app.kubernetes.io/name=nr-k8s-otel-collector --all-containers --prefix=true --namespace nr-${SCENARIO_TAG}
+      - kubectl get all -o wide --namespace nr-${SCENARIO_TAG}
       - helm uninstall ${SCENARIO_TAG} --namespace nr-${SCENARIO_TAG}
       - kubectl delete namespace nr-${SCENARIO_TAG}
     tests:
