@@ -70,6 +70,9 @@ jobs:
           go-version: "~1.24"
           cache: ${{ env.caching_enabled }}
 
+      - name: Test get-succesful-commit
+        uses: ./github/actions/get_successful_commit
+
       - name: Tidy go.mod files
         run: go mod tidy
 

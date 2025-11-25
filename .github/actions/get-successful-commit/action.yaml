@@ -29,6 +29,15 @@ runs:
         echo "Finding last successful CI workflow run on ${{ inputs.branch }}..."
         echo "Repository: ${{ github.repository }}"
 
+        workflow_data_all=$(gh api "/repos/${{ github.repository }}/actions/runs" \
+          -X GET \
+          --field branch="${{ inputs.branch }}" \
+          --field status="completed" \
+          --field conclusion="success" \
+          --field per_page="50" \
+          --jq '.workflow_runs[] | select(.name == "🔄 CI | PR / Merge") | {id, head_sha, conclusion}' 2>&1)
+        echo "all workflows: $workflow_data_all"
+
         # Get the most recent successful CI workflow run on the branch
         echo "=== Searching for successful CI workflows ==="
         workflow_data=$(gh api "/repos/${{ github.repository }}/actions/runs" \
