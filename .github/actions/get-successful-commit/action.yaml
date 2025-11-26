@@ -45,10 +45,15 @@ runs:
         workflow_run_id=$(echo "$workflow_data" | jq -r '.id')
         sha=$(echo "$workflow_data" | jq -r '.head_sha')
         short_sha=${sha:0:7}
-        
-        echo "successful_sha=$sha" >> $GITHUB_OUTPUT
-        echo "short_sha=$short_sha" >> $GITHUB_OUTPUT
-        echo "workflow_run_id=$workflow_run_id" >> $GITHUB_OUTPUT
-        echo "✅ Found successful commit: $short_sha (workflow run: $workflow_run_id)"
+
+        if [ -z "$workflow_data" ]; then
+          echo "❌ No commits found."
+          exit 1
+        else
+          echo "successful_sha=$sha" >> $GITHUB_OUTPUT
+          echo "short_sha=$short_sha" >> $GITHUB_OUTPUT
+          echo "workflow_run_id=$workflow_run_id" >> $GITHUB_OUTPUT
+          echo "✅ Found successful commit: $short_sha (workflow run: $workflow_run_id)"
+        fi
       env:
         GH_TOKEN: ${{ inputs.github-token }}
