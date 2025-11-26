@@ -39,12 +39,20 @@ runs:
           --field conclusion="success" \
           --field per_page="50" \
           --jq '.workflow_runs[] | select(.name == "🔄 CI | PR / Merge") | {id, head_sha, conclusion}' 2>&1 \
-          | head -1)
+        )
 
         echo "Raw workflow_data result: '$workflow_data'"
         workflow_run_id=$(echo "$workflow_data" | jq -r '.id')
         sha=$(echo "$workflow_data" | jq -r '.head_sha')
         short_sha=${sha:0:7}
+
+        echo "DEBUG: PRINTING INFORMATION"
+        bash --version
+        gh --version
+        echo $-
+        set -o | grep pipefail
+        echo "⚠️ DEBUG:EXITING PROGRESSION"
+        exit 1
 
         if [ -z "$workflow_data" ]; then
           echo "❌ No commits found."
