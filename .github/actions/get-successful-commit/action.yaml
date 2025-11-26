@@ -38,8 +38,7 @@ runs:
           --field status="completed" \
           --field conclusion="success" \
           --field per_page="50" \
-          --jq '.workflow_runs[] | select(.name == "🔄 CI | PR / Merge") | {id, head_sha, conclusion}' 2>&1 \
-          | head -1)
+          --jq 'first(.workflow_runs[] | select(.name == "🔄 CI | PR / Merge") | {id, head_sha, conclusion})' 2>&1)
 
         echo "Raw workflow_data result: '$workflow_data'"
         workflow_run_id=$(echo "$workflow_data" | jq -r '.id')
