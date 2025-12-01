@@ -8,7 +8,7 @@ nightly:
   collectorChart:
     # renovatebot
     name: newrelic/nr-k8s-otel-collector
-    version: 0.9.5
+    version: 0.9.6
   ec2:
     enabled: false
   testCaseSpecs:
