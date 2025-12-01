@@ -34,20 +34,25 @@ runs:
         workflow_data=$(gh api "/repos/${{ github.repository }}/actions/runs" \
           -X GET \
           --field branch="${{ inputs.branch }}" \
+          --field event="push" \
           --field status="completed" \
           --field conclusion="success" \
           --field per_page="50" \
-          --jq '.workflow_runs[] | select(.name == "🔄 CI | PR / Merge") | {id, head_sha, conclusion}' 2>&1 \
-          | head -1)
+          --jq 'first(.workflow_runs[] | select(.name == "🔄 CI | PR / Merge") | {id, head_sha, conclusion})' 2>&1)
 
         echo "Raw workflow_data result: '$workflow_data'"
         workflow_run_id=$(echo "$workflow_data" | jq -r '.id')
         sha=$(echo "$workflow_data" | jq -r '.head_sha')
         short_sha=${sha:0:7}
-        
-        echo "successful_sha=$sha" >> $GITHUB_OUTPUT
-        echo "short_sha=$short_sha" >> $GITHUB_OUTPUT
-        echo "workflow_run_id=$workflow_run_id" >> $GITHUB_OUTPUT
-        echo "✅ Found successful commit: $short_sha (workflow run: $workflow_run_id)"
+
+        if [ -z "$workflow_data" ]; then
+          echo "❌ No commits found."
+          exit 1
+        else
+          echo "successful_sha=$sha" >> $GITHUB_OUTPUT
+          echo "short_sha=$short_sha" >> $GITHUB_OUTPUT
+          echo "workflow_run_id=$workflow_run_id" >> $GITHUB_OUTPUT
+          echo "✅ Found successful commit: $short_sha (workflow run: $workflow_run_id)"
+        fi
       env:
         GH_TOKEN: ${{ inputs.github-token }}
