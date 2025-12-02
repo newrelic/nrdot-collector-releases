@@ -324,14 +324,6 @@ Distributed under the following license(s):
 
 
 
-## [go.opentelemetry.io/collector/service](https://go.opentelemetry.io/collector/service)
-
-Distributed under the following license(s):
-
-* Apache-2.0
-
-
-
 ## [golang.org/x/sys](https://golang.org/x/sys)
 
 Distributed under the following license(s):
