@@ -49,7 +49,8 @@ jobs:
         fips: [false, true]
     uses: ./.github/workflows/deploy-and-e2e.yaml
     with:
-      ref: ${{ github.sha }}
+      ref: ${{ github.event.workflow_run.head_sha }}
+      workflow_run_id: ${{ github.event.workflow_run.id }}
       distro: ${{ matrix.distribution }}
       fips: ${{ matrix.fips }}
       execute_destroy: true
