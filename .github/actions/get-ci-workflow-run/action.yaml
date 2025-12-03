@@ -1,14 +1,18 @@
-name: "Get Successful Commit"
-description: "Find the last successful commit on a branch where all checks passed"
+name: "Get CI Workflow Run"
+description: "Find the CI workflow run for a specific SHA, or get the last successful commit on a branch"
 inputs:
   github-token:
     description: "GitHub token for API access"
     required: false
     default: ${{ github.token }}
   branch:
-    description: "Branch to check for successful commits"
+    description: "Branch to check for successful commits (ignored if sha is provided)"
     required: false
     default: "main"
+  sha:
+    description: "Specific commit SHA to find the workflow run for (if provided, branch is ignored)"
+    required: false
+    default: ""
 outputs:
   sha:
     description: "SHA of the last successful commit"
@@ -22,19 +26,25 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Get Last Successful Commit
+    - name: Get CI Workflow Run
       id: get-commit
       shell: bash
       run: |
-        echo "Finding last successful CI workflow run on ${{ inputs.branch }}..."
         echo "Repository: ${{ github.repository }}"
 
-        # Get the most recent successful CI workflow run on the branch
-        echo "=== Searching for successful CI workflows ==="
+        # Build API parameters based on search mode
+        if [[ -n "${{ inputs.sha }}" ]]; then
+          echo "Finding CI workflow run for specific SHA: ${{ inputs.sha }}"
+          API_PARAMS=(--field head_sha="${{ inputs.sha }}" --field event="push")
+        else
+          echo "Finding last successful CI workflow run on ${{ inputs.branch }}..."
+          API_PARAMS=(--field branch="${{ inputs.branch }}" --field event="push")
+        fi
+
+        # Single API call with dynamic parameters
         workflow_data=$(gh api "/repos/${{ github.repository }}/actions/runs" \
           -X GET \
-          --field branch="${{ inputs.branch }}" \
-          --field event="push" \
+          "${API_PARAMS[@]}" \
           --field status="completed" \
           --field conclusion="success" \
           --field per_page="50" \
@@ -45,8 +55,11 @@ runs:
         sha=$(echo "$workflow_data" | jq -r '.head_sha')
         short_sha=${sha:0:7}
 
-        if [ -z "$workflow_data" ]; then
-          echo "❌ No commits found."
+        if [[ -z "$workflow_data" || "$workflow_data" == "null" ]]; then
+          echo "❌ No workflow run found."
+          exit 1
+        elif [[ -z "$workflow_run_id" || "$workflow_run_id" == "null" ]]; then
+          echo "❌ Could not extract workflow run ID."
           exit 1
         else
           echo "successful_sha=$sha" >> $GITHUB_OUTPUT

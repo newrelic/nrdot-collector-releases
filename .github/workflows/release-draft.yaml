@@ -112,11 +112,25 @@ jobs:
           - nrdot-collector-k8s
         fips: [false, true]
     steps:
+      - name: Checkout (sparse)
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github/actions
+
+      - name: Get CI workflow run for this SHA
+        id: get-workflow-run
+        uses: ./.github/actions/get-ci-workflow-run
+        with:
+          sha: ${{ github.sha }}
+
       - name: Download CI Artifacts
         uses: actions/download-artifact@v4
         with:
           name: goreleaser_output_${{ matrix.distribution }}${{ matrix.fips && '-fips' || '' }}_${{ github.sha }}
           path: artifacts/
+          run-id: ${{ steps.get-workflow-run.outputs.workflow-run-id }}
+          github-token: ${{ github.token }}
 
       - name: List Downloaded Artifacts
         run: |
