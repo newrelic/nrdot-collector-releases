@@ -36,7 +36,7 @@ jobs:
         uses: ./.github/actions/discover-distributions
       - name: Get Last Successful Commit
         id: get-commit
-        uses: ./.github/actions/get-successful-commit
+        uses: ./.github/actions/get-ci-workflow-run
         with:
           branch: main
   verify-artifacts:
