@@ -207,6 +207,8 @@ jobs:
       TF_VAR_nr_ingest_key: ${{ secrets.nr_ingest_key }}
       TF_VAR_distro: ${{ inputs.distro }}
       TF_VAR_fips: ${{ inputs.fips }}
+      TF_VAR_image_tag: ${{ needs.setup.outputs.image-tag }}
+      TF_VAR_k8s_namespace_prefix: ${{ inputs.workspace_prefix }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
