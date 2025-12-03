@@ -1,6 +1,6 @@
 locals {
   fips_str                                        = var.fips ? "-fips" : ""
-  test_env_name                                   = "nightly${local.fips_str}"
+  test_env_name                                   = "${var.k8s_namespace_prefix}${local.fips_str}"
   test_spec                                       = yamldecode(file("${path.module}/../../../distributions/${var.distro}/test/spec-nightly.yaml"))
   ec2_enabled                                     = local.test_spec.nightly.ec2.enabled || !var.fips
   chart_name                                      = local.test_spec.nightly.collectorChart.name
