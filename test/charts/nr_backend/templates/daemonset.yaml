@@ -18,6 +18,10 @@ spec:
         - name: *app
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: "{{ .Values.image.pullPolicy }}"
+          args:
+            {{- if (has "experimental" (splitList "-" .Values.image.tag)) }}
+            - "--config=/etc/otelcol/config.yaml"
+            {{- end }}
           ports:
             - name: health
               containerPort: 13133
@@ -38,3 +42,42 @@ spec:
                   fieldPath: spec.nodeName
             - name: OTEL_RESOURCE_ATTRIBUTES
               value: "testKey={{ .Values.testKey }}-$(KUBE_NODE_NAME)"
+      {{- if (has "experimental" (splitList "-" .Values.image.tag)) }}
+      volumes:
+        - name: otelcol-config
+          configMap:
+            name: nrdot-collector-minimal-config
+      {{- end }}
+
+---
+{{- if (has "experimental" (splitList "-" .Values.image.tag)) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nrdot-collector-minimal-config
+data:
+  config.yaml: |
+    receivers:
+      hostmetrics:
+    processors:
+      resourcedetection/env:
+        detectors: ["env"]
+        timeout: 2s
+        override: true
+    exporters:
+      otlphttp:
+        endpoint: ${env:OTEL_EXPORTER_OTLP_ENDPOINT}
+        headers:
+          "api-key": ${env:NEW_RELIC_LICENSE_KEY}
+    service:
+      extensions:
+        - health_check
+      pipelines:
+        metrics/host:
+          receivers:
+            - hostmetrics
+          processors:
+            - resourcedetection/env
+          exporters:
+            - otlphttp
+{{- end }}
