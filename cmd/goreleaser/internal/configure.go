@@ -31,6 +31,8 @@ const (
 	ExperimentalDistro = "nrdot-collector-experimental"
 
 	ConfigFile = "config.yaml"
+	LicenseFile = "LICENSE*"
+	ThirdPartyNoticesFile = "THIRD_PARTY_NOTICES.md"
 )
 
 type Distribution struct {
@@ -229,6 +231,11 @@ func Archive(dist Distribution) config.Archive {
 		})
 	}
 
+	files = append(files,
+		config.File{Source: LicenseFile},
+		config.File{Source: ThirdPartyNoticesFile},
+	)
+
 	return config.Archive{
 		ID:           dist.FullName,
 		NameTemplate: "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}",
@@ -265,6 +272,14 @@ func Package(dist Distribution) config.NFPM {
 			Destination: path.Join("/etc", dist.FullName, fmt.Sprintf("%s.conf", dist.FullName)),
 			Type:        "config|noreplace",
 		},
+		{
+			Source: LicenseFile,
+			Type: "license",
+		},
+		{
+			Source: ThirdPartyNoticesFile,
+			Type: "license",
+		},
 	}
 
 	if dist.IncludeConfig {
@@ -274,6 +289,7 @@ func Package(dist Distribution) config.NFPM {
 			Type:        "config",
 		})
 	}
+
 	return config.NFPM{
 		ID:          dist.FullName,
 		IDs:         []string{dist.FullName},
@@ -357,9 +373,15 @@ func DockerImage(dist Distribution, arch string) config.Docker {
 	}
 
 	files := make([]string, 0)
+
 	if dist.IncludeConfig {
 		files = append(files, ConfigFile)
 	}
+
+	files = append(files,
+		LicenseFile,
+		ThirdPartyNoticesFile,
+	)
 
 	return config.Docker{
 		ImageTemplates: imageTemplates,
