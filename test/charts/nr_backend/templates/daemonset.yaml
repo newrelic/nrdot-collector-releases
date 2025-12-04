@@ -18,7 +18,7 @@ spec:
         - name: *app
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: "{{ .Values.image.pullPolicy }}"
-          {{- if (has "experimental" (splitList "-" .Values.image.tag)) }}
+          {{- if (contains "experimental" .Values.image.repository) }}
           args:
             - "--config=/etc/otelcol/config.yaml"
           {{- end }}
@@ -42,7 +42,7 @@ spec:
                   fieldPath: spec.nodeName
             - name: OTEL_RESOURCE_ATTRIBUTES
               value: "testKey={{ .Values.testKey }}-$(KUBE_NODE_NAME)"
-      {{- if (has "experimental" (splitList "-" .Values.image.tag)) }}
+      {{- if (contains "experimental" .Values.image.repository) }}
       volumes:
         - name: otelcol-config
           configMap:
@@ -50,7 +50,7 @@ spec:
       {{- end }}
 
 ---
-{{- if (has "experimental" (splitList "-" .Values.image.tag)) }}
+{{- if (contains "experimental" .Values.image.repository) }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
