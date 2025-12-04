@@ -21,5 +21,5 @@ ci_test:
 	E2E_TEST__NR_ACCOUNT_ID=${NR_ACCOUNT_ID} \
 	E2E_TEST__NR_API_BASE_URL=${NR_API_BASE_URL} \
 	E2E_TEST__TEST_MODE=${TEST_MODE} \
-	E2E_TEST__FIPS_MODE=${FIPS}
+	E2E_TEST__FIPS_MODE=${FIPS} \
 	go test ./... -count=1 -timeout=10m -parallel=50
