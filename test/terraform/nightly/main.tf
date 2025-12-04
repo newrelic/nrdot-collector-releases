@@ -102,8 +102,9 @@ resource "helm_release" "ci_e2e_nightly_nr_k8s_otel_collector" {
   }
 
   set {
+    # populates k8s.cluster.name attribute; fips suffix to distinguish fips/non-fips as we use this as testKey for k8s
     name  = "cluster"
-    value = data.aws_eks_cluster.eks_cluster.name
+    value = "${data.aws_eks_cluster.eks_cluster.name}${local.fips_str}"
   }
 
   set {
