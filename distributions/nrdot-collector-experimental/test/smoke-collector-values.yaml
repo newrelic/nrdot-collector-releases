@@ -8,6 +8,10 @@ mode: daemonset
 config:
   receivers:
     hostmetrics:
+    # disable preset receivers
+    jaeger: null
+    zipkin: null
+    prometheus: null
   processors:
     resourcedetection/env:
       detectors: ["env"]
