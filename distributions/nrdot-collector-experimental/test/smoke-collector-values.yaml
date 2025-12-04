@@ -33,6 +33,10 @@ config:
           - resourcedetection/env
         exporters:
           - otlphttp
+      # disable preset pipelines
+      logs: null
+      traces: null
+      metrics: null
                 
 extraEnvs:
   - name: OTEL_EXPORTER_OTLP_ENDPOINT

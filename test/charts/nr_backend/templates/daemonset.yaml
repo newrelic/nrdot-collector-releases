@@ -18,10 +18,10 @@ spec:
         - name: *app
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: "{{ .Values.image.pullPolicy }}"
+          {{- if (has "experimental" (splitList "-" .Values.image.tag)) }}
           args:
-            {{- if (has "experimental" (splitList "-" .Values.image.tag)) }}
             - "--config=/etc/otelcol/config.yaml"
-            {{- end }}
+          {{- end }}
           ports:
             - name: health
               containerPort: 13133
