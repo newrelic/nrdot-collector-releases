@@ -63,6 +63,9 @@ data:
   config.yaml: |
     receivers:
       hostmetrics:
+        collection_interval: 60s    
+        scrapers:
+         cpu:
     processors:
       resourcedetection/env:
         detectors: ["env"]
@@ -74,8 +77,6 @@ data:
         headers:
           "api-key": ${env:NEW_RELIC_LICENSE_KEY}
     service:
-      extensions:
-        - health_check
       pipelines:
         metrics/host:
           receivers:
