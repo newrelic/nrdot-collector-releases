@@ -8,6 +8,9 @@ mode: daemonset
 config:
   receivers:
     hostmetrics:
+      collection_interval: 60s
+      scrapers:
+        cpu:
     # disable preset receivers
     jaeger: null
     zipkin: null
