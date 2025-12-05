@@ -192,7 +192,7 @@ jobs:
           NR_API_BASE_URL: ${{ secrets.nr_api_base_url }}
           DISTRO: ${{ inputs.distro }}
           K8S_CONTEXT_NAME: "aws-ci-e2etest"
-          FIPS: ${{ inputs.fips && 'true' || '' }}
+          FIPS: ${{ inputs.fips && 'true' || 'false' }}
           # TEST_MODE is set internally by the ci_test-nightly target (nightlyOnly)
 
   terraform-destroy:

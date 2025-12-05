@@ -12,19 +12,19 @@ import (
 )
 
 var ec2Ubuntu22 = spec.NightlySystemUnderTest{
-	TestKeyPattern: testutil.NewNrQueryHostNamePattern("nightly", testutil.Wildcard, "ec2_ubuntu22_04"),
+	TestKeyPattern: testutil.NewTestKeyPattern("nightly", testutil.Wildcard, "ec2_ubuntu22_04"),
 	SkipIf: func(testSpec *spec.TestSpec) bool {
 		return !testSpec.Nightly.EC2.Enabled
 	},
 }
 var ec2Ubuntu24 = spec.NightlySystemUnderTest{
-	TestKeyPattern: testutil.NewNrQueryHostNamePattern("nightly", testutil.Wildcard, "ec2_ubuntu24_04"),
+	TestKeyPattern: testutil.NewTestKeyPattern("nightly", testutil.Wildcard, "ec2_ubuntu24_04"),
 	SkipIf: func(testSpec *spec.TestSpec) bool {
 		return !testSpec.Nightly.EC2.Enabled
 	},
 }
 var k8sNode = spec.NightlySystemUnderTest{
-	TestKeyPattern: testutil.NewNrQueryHostNamePattern("nightly", testutil.Wildcard, "k8s_node"),
+	TestKeyPattern: testutil.NewTestKeyPattern("nightly", testutil.Wildcard, "k8s_node"),
 }
 
 func TestNightlyCollectorWithNrBackend(t *testing.T) {

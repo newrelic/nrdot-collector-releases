@@ -1,0 +1,65 @@
+additionalLabels:
+  e2eTestLogSelector: nrdot-collector-experimental-e2e
+podLabels:
+  e2eTestLogSelector: nrdot-collector-experimental-e2e
+
+mode: daemonset
+
+config:
+  receivers:
+    hostmetrics:
+      collection_interval: 60s
+      scrapers:
+        cpu:
+    # disable preset receivers
+    jaeger: null
+    zipkin: null
+    prometheus: null
+  processors:
+    resourcedetection/env:
+      detectors: ["env"]
+      timeout: 2s
+      override: true
+  exporters:
+    otlphttp:
+      endpoint: ${env:OTEL_EXPORTER_OTLP_ENDPOINT}
+      headers:
+        "api-key": ${env:NEW_RELIC_LICENSE_KEY}
+  extensions:
+    # The health_check extension is mandatory for this chart.
+    health_check:
+      endpoint: ${env:MY_POD_IP}:13133
+  service:
+    extensions:
+      - health_check
+    pipelines:
+      metrics/host:
+        receivers:
+          - hostmetrics
+        processors:
+          - resourcedetection/env
+        exporters:
+          - otlphttp
+      # disable preset pipelines
+      logs: null
+      traces: null
+      metrics: null
+                
+extraEnvs:
+  - name: OTEL_EXPORTER_OTLP_ENDPOINT
+    valueFrom:
+      secretKeyRef:
+        name: collector-secrets
+        key: nrBackendUrl
+  - name: NEW_RELIC_LICENSE_KEY
+    valueFrom:
+      secretKeyRef:
+        name: collector-secrets
+        key: nrIngestKey
+  - name: SCENARIO_TAG
+    valueFrom:
+      secretKeyRef:
+        name: collector-secrets
+        key: scenarioTag
+  - name: OTEL_RESOURCE_ATTRIBUTES
+    value: "testKey=$(SCENARIO_TAG)"
