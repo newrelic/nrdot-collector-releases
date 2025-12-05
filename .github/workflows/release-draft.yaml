@@ -24,6 +24,7 @@ jobs:
         with:
           sparse-checkout: |
             .github/actions
+            distributions
 
       - name: Discover Distributions
         id: discover
