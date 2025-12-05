@@ -30,6 +30,9 @@ archives:
       - goos: windows
         formats:
           - zip
+    files:
+      - src: LICENSE*
+      - src: THIRD_PARTY_NOTICES.md
 snapshot:
   version_template: '{{ incpatch .Version }}-SNAPSHOT-{{.ShortCommit}}'
 checksum:
@@ -43,6 +46,9 @@ dockers:
     image_templates:
       - '{{ .Env.REGISTRY }}/nrdot-collector-experimental:{{ .Version }}-amd64'
       - '{{ .Env.REGISTRY }}/nrdot-collector-experimental:latest-amd64'
+    extra_files:
+      - LICENSE*
+      - THIRD_PARTY_NOTICES.md
     build_flag_templates:
       - --pull
       - --platform=linux/amd64
@@ -60,6 +66,9 @@ dockers:
     image_templates:
       - '{{ .Env.REGISTRY }}/nrdot-collector-experimental:{{ .Version }}-arm64'
       - '{{ .Env.REGISTRY }}/nrdot-collector-experimental:latest-arm64'
+    extra_files:
+      - LICENSE*
+      - THIRD_PARTY_NOTICES.md
     build_flag_templates:
       - --pull
       - --platform=linux/arm64
