@@ -87,7 +87,14 @@ jobs:
           echo "Looking up release for tag: $tag"
 
           # List all releases and filter for the specific version (tag-based API does not return drafts)
-          release_info=$(gh api repos/${{ github.repository }}/releases | jq ".[] | select(.tag_name == \"$tag\")")
+          release_info=$(gh api repos/${{ github.repository }}/releases --jq ".[] | select(.tag_name == \"$tag\")")
+
+          # Releases are fetched in descending order, so the recently created draft should appear on the first page
+          if [ -z "$release_info" ]; then
+            echo "❌ Release with tag $tag not found."
+            exit 1
+          fi
+
 
           release_id=$(echo "$release_info" | jq -r '.id')
           release_url=$(echo "$release_info" | jq -r '.html_url')
