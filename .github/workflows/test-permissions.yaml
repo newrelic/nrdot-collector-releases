@@ -4,11 +4,7 @@ on:
   pull_request:
     branches: [main]
 
-permissions:
-  artifact-metadata: write
-  contents: write
-  packages: write
-  
+permissions: write-all
 
 jobs:
   draft-release:
