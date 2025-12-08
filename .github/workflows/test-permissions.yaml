@@ -20,8 +20,9 @@ jobs:
       - name: Get Release Information
         id: get-release
         run: |
-          # Get the specific release by tag
-          release_info=$(gh api repos/${{ github.repository }}/releases/tags/1.6.0)
+          tag='1.6.0'
+          # List all releases and filter for the specific version
+          release_info=$(gh api repos/${{ github.repository }}/releases | jq ".[] | select(.tag_name == \"$tag\")")
           
           echo "---DEBUG START---\n${release_info}\n--- DEBUG END ---"
 
