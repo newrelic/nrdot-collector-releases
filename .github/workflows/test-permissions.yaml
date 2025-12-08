@@ -20,11 +20,8 @@ jobs:
       - name: Get Release Information
         id: get-release
         run: |
-          # Extract tag from GoReleaser metadata
-          tag='1.6.0'
-
           # Get the specific release by tag
-          release_info=$(gh api repos/${{ github.repository }}/releases/tags/$tag)
+          release_info=$(gh api repos/${{ github.repository }}/releases/tags/1.6.0)
           
           echo "---DEBUG START---\n${release_info}\n--- DEBUG END ---"
 
