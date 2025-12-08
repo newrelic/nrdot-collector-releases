@@ -5,8 +5,10 @@ on:
     branches: [main]
 
 permissions:
+  artifact-metadata: write
   contents: write
   packages: write
+  
 
 jobs:
   draft-release:
