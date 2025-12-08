@@ -86,8 +86,8 @@ jobs:
           version=$(echo '${{ steps.goreleaser.outputs.metadata }}' | jq -r '.version')
           echo "Looking up release for tag: $tag"
 
-          # Get the specific release by tag
-          release_info=$(gh api repos/${{ github.repository }}/releases/tags/$tag)
+          # List all releases and filter for the specific version (tag-based API does not return drafts)
+          release_info=$(gh api repos/${{ github.repository }}/releases | jq ".[] | select(.tag_name == \"$tag\")")
 
           release_id=$(echo "$release_info" | jq -r '.id')
           release_url=$(echo "$release_info" | jq -r '.html_url')
