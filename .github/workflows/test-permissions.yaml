@@ -1,0 +1,44 @@
+name: 🪲 Workflow Experiments
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  draft-release:
+    runs-on: ubuntu-latest
+    outputs:
+      release-tag: ${{ steps.get-release.outputs.release-tag }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # required for tag metadata
+
+      - name: Get Release Information
+        id: get-release
+        run: |
+          # Extract tag from GoReleaser metadata
+          tag='1.6.0'
+
+          # Get the specific release by tag
+          release_info=$(gh api repos/${{ github.repository }}/releases/tags/$tag)
+          
+          echo "---DEBUG START---\n${release_info}\n--- DEBUG END ---"
+
+          release_id=$(echo "$release_info" | jq -r '.id')
+          release_url=$(echo "$release_info" | jq -r '.html_url')
+
+          echo "release-tag=$tag" >> $GITHUB_OUTPUT
+
+          echo "🚀 Release Draft Created!"
+          echo "Release ID: $release_id"
+          echo "Release URL: $release_url"
+          echo "Release Tag: $tag"
+          echo "Release Version: $version"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
