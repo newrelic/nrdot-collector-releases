@@ -67,8 +67,9 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: "~1.24.11"
+          go-version: "~1.24"
           cache: ${{ env.caching_enabled }}
+          check-latest: true
 
       - name: Tidy go.mod files
         run: go mod tidy
