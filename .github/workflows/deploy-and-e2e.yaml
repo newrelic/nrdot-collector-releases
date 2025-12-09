@@ -183,6 +183,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: "~1.24"
+          check-latest: true
 
       - name: Run Tests
         run: make -f ./test/e2e/Makefile ci_test-nightly
