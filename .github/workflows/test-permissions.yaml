@@ -28,6 +28,12 @@ jobs:
           
           echo "---DEBUG START---\n${release_info}\n--- DEBUG END ---"
 
+           # Releases are fetched in descending order, so the recently created draft should appear on the first page
+          if [ -z "$release_info" ]; then
+            echo "❌ Release with tag $tag not found."
+            exit 1
+          fi
+
           release_id=$(echo "$release_info" | jq -r '.id')
           release_url=$(echo "$release_info" | jq -r '.html_url')
 
