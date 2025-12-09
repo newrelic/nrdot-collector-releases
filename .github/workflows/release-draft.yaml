@@ -87,15 +87,38 @@ jobs:
           version=$(echo '${{ steps.goreleaser.outputs.metadata }}' | jq -r '.version')
           echo "Looking up release for tag: $tag"
 
-          # List all releases and filter for the specific version (tag-based API does not return drafts)
-          release_info=$(gh api repos/${{ github.repository }}/releases --jq ".[] | select(.tag_name == \"$tag\")")
+          # Find draft release with retries to handle eventual consistency
+          max_retries=10
+          retry_count=0
+          release_info=""
 
-          # Releases are fetched in descending order, so the recently created draft should appear on the first page
+          while [ $retry_count -lt $max_retries ]; do
+            echo "Attempt $((retry_count + 1)) of $max_retries..."
+            
+            # Fetch releases and filter for the specific tag
+            all_releases_first_page=$(gh api repos/${{ github.repository }}/releases)
+            release_info=$(echo "$all_releases_first_page" | jq ".[] | select(.tag_name == \"$tag\")")
+            
+            # Break if we found the release
+            if [ -n "$release_info" ]; then
+              echo "✅ Release found!"
+              break
+            fi
+            
+            retry_count=$((retry_count + 1))
+            if [ $retry_count -lt $max_retries ]; then
+              echo "⏳ Release not found, waiting 10s before retry..."
+              sleep 10
+            fi
+          done
+
+          # If still not found after all retries, output debug info and fail
           if [ -z "$release_info" ]; then
-            echo "❌ Release with tag $tag not found."
+            echo "❌ Release with tag $tag not found after $max_retries attempts."
+            echo "Full API response:"
+            echo "$all_releases_first_page"
             exit 1
           fi
-
 
           release_id=$(echo "$release_info" | jq -r '.id')
           release_url=$(echo "$release_info" | jq -r '.html_url')
