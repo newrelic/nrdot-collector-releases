@@ -22,15 +22,38 @@ jobs:
       - name: Get Release Information
         id: get-release
         run: |
-          tag='1.6.0'
-          # List all releases and filter for the specific version
-          release_info=$(gh api repos/${{ github.repository }}/releases --jq ".[] | select(.tag_name == \"$tag\")")
+          tag='1.6.0-test'
           
-          echo "---DEBUG START---\n${release_info}\n--- DEBUG END ---"
+          # Retry logic: try up to 100 times with 10s delay
+          max_retries=100
+          retry_count=0
+          release_info=""
 
-           # Releases are fetched in descending order, so the recently created draft should appear on the first page
+          while [ $retry_count -lt $max_retries ]; do
+            echo "Attempt $((retry_count + 1)) of $max_retries..."
+            
+            # Fetch releases and filter for the specific tag
+            all_releases=$(gh api repos/${{ github.repository }}/releases)
+            release_info=$(echo "$all_releases" | jq ".[] | select(.tag_name == \"$tag\")")
+            
+            # Break if we found the release
+            if [ -n "$release_info" ]; then
+              echo "✅ Release found!"
+              break
+            fi
+            
+            retry_count=$((retry_count + 1))
+            if [ $retry_count -lt $max_retries ]; then
+              echo "⏳ Release not found, waiting 10s before retry..."
+              sleep 10
+            fi
+          done
+
+          # If still not found after all retries, output debug info and fail
           if [ -z "$release_info" ]; then
-            echo "❌ Release with tag $tag not found."
+            echo "❌ Release with tag $tag not found after $max_retries attempts."
+            echo "Full API response:"
+            echo "$all_releases"
             exit 1
           fi
 
@@ -43,6 +66,5 @@ jobs:
           echo "Release ID: $release_id"
           echo "Release URL: $release_url"
           echo "Release Tag: $tag"
-          echo "Release Version: $version"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
