@@ -2,8 +2,6 @@ module github.com/newrelic/nrdot-collector-releases
 
 go 1.24.11
 
-toolchain go1.24.11
-
 require (
 	github.com/goreleaser/goreleaser/v2 v2.8.1
 	gopkg.in/yaml.v3 v3.0.1
