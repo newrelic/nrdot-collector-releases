@@ -87,15 +87,3 @@ docker_manifests:
       - '{{ .Env.REGISTRY }}/nrdot-collector:{{ .Version }}-fips-arm64'
 changelog:
   disable: "true"
-signs:
-  - args:
-      - --batch
-      - -u
-      - '{{ .Env.GPG_FINGERPRINT }}'
-      - --output
-      - ${signature}
-      - --detach-sign
-      - --armor
-      - ${artifact}
-    signature: ${artifact}.asc
-    artifacts: all

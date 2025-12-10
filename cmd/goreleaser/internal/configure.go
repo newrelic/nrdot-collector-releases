@@ -42,6 +42,7 @@ type Distribution struct {
 	IncludeConfig bool
 	SkipBinaries  bool
 	SkipArchives  bool
+	SkipSigning   bool
 }
 
 var (
@@ -66,7 +67,7 @@ func Generate(distFlag string, fips bool) config.Project {
 		NFPMs:           Packages(dist),
 		Dockers:         DockerImages(dist),
 		DockerManifests: DockerManifests(dist),
-		Signs:           Sign(),
+		Signs:           Signs(dist),
 		Version:         2,
 		Changelog:       config.Changelog{Disable: "true"},
 		Snapshot: config.Snapshot{
@@ -100,27 +101,36 @@ func NewDistribution(baseDist string, fips bool) Distribution {
 		IncludeConfig: true,
 		SkipBinaries:  false,
 		SkipArchives:  false,
+		SkipSigning:   false,
 	}
 
-	if baseDist == K8sDistro {
+	if isNoConfigDistro(baseDist) {
 		dist.IncludeConfig = false
 	}
 
-	if baseDist == K8sDistro || fips {
+	if isImageOnlyDistro(baseDist, fips) {
 		dist.Goos = []string{"linux"}
 		dist.IgnoredBuilds = nil
 		dist.SkipBinaries = true
 		dist.SkipArchives = true
+		dist.SkipSigning = true
 	}
 
 	if baseDist == ExperimentalDistro {
 		dist.Goos = []string{"linux"}
 		dist.IgnoredBuilds = nil
-		dist.IncludeConfig = false
 		dist.SkipBinaries = true
 	}
 
 	return dist
+}
+
+func isNoConfigDistro(dist string) bool {
+	return dist == K8sDistro || dist == ExperimentalDistro
+}
+
+func isImageOnlyDistro(dist string, fips bool) bool {
+	return dist == K8sDistro || fips
 }
 
 func Blobs(dist Distribution) []config.Blob {
@@ -416,21 +426,29 @@ func DockerManifest(version string, dist Distribution) config.DockerManifest {
 	}
 }
 
-func Sign() []config.Sign {
+func Signs(dist Distribution) []config.Sign {
+	if dist.SkipSigning {
+		return nil
+	}
+
 	return []config.Sign{
-		{
-			Artifacts: "all",
-			Signature: "${artifact}.asc",
-			Args: []string{
-				"--batch",
-				"-u",
-				"{{ .Env.GPG_FINGERPRINT }}",
-				"--output",
-				"${signature}",
-				"--detach-sign",
-				"--armor",
-				"${artifact}",
-			},
+		SignAllArtifacts(),
+	}
+}
+
+func SignAllArtifacts() config.Sign {
+	return config.Sign{
+		Artifacts: "all",
+		Signature: "${artifact}.asc",
+		Args: []string{
+			"--batch",
+			"-u",
+			"{{ .Env.GPG_FINGERPRINT }}",
+			"--output",
+			"${signature}",
+			"--detach-sign",
+			"--armor",
+			"${artifact}",
 		},
 	}
 }
