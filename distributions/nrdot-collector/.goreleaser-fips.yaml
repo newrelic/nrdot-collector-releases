@@ -38,7 +38,7 @@ builds:
 archives:
   - format: binary
 snapshot:
-  version_template: '{{ incpatch .Version }}-SNAPSHOT-{{.ShortCommit}}'
+  version_template: '{{ incpatch .Env.MANIFEST_VERSION }}-SNAPSHOT-{{.ShortCommit}}'
 checksum:
   name_template: '{{ .ArtifactName }}.sum'
   algorithm: sha256
@@ -48,7 +48,7 @@ dockers:
     goarch: amd64
     dockerfile: Dockerfile
     image_templates:
-      - '{{ .Env.REGISTRY }}/nrdot-collector:{{ .Version }}-fips-amd64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector:{{ .Env.MANIFEST_VERSION }}-fips-amd64'
     extra_files:
       - config.yaml
     build_flag_templates:
@@ -57,7 +57,7 @@ dockers:
       - --label=org.opencontainers.image.created={{.Date}}
       - --label=org.opencontainers.image.name={{.ProjectName}}
       - --label=org.opencontainers.image.revision={{.FullCommit}}
-      - --label=org.opencontainers.image.version={{.Version}}
+      - --label=org.opencontainers.image.version={{.Env.MANIFEST_VERSION}}
       - --label=org.opencontainers.image.source={{.GitURL}}
       - --label=org.opencontainers.image.licenses=Apache-2.0
       - --build-arg=DIST_NAME=nrdot-collector-fips
@@ -66,7 +66,7 @@ dockers:
     goarch: arm64
     dockerfile: Dockerfile
     image_templates:
-      - '{{ .Env.REGISTRY }}/nrdot-collector:{{ .Version }}-fips-arm64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector:{{ .Env.MANIFEST_VERSION }}-fips-arm64'
     extra_files:
       - config.yaml
     build_flag_templates:
@@ -75,15 +75,15 @@ dockers:
       - --label=org.opencontainers.image.created={{.Date}}
       - --label=org.opencontainers.image.name={{.ProjectName}}
       - --label=org.opencontainers.image.revision={{.FullCommit}}
-      - --label=org.opencontainers.image.version={{.Version}}
+      - --label=org.opencontainers.image.version={{.Env.MANIFEST_VERSION}}
       - --label=org.opencontainers.image.source={{.GitURL}}
       - --label=org.opencontainers.image.licenses=Apache-2.0
       - --build-arg=DIST_NAME=nrdot-collector-fips
     use: buildx
 docker_manifests:
-  - name_template: '{{ .Env.REGISTRY }}/nrdot-collector:{{ .Version }}-fips'
+  - name_template: '{{ .Env.REGISTRY }}/nrdot-collector:{{ .Env.MANIFEST_VERSION }}-fips'
     image_templates:
-      - '{{ .Env.REGISTRY }}/nrdot-collector:{{ .Version }}-fips-amd64'
-      - '{{ .Env.REGISTRY }}/nrdot-collector:{{ .Version }}-fips-arm64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector:{{ .Env.MANIFEST_VERSION }}-fips-amd64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector:{{ .Env.MANIFEST_VERSION }}-fips-arm64'
 changelog:
   disable: "true"

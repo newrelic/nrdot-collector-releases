@@ -29,7 +29,7 @@ archives:
   - id: nrdot-collector-host
     ids:
       - nrdot-collector-host
-    name_template: '{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}'
+    name_template: '{{ .Binary }}_{{ .Env.MANIFEST_VERSION }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}'
     format_overrides:
       - goos: windows
         formats:
@@ -37,7 +37,7 @@ archives:
     files:
       - src: config.yaml
 nfpms:
-  - file_name_template: '{{ .PackageName }}_{{ .Version }}_{{ .Os }}_{{- if not (eq (filter .ConventionalFileName "\\.rpm$") "") }}{{- replace .Arch "amd64" "x86_64" }}{{- else }}{{- .Arch }}{{- end }}{{- with .Arm }}v{{ . }}{{- end }}{{- with .Mips }}_{{ . }}{{- end }}{{- if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{- end }}'
+  - file_name_template: '{{ .PackageName }}_{{ .Env.MANIFEST_VERSION }}_{{ .Os }}_{{- if not (eq (filter .ConventionalFileName "\\.rpm$") "") }}{{- replace .Arch "amd64" "x86_64" }}{{- else }}{{- .Arch }}{{- end }}{{- with .Arm }}v{{ . }}{{- end }}{{- with .Mips }}_{{ . }}{{- end }}{{- if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{- end }}'
     package_name: nrdot-collector-host
     contents:
       - src: nrdot-collector-host.service
@@ -72,7 +72,7 @@ nfpms:
     description: NRDOT Collector - nrdot-collector-host
     license: Apache 2.0
 snapshot:
-  version_template: '{{ incpatch .Version }}-SNAPSHOT-{{.ShortCommit}}'
+  version_template: '{{ incpatch .Env.MANIFEST_VERSION }}-SNAPSHOT-{{.ShortCommit}}'
 checksum:
   name_template: '{{ .ArtifactName }}.sum'
   algorithm: sha256
@@ -82,7 +82,7 @@ dockers:
     goarch: amd64
     dockerfile: Dockerfile
     image_templates:
-      - '{{ .Env.REGISTRY }}/nrdot-collector-host:{{ .Version }}-amd64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-host:{{ .Env.MANIFEST_VERSION }}-amd64'
       - '{{ .Env.REGISTRY }}/nrdot-collector-host:latest-amd64'
     extra_files:
       - config.yaml
@@ -92,7 +92,7 @@ dockers:
       - --label=org.opencontainers.image.created={{.Date}}
       - --label=org.opencontainers.image.name={{.ProjectName}}
       - --label=org.opencontainers.image.revision={{.FullCommit}}
-      - --label=org.opencontainers.image.version={{.Version}}
+      - --label=org.opencontainers.image.version={{.Env.MANIFEST_VERSION}}
       - --label=org.opencontainers.image.source={{.GitURL}}
       - --label=org.opencontainers.image.licenses=Apache-2.0
       - --build-arg=DIST_NAME=nrdot-collector-host
@@ -101,7 +101,7 @@ dockers:
     goarch: arm64
     dockerfile: Dockerfile
     image_templates:
-      - '{{ .Env.REGISTRY }}/nrdot-collector-host:{{ .Version }}-arm64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-host:{{ .Env.MANIFEST_VERSION }}-arm64'
       - '{{ .Env.REGISTRY }}/nrdot-collector-host:latest-arm64'
     extra_files:
       - config.yaml
@@ -111,16 +111,16 @@ dockers:
       - --label=org.opencontainers.image.created={{.Date}}
       - --label=org.opencontainers.image.name={{.ProjectName}}
       - --label=org.opencontainers.image.revision={{.FullCommit}}
-      - --label=org.opencontainers.image.version={{.Version}}
+      - --label=org.opencontainers.image.version={{.Env.MANIFEST_VERSION}}
       - --label=org.opencontainers.image.source={{.GitURL}}
       - --label=org.opencontainers.image.licenses=Apache-2.0
       - --build-arg=DIST_NAME=nrdot-collector-host
     use: buildx
 docker_manifests:
-  - name_template: '{{ .Env.REGISTRY }}/nrdot-collector-host:{{ .Version }}'
+  - name_template: '{{ .Env.REGISTRY }}/nrdot-collector-host:{{ .Env.MANIFEST_VERSION }}'
     image_templates:
-      - '{{ .Env.REGISTRY }}/nrdot-collector-host:{{ .Version }}-amd64'
-      - '{{ .Env.REGISTRY }}/nrdot-collector-host:{{ .Version }}-arm64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-host:{{ .Env.MANIFEST_VERSION }}-amd64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-host:{{ .Env.MANIFEST_VERSION }}-arm64'
   - name_template: '{{ .Env.REGISTRY }}/nrdot-collector-host:latest'
     image_templates:
       - '{{ .Env.REGISTRY }}/nrdot-collector-host:latest-amd64'
@@ -129,7 +129,7 @@ blobs:
   - bucket: nr-releases
     provider: s3
     region: us-east-1
-    directory: nrdot-collector-releases/nrdot-collector-host/{{ .Version }}
+    directory: nrdot-collector-releases/nrdot-collector-host/{{ .Env.MANIFEST_VERSION }}
 changelog:
   disable: "true"
 signs:
