@@ -1,6 +1,8 @@
 # .actrc
+# see team onboarding docs for instructions how to build image
+-P ubuntu-latest=act-certs
 --container-architecture=linux/arm64
--P ubuntu-latest=catthehacker/ubuntu:act-latest
+--pull=false
 -e event.json
 --artifact-server-path $PWD/.artifacts
 --bind
