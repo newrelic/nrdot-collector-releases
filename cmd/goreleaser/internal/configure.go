@@ -222,7 +222,7 @@ func Archives(dist Distribution) []config.Archive {
 		// https://goreleaser.com/customization/archive/#do-not-archive
 		return []config.Archive{
 			{
-				Format: "binary",
+				Formats: []string{"binary"},
 			},
 		}
 	}
