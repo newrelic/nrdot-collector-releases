@@ -180,6 +180,8 @@ jobs:
 
           echo "📦 Uploading artifacts for ${{ matrix.distribution }}${{ matrix.fips && ' (FIPS)' || '' }}"
 
+          release_tag="${{ needs.draft-release.outputs.release-tag }}"
+
           # Read artifacts.json and upload each file with a path
           jq -r '.[] | select(has("path")) | .path' artifacts/dist/artifacts.json | while IFS= read -r artifact_path; do
             # Skip unrelated build artifacts
@@ -188,9 +190,18 @@ jobs:
               continue
             fi
             
+            # Extract filename from path
+            artifact_filename=$(basename "$artifact_path")
+            
+            # Validate that filename contains the release tag
+            if [[ ! "$artifact_filename" =~ $release_tag ]]; then
+              echo "❌ Artifact filename does not contain release tag '$release_tag': $artifact_filename"
+              exit 1
+            fi
+            
             if [ -f "artifacts/$artifact_path" ]; then
               echo "⬆️  Uploading: $artifact_path"
-              gh release upload ${{ needs.draft-release.outputs.release-tag }} \
+              gh release upload "$release_tag" \
                 "artifacts/$artifact_path" \
                 --clobber
             else
