@@ -209,7 +209,12 @@ func Build(dist Distribution) config.Build {
 
 func Archives(dist Distribution) []config.Archive {
 	if dist.SkipArchives {
-		return nil
+		// https://goreleaser.com/customization/archive/#do-not-archive
+		return []config.Archive{
+			{
+				Format: "binary",
+			},
+		}
 	}
 
 	return []config.Archive{

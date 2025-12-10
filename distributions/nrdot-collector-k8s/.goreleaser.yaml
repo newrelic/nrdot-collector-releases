@@ -21,6 +21,8 @@ builds:
     env:
       - CGO_ENABLED=0
       - GOEXPERIMENT=
+archives:
+  - format: binary
 snapshot:
   version_template: '{{ incpatch .Version }}-SNAPSHOT-{{.ShortCommit}}'
 checksum:
