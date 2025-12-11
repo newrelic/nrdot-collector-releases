@@ -72,7 +72,7 @@ nfpms:
     description: NRDOT Collector - nrdot-collector
     license: Apache 2.0
 snapshot:
-  version_template: '{{ incpatch .Version }}-SNAPSHOT-{{.ShortCommit}}'
+  version_template: '{{ .Version }}-SNAPSHOT-{{.ShortCommit}}'
 checksum:
   name_template: '{{ .ArtifactName }}.sum'
   algorithm: sha256

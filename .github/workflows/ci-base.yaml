@@ -213,8 +213,16 @@ jobs:
         run: |
           version=$(./scripts/get-version.sh)
           echo "Manifest version: $version"
-          
-          if git rev-parse "$version" >/dev/null 2>&1; then
+
+          if [ "${{ inputs.publish }}" = "true" ]; then
+            if git rev-parse "$version" >/dev/null 2>&1; then
+              echo "❌ Release tag $version already exists. Aborting publish."
+              exit 1
+            else
+              echo "Remote tag $version does not exist - tagging locally with $version to build releasable artifacts"
+              git tag "$version"
+            fi
+          else
             # Increment patch version
             if [[ $version =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)(.*)$ ]]; then
               prefix="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}."
@@ -229,11 +237,7 @@ jobs:
               echo "❌ Unable to parse version format: $version"
               exit 1
             fi
-          else
-            echo "Remote tag $version does not exist - tagging locally with $version to build releasable artifacts"
-            git tag "$version"
-          fi
-          
+          fi 
 
       - name: Build binaries & packages with GoReleaser
         if: inputs.publish || steps.cache-goreleaser.outputs.cache-hit != 'true'
