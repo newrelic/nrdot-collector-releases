@@ -214,14 +214,9 @@ jobs:
           version=$(./scripts/get-version.sh)
           echo "Manifest version: $version"
 
-          if [ "${{ inputs.publish }}" = "true" ]; then
-            if git rev-parse "$version" >/dev/null 2>&1; then
-              echo "❌ Release tag $version already exists. Aborting publish."
-              exit 1
-            else
-              echo "Planning to publish: Tagging locally with $version to build publishable artifacts"
-              git tag "$version"
-            fi
+          if [ "${{ inputs.publish }}" = "true" ] && ! git rev-parse "$version" >/dev/null 2>&1; then
+            echo "Planning to release artifacts: Tagging locally with $version"
+            git tag "$version"
           else
             # Increment patch version
             if [[ $version =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)(.*)$ ]]; then
@@ -231,7 +226,7 @@ jobs:
               new_patch=$((patch + 1))
               version_with_inc_patch="${prefix}${new_patch}${suffix}"
               
-              echo "Not publishing: Tagging locally with $version_with_inc_patch to build interim artifacts"
+              echo "Tagging locally with $version_with_inc_patch to build interim artifacts"
               git tag "$version_with_inc_patch"
             else
               echo "❌ Unable to parse version format: $version"
