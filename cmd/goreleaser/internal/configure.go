@@ -71,7 +71,7 @@ func Generate(distFlag string, fips bool) config.Project {
 		Version:         2,
 		Changelog:       config.Changelog{Disable: "true"},
 		Snapshot: config.Snapshot{
-			VersionTemplate: "{{ incpatch .Env.MANIFEST_VERSION }}-SNAPSHOT-{{.ShortCommit}}",
+			VersionTemplate: "{{ .Version }}-SNAPSHOT-{{.ShortCommit}}",
 		},
 		Blobs: Blobs(dist),
 		Release: config.Release{
@@ -144,7 +144,7 @@ func Blobs(dist Distribution) []config.Blob {
 }
 
 func Blob(dist Distribution) config.Blob {
-	version := "{{ .Env.MANIFEST_VERSION }}"
+	version := "{{ .Version }}"
 	return config.Blob{
 		Provider:  "s3",
 		Region:    "us-east-1",
@@ -246,7 +246,7 @@ func Archive(dist Distribution) config.Archive {
 
 	return config.Archive{
 		ID:           dist.FullName,
-		NameTemplate: "{{ .Binary }}_{{ .Env.MANIFEST_VERSION }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}",
+		NameTemplate: "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}",
 		IDs:          []string{dist.FullName},
 		Files:        files,
 		FormatOverrides: []config.FormatOverride{
@@ -303,7 +303,7 @@ func Package(dist Distribution) config.NFPM {
 		},
 		NFPMOverridables: config.NFPMOverridables{
 			PackageName: dist.FullName,
-			FileNameTemplate: "{{ .PackageName }}_{{ .Env.MANIFEST_VERSION }}_{{ .Os }}_" +
+			FileNameTemplate: "{{ .PackageName }}_{{ .Version }}_{{ .Os }}_" +
 				"{{- if not (eq (filter .ConventionalFileName \"\\\\.rpm$\") \"\") }}" +
 				"{{- replace .Arch \"amd64\" \"x86_64\" }}" +
 				"{{- else }}" +
@@ -335,9 +335,9 @@ func Package(dist Distribution) config.NFPM {
 func DockerImageTags(dist Distribution) []string {
 	tags := []string{}
 	if dist.Fips {
-		tags = append(tags, "{{ .Env.MANIFEST_VERSION }}-fips")
+		tags = append(tags, "{{ .Version }}-fips")
 	} else {
-		tags = append(tags, "{{ .Env.MANIFEST_VERSION }}")
+		tags = append(tags, "{{ .Version }}")
 		tags = append(tags, "latest")
 	}
 	return tags
@@ -387,7 +387,7 @@ func DockerImage(dist Distribution, arch string) config.Docker {
 			label("created", ".Date"),
 			label("name", ".ProjectName"),
 			label("revision", ".FullCommit"),
-			label("version", ".Env.MANIFEST_VERSION"),
+			label("version", ".Version"),
 			label("source", ".GitURL"),
 			"--label=org.opencontainers.image.licenses=Apache-2.0",
 			fmt.Sprint("--build-arg=DIST_NAME=", dist.FullName),

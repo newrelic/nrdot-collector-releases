@@ -22,9 +22,10 @@ builds:
       - CGO_ENABLED=0
       - GOEXPERIMENT=
 archives:
-  - format: binary
+  - formats:
+      - binary
 snapshot:
-  version_template: '{{ incpatch .Env.MANIFEST_VERSION }}-SNAPSHOT-{{.ShortCommit}}'
+  version_template: '{{ incpatch .Version }}-SNAPSHOT-{{.ShortCommit}}'
 checksum:
   name_template: '{{ .ArtifactName }}.sum'
   algorithm: sha256
@@ -34,7 +35,7 @@ dockers:
     goarch: amd64
     dockerfile: Dockerfile
     image_templates:
-      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:{{ .Env.MANIFEST_VERSION }}-amd64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:{{ .Version }}-amd64'
       - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:latest-amd64'
     build_flag_templates:
       - --pull
@@ -42,7 +43,7 @@ dockers:
       - --label=org.opencontainers.image.created={{.Date}}
       - --label=org.opencontainers.image.name={{.ProjectName}}
       - --label=org.opencontainers.image.revision={{.FullCommit}}
-      - --label=org.opencontainers.image.version={{.Env.MANIFEST_VERSION}}
+      - --label=org.opencontainers.image.version={{.Version}}
       - --label=org.opencontainers.image.source={{.GitURL}}
       - --label=org.opencontainers.image.licenses=Apache-2.0
       - --build-arg=DIST_NAME=nrdot-collector-k8s
@@ -51,7 +52,7 @@ dockers:
     goarch: arm64
     dockerfile: Dockerfile
     image_templates:
-      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:{{ .Env.MANIFEST_VERSION }}-arm64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:{{ .Version }}-arm64'
       - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:latest-arm64'
     build_flag_templates:
       - --pull
@@ -59,16 +60,16 @@ dockers:
       - --label=org.opencontainers.image.created={{.Date}}
       - --label=org.opencontainers.image.name={{.ProjectName}}
       - --label=org.opencontainers.image.revision={{.FullCommit}}
-      - --label=org.opencontainers.image.version={{.Env.MANIFEST_VERSION}}
+      - --label=org.opencontainers.image.version={{.Version}}
       - --label=org.opencontainers.image.source={{.GitURL}}
       - --label=org.opencontainers.image.licenses=Apache-2.0
       - --build-arg=DIST_NAME=nrdot-collector-k8s
     use: buildx
 docker_manifests:
-  - name_template: '{{ .Env.REGISTRY }}/nrdot-collector-k8s:{{ .Env.MANIFEST_VERSION }}'
+  - name_template: '{{ .Env.REGISTRY }}/nrdot-collector-k8s:{{ .Version }}'
     image_templates:
-      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:{{ .Env.MANIFEST_VERSION }}-amd64'
-      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:{{ .Env.MANIFEST_VERSION }}-arm64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:{{ .Version }}-amd64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:{{ .Version }}-arm64'
   - name_template: '{{ .Env.REGISTRY }}/nrdot-collector-k8s:latest'
     image_templates:
       - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:latest-amd64'

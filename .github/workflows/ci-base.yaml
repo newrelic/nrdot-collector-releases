@@ -213,7 +213,28 @@ jobs:
         id: get_manifest_version
         run: |
           version=$(./scripts/get-version.sh)
-          echo "version=$version" >> $GITHUB_OUTPUT
+          echo "Manifest version: $version"
+          
+          if git rev-parse "$version" >/dev/null 2>&1; then
+            # Increment patch version
+            if [[ $version =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)(.*)$ ]]; then
+              prefix="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}."
+              patch="${BASH_REMATCH[3]}"
+              suffix="${BASH_REMATCH[4]}"
+              new_patch=$((patch + 1))
+              version_with_inc_patch="${prefix}${new_patch}${suffix}"
+              
+              echo "Remote tag $version already exist - tagging locally with $version_with_inc_patch to build interim artifacts"
+              git tag "$version_with_inc_patch"
+            else
+              echo "❌ Unable to parse version format: $version"
+              exit 1
+            fi
+          else
+            echo "Remote tag $version does not exist - tagging locally with $version to build releasable artifacts"
+            git tag "$version"
+          fi
+          
 
       - name: Build binaries & packages with GoReleaser
         if: inputs.publish || steps.cache-goreleaser.outputs.cache-hit != 'true'
@@ -224,7 +245,6 @@ jobs:
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
           GPG_KEY_PATH: ${{ steps.write_gpg_to_path.outputs.gpg_key_path }}
           REGISTRY: "${{ env.registry }}"
-          MANIFEST_VERSION: "${{ steps.get_manifest_version.outputs.version }}"
         with:
           distribution: goreleaser
           version: "2.11.2"

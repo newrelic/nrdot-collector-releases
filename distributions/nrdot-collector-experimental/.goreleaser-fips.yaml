@@ -36,9 +36,10 @@ builds:
           - CC=aarch64-linux-gnu-gcc
           - CXX=aarch64-linux-gnu-g++
 archives:
-  - format: binary
+  - formats:
+      - binary
 snapshot:
-  version_template: '{{ incpatch .Env.MANIFEST_VERSION }}-SNAPSHOT-{{.ShortCommit}}'
+  version_template: '{{ incpatch .Version }}-SNAPSHOT-{{.ShortCommit}}'
 checksum:
   name_template: '{{ .ArtifactName }}.sum'
   algorithm: sha256
@@ -48,14 +49,14 @@ dockers:
     goarch: amd64
     dockerfile: Dockerfile
     image_templates:
-      - '{{ .Env.REGISTRY }}/nrdot-collector-experimental:{{ .Env.MANIFEST_VERSION }}-fips-amd64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-experimental:{{ .Version }}-fips-amd64'
     build_flag_templates:
       - --pull
       - --platform=linux/amd64
       - --label=org.opencontainers.image.created={{.Date}}
       - --label=org.opencontainers.image.name={{.ProjectName}}
       - --label=org.opencontainers.image.revision={{.FullCommit}}
-      - --label=org.opencontainers.image.version={{.Env.MANIFEST_VERSION}}
+      - --label=org.opencontainers.image.version={{.Version}}
       - --label=org.opencontainers.image.source={{.GitURL}}
       - --label=org.opencontainers.image.licenses=Apache-2.0
       - --build-arg=DIST_NAME=nrdot-collector-experimental-fips
@@ -64,22 +65,22 @@ dockers:
     goarch: arm64
     dockerfile: Dockerfile
     image_templates:
-      - '{{ .Env.REGISTRY }}/nrdot-collector-experimental:{{ .Env.MANIFEST_VERSION }}-fips-arm64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-experimental:{{ .Version }}-fips-arm64'
     build_flag_templates:
       - --pull
       - --platform=linux/arm64
       - --label=org.opencontainers.image.created={{.Date}}
       - --label=org.opencontainers.image.name={{.ProjectName}}
       - --label=org.opencontainers.image.revision={{.FullCommit}}
-      - --label=org.opencontainers.image.version={{.Env.MANIFEST_VERSION}}
+      - --label=org.opencontainers.image.version={{.Version}}
       - --label=org.opencontainers.image.source={{.GitURL}}
       - --label=org.opencontainers.image.licenses=Apache-2.0
       - --build-arg=DIST_NAME=nrdot-collector-experimental-fips
     use: buildx
 docker_manifests:
-  - name_template: '{{ .Env.REGISTRY }}/nrdot-collector-experimental:{{ .Env.MANIFEST_VERSION }}-fips'
+  - name_template: '{{ .Env.REGISTRY }}/nrdot-collector-experimental:{{ .Version }}-fips'
     image_templates:
-      - '{{ .Env.REGISTRY }}/nrdot-collector-experimental:{{ .Env.MANIFEST_VERSION }}-fips-amd64'
-      - '{{ .Env.REGISTRY }}/nrdot-collector-experimental:{{ .Env.MANIFEST_VERSION }}-fips-arm64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-experimental:{{ .Version }}-fips-amd64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-experimental:{{ .Version }}-fips-arm64'
 changelog:
   disable: "true"
