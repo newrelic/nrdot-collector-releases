@@ -69,7 +69,7 @@ func Generate(distFlag string, fips bool) config.Project {
 		Version:         2,
 		Changelog:       config.Changelog{Disable: "true"},
 		Snapshot: config.Snapshot{
-			VersionTemplate: "{{ .Version }}-SNAPSHOT-{{.ShortCommit}}",
+			VersionTemplate: "{{ incpatch .Version }}-SNAPSHOT-{{.ShortCommit}}",
 		},
 		Blobs: Blobs(dist),
 		Release: config.Release{

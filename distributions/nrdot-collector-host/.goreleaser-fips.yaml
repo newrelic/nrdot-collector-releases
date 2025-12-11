@@ -39,7 +39,7 @@ archives:
   - formats:
       - binary
 snapshot:
-  version_template: '{{ .Version }}-SNAPSHOT-{{.ShortCommit}}'
+  version_template: '{{ incpatch .Version }}-SNAPSHOT-{{.ShortCommit}}'
 checksum:
   disable: true
 dockers:

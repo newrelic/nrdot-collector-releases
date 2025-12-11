@@ -213,26 +213,13 @@ jobs:
         run: |
           version=$(./scripts/get-version.sh)
           echo "Manifest version: $version"
-
-          if [ "${{ inputs.publish }}" = "true" ] && ! git rev-parse "$version" >/dev/null 2>&1; then
-            echo "Planning to release artifacts: Tagging locally with $version"
-            git tag "$version"
+          
+          if git rev-parse "$version" >/dev/null 2>&1; then
+            echo "Tag $version already exists, skipping tag creation"
           else
-            # Increment patch version
-            if [[ $version =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)(.*)$ ]]; then
-              prefix="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}."
-              patch="${BASH_REMATCH[3]}"
-              suffix="${BASH_REMATCH[4]}"
-              new_patch=$((patch + 1))
-              version_with_inc_patch="${prefix}${new_patch}${suffix}"
-              
-              echo "Tagging locally with $version_with_inc_patch to build interim artifacts"
-              git tag "$version_with_inc_patch"
-            else
-              echo "❌ Unable to parse version format: $version"
-              exit 1
-            fi
-          fi 
+            echo "Tagging locally with $version to force goreleaser to use correct version in artifact names"
+            git tag "$version"
+          fi
 
       - name: Build binaries & packages with GoReleaser
         if: inputs.publish || steps.cache-goreleaser.outputs.cache-hit != 'true'

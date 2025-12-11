@@ -31,7 +31,7 @@ archives:
         formats:
           - zip
 snapshot:
-  version_template: '{{ .Version }}-SNAPSHOT-{{.ShortCommit}}'
+  version_template: '{{ incpatch .Version }}-SNAPSHOT-{{.ShortCommit}}'
 checksum:
   name_template: '{{ .ArtifactName }}.sum'
   algorithm: sha256
