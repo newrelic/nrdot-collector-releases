@@ -209,8 +209,7 @@ jobs:
             distributions/${{ inputs.distribution }}/dist
           key: ${{ steps.generate_binary_key.outputs.binary_key }}
 
-      - name: Get manifest version
-        id: get_manifest_version
+      - name: Configure artifact version
         run: |
           version=$(./scripts/get-version.sh)
           echo "Manifest version: $version"
