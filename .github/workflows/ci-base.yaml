@@ -209,7 +209,7 @@ jobs:
             distributions/${{ inputs.distribution }}/dist
           key: ${{ steps.generate_binary_key.outputs.binary_key }}
 
-      - name: Configure artifact version
+      - name: Force artifact version via git tag
         run: |
           version=$(./scripts/get-version.sh)
           echo "Manifest version: $version"
@@ -219,7 +219,7 @@ jobs:
               echo "❌ Release tag $version already exists. Aborting publish."
               exit 1
             else
-              echo "Remote tag $version does not exist - tagging locally with $version to build releasable artifacts"
+              echo "Planning to publish: Tagging locally with $version to build publishable artifacts"
               git tag "$version"
             fi
           else
@@ -231,7 +231,7 @@ jobs:
               new_patch=$((patch + 1))
               version_with_inc_patch="${prefix}${new_patch}${suffix}"
               
-              echo "Remote tag $version already exist - tagging locally with $version_with_inc_patch to build interim artifacts"
+              echo "Not publishing: Tagging locally with $version_with_inc_patch to build interim artifacts"
               git tag "$version_with_inc_patch"
             else
               echo "❌ Unable to parse version format: $version"
