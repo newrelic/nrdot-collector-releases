@@ -21,12 +21,13 @@ builds:
     env:
       - CGO_ENABLED=0
       - GOEXPERIMENT=
+archives:
+  - formats:
+      - binary
 snapshot:
   version_template: '{{ incpatch .Version }}-SNAPSHOT-{{.ShortCommit}}'
 checksum:
-  name_template: '{{ .ArtifactName }}.sum'
-  algorithm: sha256
-  split: true
+  disable: true
 dockers:
   - goos: linux
     goarch: amd64
@@ -73,15 +74,3 @@ docker_manifests:
       - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:latest-arm64'
 changelog:
   disable: "true"
-signs:
-  - args:
-      - --batch
-      - -u
-      - '{{ .Env.GPG_FINGERPRINT }}'
-      - --output
-      - ${signature}
-      - --detach-sign
-      - --armor
-      - ${artifact}
-    signature: ${artifact}.asc
-    artifacts: all

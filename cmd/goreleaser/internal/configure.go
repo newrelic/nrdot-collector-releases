@@ -34,14 +34,17 @@ const (
 )
 
 type Distribution struct {
-	BaseName      string
-	FullName      string // dist or dist-fips
-	Fips          bool
-	Goos          []string
-	IgnoredBuilds []config.IgnoredBuild
-	IncludeConfig bool
-	SkipBinaries  bool
-	SkipArchives  bool
+	BaseName                string
+	FullName                string // dist or dist-fips
+	Fips                    bool
+	Goos                    []string
+	IgnoredBuilds           []config.IgnoredBuild
+	IncludeConfig           bool
+	SkipPackages            bool
+	SkipArchives            bool
+	SkipUploadToBlobStorage bool
+	SkipChecksums           bool
+	SkipSigning             bool
 }
 
 var (
@@ -55,18 +58,14 @@ func Generate(distFlag string, fips bool) config.Project {
 	dist := NewDistribution(distFlag, fips)
 
 	return config.Project{
-		ProjectName: projectName,
-		Checksum: config.Checksum{
-			NameTemplate: "{{ .ArtifactName }}.sum",
-			Split:        true,
-			Algorithm:    "sha256",
-		},
+		ProjectName:     projectName,
+		Checksum:        Checksum(dist),
 		Builds:          Builds(dist),
 		Archives:        Archives(dist),
 		NFPMs:           Packages(dist),
 		Dockers:         DockerImages(dist),
 		DockerManifests: DockerManifests(dist),
-		Signs:           Sign(),
+		Signs:           Signs(dist),
 		Version:         2,
 		Changelog:       config.Changelog{Disable: "true"},
 		Snapshot: config.Snapshot{
@@ -97,34 +96,48 @@ func NewDistribution(baseDist string, fips bool) Distribution {
 		IgnoredBuilds: []config.IgnoredBuild{
 			{Goos: "windows", Goarch: "arm64"},
 		},
-		IncludeConfig: true,
-		SkipBinaries:  false,
-		SkipArchives:  false,
+		IncludeConfig:           true,
+		SkipUploadToBlobStorage: false,
+		SkipPackages:            false,
+		SkipArchives:            false,
+		SkipSigning:             false,
+		SkipChecksums:           false,
 	}
 
-	if baseDist == K8sDistro {
+	if isNoConfigDistro(baseDist) {
 		dist.IncludeConfig = false
 	}
 
-	if baseDist == K8sDistro || fips {
+	if isImageOnlyDistro(baseDist, fips) {
 		dist.Goos = []string{"linux"}
 		dist.IgnoredBuilds = nil
-		dist.SkipBinaries = true
+		dist.SkipPackages = true
 		dist.SkipArchives = true
+		dist.SkipUploadToBlobStorage = true
+		dist.SkipSigning = true
+		dist.SkipChecksums = true
 	}
 
 	if baseDist == ExperimentalDistro {
 		dist.Goos = []string{"linux"}
 		dist.IgnoredBuilds = nil
-		dist.IncludeConfig = false
-		dist.SkipBinaries = true
+		dist.SkipPackages = true
+		dist.SkipUploadToBlobStorage = true
 	}
 
 	return dist
 }
 
+func isNoConfigDistro(dist string) bool {
+	return dist == K8sDistro || dist == ExperimentalDistro
+}
+
+func isImageOnlyDistro(dist string, fips bool) bool {
+	return dist == K8sDistro || fips
+}
+
 func Blobs(dist Distribution) []config.Blob {
-	if dist.SkipBinaries {
+	if dist.SkipUploadToBlobStorage {
 		return nil
 	}
 
@@ -209,7 +222,12 @@ func Build(dist Distribution) config.Build {
 
 func Archives(dist Distribution) []config.Archive {
 	if dist.SkipArchives {
-		return nil
+		// https://goreleaser.com/customization/archive/#do-not-archive
+		return []config.Archive{
+			{
+				Formats: []string{"binary"},
+			},
+		}
 	}
 
 	return []config.Archive{
@@ -243,7 +261,7 @@ func Archive(dist Distribution) config.Archive {
 }
 
 func Packages(dist Distribution) []config.NFPM {
-	if dist.SkipBinaries {
+	if dist.SkipPackages {
 		return nil
 	}
 
@@ -411,21 +429,42 @@ func DockerManifest(version string, dist Distribution) config.DockerManifest {
 	}
 }
 
-func Sign() []config.Sign {
+func Checksum(dist Distribution) config.Checksum {
+	if dist.SkipChecksums {
+		return config.Checksum{
+			Disable: true,
+		}
+	}
+	return config.Checksum{
+		NameTemplate: "{{ .ArtifactName }}.sum",
+		Split:        true,
+		Algorithm:    "sha256",
+	}
+}
+
+func Signs(dist Distribution) []config.Sign {
+	if dist.SkipSigning {
+		return nil
+	}
+
 	return []config.Sign{
-		{
-			Artifacts: "all",
-			Signature: "${artifact}.asc",
-			Args: []string{
-				"--batch",
-				"-u",
-				"{{ .Env.GPG_FINGERPRINT }}",
-				"--output",
-				"${signature}",
-				"--detach-sign",
-				"--armor",
-				"${artifact}",
-			},
+		SignAllArtifacts(),
+	}
+}
+
+func SignAllArtifacts() config.Sign {
+	return config.Sign{
+		Artifacts: "all",
+		Signature: "${artifact}.asc",
+		Args: []string{
+			"--batch",
+			"-u",
+			"{{ .Env.GPG_FINGERPRINT }}",
+			"--output",
+			"${signature}",
+			"--detach-sign",
+			"--armor",
+			"${artifact}",
 		},
 	}
 }

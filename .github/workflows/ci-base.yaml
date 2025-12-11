@@ -209,6 +209,18 @@ jobs:
             distributions/${{ inputs.distribution }}/dist
           key: ${{ steps.generate_binary_key.outputs.binary_key }}
 
+      - name: Force artifact version via git tag
+        run: |
+          version=$(./scripts/get-version.sh)
+          echo "Manifest version: $version"
+          
+          if git rev-parse "$version" >/dev/null 2>&1; then
+            echo "Tag $version already exists, skipping tag creation"
+          else
+            echo "Tagging locally with $version to force goreleaser to use correct version in artifact names"
+            git tag "$version"
+          fi
+
       - name: Build binaries & packages with GoReleaser
         if: inputs.publish || steps.cache-goreleaser.outputs.cache-hit != 'true'
         id: goreleaser
