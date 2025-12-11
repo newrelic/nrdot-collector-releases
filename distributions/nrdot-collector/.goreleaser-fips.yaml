@@ -41,9 +41,7 @@ archives:
 snapshot:
   version_template: '{{ .Version }}-SNAPSHOT-{{.ShortCommit}}'
 checksum:
-  name_template: '{{ .ArtifactName }}.sum'
-  algorithm: sha256
-  split: true
+  disable: true
 dockers:
   - goos: linux
     goarch: amd64
