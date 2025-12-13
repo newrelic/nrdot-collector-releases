@@ -19,6 +19,7 @@ jobs:
       matrix:
         image:
           - nrdot-collector
+          - nrdot-collector-experimental
           - nrdot-collector-host
           - nrdot-collector-k8s
     steps:
