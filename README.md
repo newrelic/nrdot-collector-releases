@@ -11,6 +11,7 @@ Generated assets are available in the corresponding Github release page and as d
 - [nrdot-collector-host](./distributions/nrdot-collector-host/): Host monitoring
 - [nrdot-collector-k8s](./distributions/nrdot-collector-k8s/): k8s cluster and resource monitoring
 - [nrdot-collector](./distributions/nrdot-collector): Gateway capabilities and host monitoring
+- [nrdot-collector-experimental](./distributions/nrdot-collector-experimental): Experimental integrations
 
 We also provide [FIPS-compliant docker images](../fips/README.md).
 
