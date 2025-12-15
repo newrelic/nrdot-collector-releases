@@ -19,35 +19,40 @@ GO_LICENCE_DETECTOR_CONFIG   := $(SRC_ROOT)/internal/assets/license/rules.json
 DISTRO ?= nrdot-collector-host
 ALL_DISTROS = nrdot-collector-host nrdot-collector-k8s nrdot-collector nrdot-collector-experimental
 
+
 .PHONY: ci
-ci: pre-sourcegen-check-$(DISTRO) generate-sources-$(DISTRO) generate-sources-$(DISTRO)-fips post-sourcegen-check-$(DISTRO)
+ci: pre-sourcegen-check generate-sources generate-sources-fips post-sourcegen-check
 
-.PHONY: pre-sourcegen-check-$(DISTRO)
-pre-sourcegen-check-$(DISTRO): ensure-goreleaser-up-to-date-$(DISTRO) version-check
 
-.PHONY: post-sourcegen-check-$(DISTRO)
-post-sourcegen-check-$(DISTRO): licenses-check-$(DISTRO)
+.PHONY: pre-sourcegen-check
+pre-sourcegen-check: ensure-goreleaser-up-to-date version-check
 
-.PHONY: generate-sources-$(DISTRO)
-generate-sources-$(DISTRO): go ocb
+
+.PHONY: post-sourcegen-check
+post-sourcegen-check: licenses-check
+
+
+.PHONY: generate-sources
+generate-sources: go ocb
 	@./scripts/build.sh -d "$(DISTRO)" -b ${OTELCOL_BUILDER}
 
-.PHONY: generate-sources-$(DISTRO)-fips
-generate-sources-$(DISTRO)-fips: go ocb
+
+.PHONY: generate-sources-fips
+generate-sources-fips: go ocb
 	@./scripts/build.sh -d "$(DISTRO)" -b ${OTELCOL_BUILDER} -f true
 
-.PHONY: generate-goreleaser
-generate-goreleaser:
+.PHONY: generate-goreleaser_all
+generate-goreleaser_all:
 	@for d in $(ALL_DISTROS); do \
-		make generate-goreleaser-$$d DISTRO=$$d; \
+		make generate-goreleaser DISTRO=$$d; \
 	done
 
-.PHONY: generate-goreleaser-$(DISTRO)
-generate-goreleaser-$(DISTRO): go
+.PHONY: generate-goreleaser
+generate-goreleaser: go
 	@./scripts/generate-goreleaser.sh -d "$(DISTRO)" -g ${GO}
 
-.PHONY: ensure-goreleaser-up-to-date-$(DISTRO)
-ensure-goreleaser-up-to-date-$(DISTRO): generate-goreleaser-$(DISTRO)
+.PHONY: ensure-goreleaser-up-to-date
+ensure-goreleaser-up-to-date: generate-goreleaser
 	@{ \
 		git diff -s --exit-code distributions/*/.goreleaser*.yaml || \
 		(echo "📋 Check failed: The goreleaser templates have changed but the .goreleaser.yamls haven't. Run 'make generate-goreleaser' and update your PR." && exit 1) \
@@ -163,19 +168,20 @@ NOTICE_OUTPUT?=THIRD_PARTY_NOTICES.md
 
 
 
-.PHONY: licenses
-licenses:
+.PHONY: licenses_all
+licenses_all:
 	@for d in $(ALL_DISTROS); do \
-		make licenses-$$d DISTRO=$$d; \
+		make licenses DISTRO=$$d; \
 	done
 
-.PHONY: licenses-$(DISTRO)
-licenses-$(DISTRO): go $(GO_LICENCE_DETECTOR)
-	@{ if [ ! -d "distributions/$(DISTRO)/_build" ]; then $(MAKE) generate-sources-$(DISTRO); fi }
+.PHONY: licenses
+licenses: go $(GO_LICENCE_DETECTOR)
+	@{ if [ ! -d "distributions/$(DISTRO)/_build" ]; then $(MAKE) generate-sources; fi }
 	@./scripts/licenses.sh -d "$(DISTRO)" -b ${GO_LICENCE_DETECTOR} -n ${NOTICE_OUTPUT} -g ${GO}
 
-.PHONY: licenses-check-$(DISTRO)
-licenses-check-$(DISTRO): licenses-$(DISTRO)
+
+.PHONY: licenses-check
+licenses-check: licenses-check
 	@git diff --name-only | grep -q $(NOTICE_OUTPUT) \
 		&& { \
 			echo "📜 Third party notices out of date, please run \"make licenses\" and commit the changes in this PR.";\

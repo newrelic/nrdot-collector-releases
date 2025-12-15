@@ -51,7 +51,7 @@ jobs:
             echo "output=${output}" >> $GITHUB_OUTPUT
 
             # Generate third-party licenses
-            make licenses
+            make licenses_all
 
             # Check for unstaged changes
             if git diff --quiet; then
