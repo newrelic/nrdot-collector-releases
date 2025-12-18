@@ -288,37 +288,3 @@ jobs:
           api_key: ${{ secrets.nr_api_key }}
           license_key: ${{ secrets.nr_ingest_key }}
           region: "US"
-
-  terraform-destroy:
-    name: Terraform Destroy
-    needs: [ setup, e2e-tests ]
-    if: ${{ inputs.execute_destroy && always() }}
-    runs-on: ubuntu-latest
-    env:
-      TF_INPUT: "false"
-      AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
-      TF_VAR_aws_account_id: ${{ secrets.aws_account_id }}
-      TF_VAR_nr_backend_url: ${{ secrets.nr_backend_url }}
-      TF_VAR_nr_ingest_key: ${{ secrets.nr_ingest_key }}
-      TF_VAR_distro: ${{ inputs.distro }}
-      TF_VAR_fips: ${{ inputs.fips }}
-      TF_VAR_image_tag: ${{ needs.setup.outputs.image-tag }}
-      TF_VAR_k8s_namespace_prefix: ${{ inputs.workspace_prefix }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.ref || github.sha }}
-
-      - name: Terraform Setup & Workspace
-        uses: ./.github/actions/terraform-setup
-        with:
-          terraform_version: 1.9.8
-          aws_account_id: ${{ secrets.aws_account_id }}
-          working_directory: ./test/terraform/nightly
-          workspace: ${{ needs.setup.outputs.workspace }}
-
-      - name: Terraform Destroy
-        run: terraform destroy -auto-approve
-        working-directory: ./test/terraform/nightly
