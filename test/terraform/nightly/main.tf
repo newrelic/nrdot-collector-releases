@@ -21,7 +21,7 @@ data "aws_ecr_repository" "ecr_repo" {
 }
 
 resource "helm_release" "ci_e2e_nightly_nr_backend" {
-  count = local.chart_name == "nr_backend" ? 1 : 0
+  count = local.chart_name == "nr_backend" && var.is_legacy_test ? 1 : 0
   name  = "${local.test_env_name}-nr-backend-${var.distro}"
   chart = "../../charts/nr_backend"
 
@@ -71,7 +71,7 @@ resource "helm_release" "ci_e2e_nightly_nr_backend" {
 }
 
 resource "helm_release" "ci_e2e_nightly_nr_k8s_otel_collector" {
-  count      = local.chart_name == "newrelic/nr-k8s-otel-collector" ? 1 : 0
+  count      = local.chart_name == "newrelic/nr-k8s-otel-collector" && var.is_legacy_test ? 1 : 0
   name       = "${local.test_env_name}-nr-k8s-otel-${var.distro}"
   repository = "https://helm-charts.newrelic.com"
   chart      = "nr-k8s-otel-collector"
@@ -131,4 +131,5 @@ module "ci_e2e_ec2" {
   vpc_id              = data.aws_eks_cluster.eks_cluster.vpc_config[0].vpc_id
   deploy_id           = random_string.deploy_id.result
   permission_boundary = local.required_permissions_boundary_arn_for_new_roles
+  test_key            = var.test_key
 }

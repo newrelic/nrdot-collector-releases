@@ -1,4 +1,4 @@
-description: nrdot-collector-k8s E2E Local Test
+description: nrdot-collector-k8s E2E Nightly Test
 
 # can't easily force usage of default 'testKey' as OTEL_RESOURCE_ATTRIBUTES is already used by chart
 custom_test_key: k8s.cluster.name
@@ -6,8 +6,6 @@ custom_test_key: k8s.cluster.name
 dependencies:
   # renovatebot
   newrelic/nr-k8s-otel-collector: 0.9.6
-
-# scoping is achieved via an implicit attribute `testKey=${SCENARIO_TAG}` expected on all tested telemetry
 scenarios:
   - description: k8s telemetry
     before:

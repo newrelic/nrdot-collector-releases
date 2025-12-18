@@ -1,0 +1,193 @@
+description: nrdot-collector-host E2E Nightly Test (Action-based)
+
+# Scoping is achieved via an implicit attribute `testKey=${SCENARIO_TAG}` expected on all tested telemetry
+
+# YAML anchor for all host metrics NRQL queries (includes EC2 resourcedetection test)
+# The resourcedetection query validates EC2 metadata attachment (harmless for K8s as it checks host.name LIKE 'ip-%')
+.host_metrics_nrqls: &host_metrics_nrqls
+  # All host metrics
+  - query: FROM Metric SELECT max(system.cpu.utilization) as cpu_util_user WHERE state='user'
+    expected_results:
+      - key: cpu_util_user
+        lowerBoundedValue: 0
+  - query: FROM Metric SELECT max(system.cpu.utilization) as cpu_util_idle WHERE state='idle'
+    expected_results:
+      - key: cpu_util_idle
+        lowerBoundedValue: 0
+  - query: FROM Metric SELECT max(system.cpu.utilization) as cpu_util_wait WHERE state='wait'
+    expected_results:
+      - key: cpu_util_wait
+        lowerBoundedValue: 0
+  - query: FROM Metric SELECT max(system.cpu.utilization) as cpu_util_steal WHERE state='steal'
+    expected_results:
+      - key: cpu_util_steal
+        lowerBoundedValue: 0
+  - query: FROM Metric SELECT max(system.disk.io) as disk_io_read WHERE direction='read'
+    expected_results:
+      - key: disk_io_read
+        lowerBoundedValue: 0
+  - query: FROM Metric SELECT max(system.disk.io) as disk_io_write WHERE direction='write'
+    expected_results:
+      - key: disk_io_write
+        lowerBoundedValue: 0
+  - query: FROM Metric SELECT max(system.disk.io_time) as disk_io_time
+    expected_results:
+      - key: disk_io_time
+        lowerBoundedValue: 0
+  - query: FROM Metric SELECT max(system.disk.operation_time) as disk_op_time_read WHERE direction='read'
+    expected_results:
+      - key: disk_op_time_read
+        lowerBoundedValue: 0
+  - query: FROM Metric SELECT max(system.disk.operation_time) as disk_op_time_write WHERE direction='write'
+    expected_results:
+      - key: disk_op_time_write
+        lowerBoundedValue: 0
+  - query: FROM Metric SELECT max(system.disk.operations) as disk_ops_read WHERE direction='read'
+    expected_results:
+      - key: disk_ops_read
+        lowerBoundedValue: 0
+  - query: FROM Metric SELECT max(system.disk.operations) as disk_ops_write WHERE direction='write'
+    expected_results:
+      - key: disk_ops_write
+        lowerBoundedValue: 0
+  - query: FROM Metric SELECT max(system.cpu.load_average.1m) as cpu_load_1m
+    expected_results:
+      - key: cpu_load_1m
+        lowerBoundedValue: 0
+  - query: FROM Metric SELECT max(system.cpu.load_average.5m) as cpu_load_5m
+    expected_results:
+      - key: cpu_load_5m
+        lowerBoundedValue: 0
+  - query: FROM Metric SELECT max(system.cpu.load_average.15m) as cpu_load_15m
+    expected_results:
+      - key: cpu_load_15m
+        lowerBoundedValue: 0
+  - query: FROM Metric SELECT max(system.memory.usage) as mem_usage_cached WHERE state='cached'
+    expected_results:
+      - key: mem_usage_cached
+        lowerBoundedValue: 0
+  - query: FROM Metric SELECT max(system.memory.usage) as mem_usage_free WHERE state='free'
+    expected_results:
+      - key: mem_usage_free
+        lowerBoundedValue: 0
+  - query: FROM Metric SELECT max(system.memory.usage) as mem_usage_slab_reclaim WHERE state='slab_reclaimable'
+    expected_results:
+      - key: mem_usage_slab_reclaim
+        lowerBoundedValue: 0
+  - query: FROM Metric SELECT max(system.memory.usage) as mem_usage_buffered WHERE state='buffered'
+    expected_results:
+      - key: mem_usage_buffered
+        lowerBoundedValue: 0
+  - query: FROM Metric SELECT max(system.memory.usage) as mem_usage_used WHERE state='used'
+    expected_results:
+      - key: mem_usage_used
+        lowerBoundedValue: 0
+  - query: FROM Metric SELECT max(system.memory.utilization) as mem_util_free WHERE state='free'
+    expected_results:
+      - key: mem_util_free
+        lowerBoundedValue: 0
+  - query: FROM Metric SELECT max(system.memory.utilization) as mem_util_used WHERE state='used'
+    expected_results:
+      - key: mem_util_used
+        lowerBoundedValue: 0
+  - query: FROM Metric SELECT max(system.paging.operations) as paging_ops_out WHERE direction='page_out'
+    expected_results:
+      - key: paging_ops_out
+        lowerBoundedValue: 0
+  - query: FROM Metric SELECT max(system.paging.operations) as paging_ops_in WHERE direction='page_in'
+    expected_results:
+      - key: paging_ops_in
+        lowerBoundedValue: 0
+  - query: FROM Metric SELECT max(system.filesystem.inodes.usage) as fs_inodes_free WHERE state='free'
+    expected_results:
+      - key: fs_inodes_free
+        lowerBoundedValue: 0
+  - query: FROM Metric SELECT max(system.filesystem.inodes.usage) as fs_inodes_used WHERE state='used'
+    expected_results:
+      - key: fs_inodes_used
+        lowerBoundedValue: 0
+  - query: FROM Metric SELECT max(system.filesystem.usage) as fs_usage_used WHERE state='used'
+    expected_results:
+      - key: fs_usage_used
+        lowerBoundedValue: 0
+  - query: FROM Metric SELECT max(system.filesystem.usage) as fs_usage_free WHERE state='free'
+    expected_results:
+      - key: fs_usage_free
+        lowerBoundedValue: 0
+  - query: FROM Metric SELECT max(system.filesystem.utilization) as fs_util WHERE type != 'squashfs'
+    expected_results:
+      - key: fs_util
+        lowerBoundedValue: 0
+  - query: FROM Metric SELECT max(system.network.dropped) as net_dropped_rx WHERE direction='receive'
+    expected_results:
+      - key: net_dropped_rx
+        lowerBoundedValue: 0
+  - query: FROM Metric SELECT max(system.network.dropped) as net_dropped_tx WHERE direction='transmit'
+    expected_results:
+      - key: net_dropped_tx
+        lowerBoundedValue: 0
+  - query: FROM Metric SELECT max(system.network.errors) as net_errors_rx WHERE direction='receive'
+    expected_results:
+      - key: net_errors_rx
+        lowerBoundedValue: 0
+  - query: FROM Metric SELECT max(system.network.errors) as net_errors_tx WHERE direction='transmit'
+    expected_results:
+      - key: net_errors_tx
+        lowerBoundedValue: 0
+  - query: FROM Metric SELECT max(system.network.io) as net_io_rx WHERE direction='receive'
+    expected_results:
+      - key: net_io_rx
+        lowerBoundedValue: 0
+  - query: FROM Metric SELECT max(system.network.io) as net_io_tx WHERE direction='transmit'
+    expected_results:
+      - key: net_io_tx
+        lowerBoundedValue: 0
+  - query: FROM Metric SELECT max(system.network.packets) as net_packets_rx WHERE direction='receive'
+    expected_results:
+      - key: net_packets_rx
+        lowerBoundedValue: 0
+  - query: FROM Metric SELECT max(system.network.packets) as net_packets_tx WHERE direction='transmit'
+    expected_results:
+      - key: net_packets_tx
+        lowerBoundedValue: 0
+  # EC2 resourcedetection test
+  - query: FROM Metric SELECT max(system.cpu.utilization) as ec2_resource_detection WHERE host.name LIKE 'ip-%'
+    expected_results:
+      - key: ec2_resource_detection
+        lowerBoundedValue: 0
+
+scenarios:
+  - description: k8s node host metrics
+    before:
+      - kubectl create ns nr-${SCENARIO_TAG}
+      - |
+        helm upgrade --install ${SCENARIO_TAG} ../../../test/charts/nr_backend \
+        --namespace nr-${SCENARIO_TAG} \
+        --set image.tag=${IMAGE_TAG} \
+        --set image.repository=${IMAGE_REPO} \
+        --set image.pullPolicy=Always \
+        --set secrets.nrBackendUrl=${NR_BACKEND_URL} \
+        --set secrets.nrIngestKey=${LICENSE_KEY} \
+        --set testKey=${SCENARIO_TAG} \
+        --set clusterName=${CLUSTER_NAME} \
+        --set demoService.enabled=true
+    after:
+      - kubectl logs -l app=nrdot-collector-daemonset -n nr-${SCENARIO_TAG} --all-containers --prefix=true
+      - kubectl get all -o wide -n nr-${SCENARIO_TAG}
+      - helm uninstall ${SCENARIO_TAG} --namespace nr-${SCENARIO_TAG}
+      - kubectl delete namespace nr-${SCENARIO_TAG}
+    tests:
+      nrqls: *host_metrics_nrqls
+
+  - description: ec2 host metrics and resourcedetection
+    before:
+      - cd ../../../test/terraform/nightly
+      - terraform workspace select ${TF_WORKSPACE} || terraform workspace new ${TF_WORKSPACE}
+      - terraform apply -auto-approve -var="test_key=${SCENARIO_TAG}"
+      - echo "Waiting for EC2 instances to start and report metrics..."
+      - sleep 120
+    after:
+      - cd ../../../test/terraform/nightly
+      - terraform destroy -auto-approve -var="test_key=${SCENARIO_TAG}"
+    tests:
+      nrqls: *host_metrics_nrqls

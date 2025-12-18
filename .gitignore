@@ -30,3 +30,6 @@ test/**/charts/*.tgz
 
 # tmp directory used in act builds
 .tmp
+
+# claude
+settings.local.json
