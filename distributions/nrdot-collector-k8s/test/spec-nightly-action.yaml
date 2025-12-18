@@ -1,13 +1,11 @@
-description: nrdot-collector-k8s E2E Local Test
+description: nrdot-collector-k8s E2E Nightly Test
 
 # can't easily force usage of default 'testKey' as OTEL_RESOURCE_ATTRIBUTES is already used by chart
 custom_test_key: k8s.cluster.name
 
 dependencies:
   # renovatebot
-  newrelic/nr-k8s-otel-collector: 0.9.8
-
-# scoping is achieved via an implicit attribute `testKey=${SCENARIO_TAG}` expected on all tested telemetry
+  newrelic/nr-k8s-otel-collector: 0.9.6
 scenarios:
   - description: k8s telemetry
     before:
@@ -21,8 +19,8 @@ scenarios:
         chart_version=$(yq '.dependencies.newrelic/nr-k8s-otel-collector' ./spec-local.yaml)
         helm upgrade --install ${SCENARIO_TAG} newrelic/nr-k8s-otel-collector \
         --namespace nr-${SCENARIO_TAG} --version ${chart_version} \
-        --set images.collector.tag=${IMAGE_TAG} \
-        --set images.collector.repository=${IMAGE_REPO} \
+        --set image.tag=${IMAGE_TAG} \
+        --set image.repository=${IMAGE_REPO} \
         --set licenseKey=${LICENSE_KEY} \
         --set cluster=${SCENARIO_TAG} \
         --set nrStaging=${isStaging}

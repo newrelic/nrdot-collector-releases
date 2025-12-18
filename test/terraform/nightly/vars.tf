@@ -48,3 +48,15 @@ variable "image_tag" {
   description = "Tag of the nightly docker image"
   type        = string
 }
+
+variable "is_legacy_test" {
+  description = "Whether to deploy helm charts (enabled for Go tests, disabled for action tests)"
+  type        = bool
+  default     = false
+}
+
+variable "test_key" {
+  description = "Test key for scoping queries (used by action-based tests, Go tests use generated pattern)"
+  type        = string
+  default     = ""
+}
