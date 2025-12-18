@@ -38,3 +38,9 @@ variable "collector_version" {
   type        = string
   default     = "nightly"
 }
+
+variable "test_key" {
+  description = "Test key for scoping queries (if empty, uses generated pattern)"
+  type        = string
+  default     = ""
+}
