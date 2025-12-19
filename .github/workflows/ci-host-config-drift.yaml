@@ -17,9 +17,15 @@ jobs:
         with:
           fetch-depth: 0
 
+      # Can only be removed once Agent Control has migrated to use core distro
       - name: Assert nrdot-collector-host invariants
         run: |
           make -f ./distributions/nrdot-collector-host/Makefile assert-config-invariants
+
+      - name: Assert nrdot-collector invariants
+        run: |
+          make -f ./distributions/nrdot-collector/Makefile assert-config-invariants
+
 
   notify-drift:
     needs: host-config-drift
