@@ -4,28 +4,18 @@
 
 This repository assembles various [custom distributions](https://opentelemetry.io/docs/collector/distributions/#custom-distributions) of the [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/) focused on specific use cases and pre-configured to work with NewRelic out-of-the-box.
 
-Generated assets are available in the corresponding Github release page and as docker images published within the [newrelic organization on Docker Hub](https://hub.docker.com/u/newrelic).
+Generated assets are available in the corresponding Github [release page](https://github.com/newrelic/nrdot-collector-releases/releases) and as docker images published within the [newrelic organization on Docker Hub](https://hub.docker.com/u/newrelic).
 
 ### Current list of distributions:
 
-- [nrdot-collector-host](./distributions/nrdot-collector-host/): distribution focused on monitoring host metrics and logs
-- [nrdot-collector-k8s](./distributions/nrdot-collector-k8s/): distribution focused on monitoring a Kubernetes cluster
-- [nrdot-collector](./distributions/nrdot-collector/): comprehensive core distribution with full OTLP gateway capabilities, host monitoring, and Prometheus scraping, replacing `nrdot-collector-host` and `nrdot-collector-k8s` once stable.
-- [nrdot-collector-experimental](./distributions/nrdot-collector-experimental): Experimental integrations
+- [nrdot-collector-host](./distributions/nrdot-collector-host/README.md): distribution focused on monitoring host metrics and logs
+- [nrdot-collector-k8s](./distributions/nrdot-collector-k8s/README.md): distribution focused on monitoring a Kubernetes cluster
+- [nrdot-collector](./distributions/nrdot-collector/README.md): comprehensive core distribution with full OTLP gateway capabilities, host monitoring, and Prometheus scraping, replacing `nrdot-collector-host` and `nrdot-collector-k8s` once stable.
+- [nrdot-collector-experimental](./distributions/nrdot-collector-experimental/README.md): Experimental integrations
 
-We also provide [FIPS-compliant docker images](../fips/README.md).
+We also provide [FIPS-compliant docker images](./fips/README.md).
 
 Please refer to [this README](./distributions/README.md) for documentation on our distributions.
-
-## Distribution Governance
-Our intention is that each distribution we maintain serves a specific use case powering a particular slice of the New Relic experience. This ensures that each distribution is easy to understand, has a small attack surface and can be updated quickly to patch security issues or bugs.
-However, this also means that we need to be deliberate about the components we include in a distribution. Our current
-philosophy is that we will only add a new component to a distribution if
-- it is required to support the use case of the distribution
-- we consider it [essential ](./distributions/core-components.md) for all distributions
-Our goal is to work with customers and internal teams to iteratively create new distributions when a strong enough use case has been developed and the components to support it have been identified.
-
-Please note that while the set of distributions is still limited, we encourage you to also explore the distributions provided by the [OpenTelemetry community](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions). In particular the `contrib` distribution can be helpful as a stopgap solution as it includes all core and contrib components.
 
 ## Support
 
