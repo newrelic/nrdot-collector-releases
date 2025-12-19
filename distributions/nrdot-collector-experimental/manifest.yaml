@@ -53,7 +53,7 @@ providers:
   - gomod: go.opentelemetry.io/collector/confmap/provider/yamlprovider v1.48.0
 # When adding a replace, add a comment before it to document why it's needed and when it can be removed
 replaces:
-### Transitive deps determined via `go mod graph | grep $dep@$dep_replace_version`
+  ### Transitive deps determined via `go mod graph | grep $dep@$dep_replace_version`
   # Why: Fixes CVE-2025-68156
   # Transitive dep of various components and packages
   - github.com/expr-lang/expr v1.17.6 => github.com/expr-lang/expr v1.17.7
