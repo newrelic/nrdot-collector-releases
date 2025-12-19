@@ -8,9 +8,9 @@ Generated assets are available in the corresponding Github [release page](https:
 
 ### Current list of distributions:
 
-- [nrdot-collector-host](./distributions/nrdot-collector-host/README.md): distribution focused on monitoring host metrics and logs
+- [nrdot-collector-host](./distributions/nrdot-collector-host/README.md): distribution focused on monitoring host metrics and logs (deprecated in favor of `nrdot-collector`)
 - [nrdot-collector-k8s](./distributions/nrdot-collector-k8s/README.md): distribution focused on monitoring a Kubernetes cluster
-- [nrdot-collector](./distributions/nrdot-collector/README.md): comprehensive core distribution with full OTLP gateway capabilities, host monitoring, and Prometheus scraping, replacing `nrdot-collector-host` and `nrdot-collector-k8s` once stable.
+- [nrdot-collector](./distributions/nrdot-collector/README.md): comprehensive core distribution with full OTLP gateway capabilities and host monitoring
 - [nrdot-collector-experimental](./distributions/nrdot-collector-experimental/README.md): Experimental integrations
 
 We also provide [FIPS-compliant docker images](./fips/README.md).
