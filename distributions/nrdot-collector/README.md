@@ -3,7 +3,7 @@
 | Status | |
 |-----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Distro    | `nrdot-collector`                                                                                                                                                                                      |
-| Stability | defined by use case, see [below](#use-cases)                                                                                                                                                                                                    |
+| Stability | defined by use case, see ['Use Cases' below](#use-cases)                                                                                                                                                                                                    |
 | Artifacts | [Docker images on DockerHub](https://hub.docker.com/r/newrelic/nrdot-collector)<br> [Linux packages and archives under GitHub Releases](https://github.com/newrelic/nrdot-collector-releases/releases) |
 
 The core NRDOT collector distribution with components for various monitoring needs replacing existing distributions, see [Use Cases](#use-cases).
