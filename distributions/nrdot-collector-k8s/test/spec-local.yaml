@@ -24,8 +24,8 @@ scenarios:
         chart_version=$(yq '.dependencies.newrelic/nr-k8s-otel-collector' ./spec-local.yaml)
         helm upgrade --install ${SCENARIO_TAG} newrelic/nr-k8s-otel-collector \
         --namespace nr-${SCENARIO_TAG} --version ${chart_version} \
-        --set image.tag=${IMAGE_TAG} \
-        --set image.repository=${IMAGE_REPO} \
+        --set images.collector.tag=${IMAGE_TAG} \
+        --set images.collector.repository=${IMAGE_REPO} \
         --set licenseKey=${LICENSE_KEY} \
         --set cluster=${SCENARIO_TAG} \
         --set nrStaging=${isStaging}
