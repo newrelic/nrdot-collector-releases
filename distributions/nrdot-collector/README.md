@@ -6,7 +6,7 @@
 | Stability | defined by use case, see [below](#use-cases)                                                                                                                                                                                                    |
 | Artifacts | [Docker images on DockerHub](https://hub.docker.com/r/newrelic/nrdot-collector)<br> [Linux packages and archives under GitHub Releases](https://github.com/newrelic/nrdot-collector-releases/releases) |
 
-The core NRDOT collector distribution with components for various monitoring needs. Once stable it will replace `nrdot-collector-k8s` and `nrdot-collector-host` as a drop-in replacement. 
+The core NRDOT collector distribution with components for various monitoring needs replacing existing distributions, see [Use Cases](#use-cases).
 
 Note: See [general README](../README.md) for information that applies to all distributions.
 
@@ -14,16 +14,16 @@ Note: See [general README](../README.md) for information that applies to all dis
 
 | Use Case              | Stability | Replaces                  | Documentation |
 |-----------------------|-----------|---------------------------|---------------|
-| Host Monitoring (default)      | `public`  | `nrdot-collector-host`    | [See below](#host-monitoring) |
-| Gateway Mode          | `alpha`   | N/A (new)                 | [See below](#gateway-mode) |
+| Host Monitoring (default)      | `public`  | `nrdot-collector-host`    | [See 'Host Monitoring' below](#host-monitoring) |
+| Gateway Mode          | `alpha`   | N/A (new)                 | [See 'Gateway Mode' below](#gateway-mode) |
 
-While it's technically possible to have a single collector serve multiple use cases at the same time, we generally do not recommend or support this pattern due to the operational complexity that comes with it (configuration, deployment, scaling). Instead we recommend deploying one collector per use case and chain them as necessary. Please note that when we say 'one collector' we refer to a logical service, not a single instance, i.e. you should still employ common scaling practices to keep your architecture resilient.  
+Note: While it's technically possible to have a single collector serve multiple use cases at the same time, we generally do not recommend or support this pattern due to the operational complexity that comes with it (configuration, deployment, scaling, ...). Instead we recommend deploying one collector per use case and chain them as necessary. Please note that when we say 'one collector' we refer to a logical service, not a single instance, i.e. you should still employ common scaling practices to ensure your architecture is resilient.  
  
 ## Host Monitoring
 
 Monitor the host the collector is deployed on via `hostmetricsreceiver` and `filelogreceiver`, and enrich OTLP data with host metadata via the `otlpreceiver` and `resourcedetectionprocessor`.
 
-This is the default use case for `nrdot-collector`.
+This is the default use case for `nrdot-collector`, i.e. the published artifacts set the collector's configuration to the packaged `config.yaml` which enables this use case. Other use cases will provide instructions on how to deploy the collector to override this behavior.
 
 ### Installation
 
