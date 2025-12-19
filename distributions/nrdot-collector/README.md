@@ -3,50 +3,90 @@
 | Status    |                                                                                                                                                                                                             |
 |-----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Distro    | `nrdot-collector`                                                                                                                                                                                      |
-| Stability | `alpha`                                                                                                                                                                                                    |
+| Artifacts | [Docker images on DockerHub](https://hub.docker.com/r/newrelic/nrdot-collector)<br> [Linux packages and archives under GitHub Releases](https://github.com/newrelic/nrdot-collector-releases/releases) |
 
-A distribution of the NRDOT collector focused on
-- monitoring the host the collector is deployed on via `hostmetricsreceiver` and `filelogreceiver`
-- enriching other OTLP data with host metadata via the `otlpreceiver` and `resourcedetectionprocessor`
-- facilitating gateway mode deployments with additional components for centralized telemetry collection and processing
-
-This distribution includes all the capabilities of `nrdot-collector-host` plus additional components to support gateway mode deployments, allowing it to act as a central collection point for telemetry data from multiple sources.
+The core NRDOT collector distribution with components for various monitoring needs. Once stable it will replace `nrdot-collector-k8s` and `nrdot-collector-host` as a drop-in replacement. 
 
 Note: See [general README](../README.md) for information that applies to all distributions.
 
-## Installation
+## Use Cases
+
+| Use Case              | Stability | Replaces                  | Documentation |
+|-----------------------|-----------|---------------------------|---------------|
+| Host Monitoring (default)      | `public`  | `nrdot-collector-host`    | [See below](#host-monitoring) |
+| Kubernetes Monitoring | `public`  | `nrdot-collector-k8s`     | [See below](#kubernetes-monitoring) |
+| Gateway Mode          | `alpha`   | N/A (new)                 | [See below](#gateway-mode) |
+
+While it's technically possible to have a single collector serve multiple use cases at the same time, we generally do not recommend or support this pattern due to the operational complexity that comes with it (configuration, deployment, scaling). Instead we recommend deploying one collector per use case and chain them as necessary. Please note that when we say 'one collector' we refer to a logical service, not a single instance, i.e. you should still employ common scaling practices to keep your architecture resilient. 
+ 
+## Host Monitoring
+
+Monitor the host the collector is deployed on via `hostmetricsreceiver` and `filelogreceiver`, and enrich OTLP data with host metadata via the `otlpreceiver` and `resourcedetectionprocessor`.
+
+This is the default use case for `nrdot-collector`.
+
+### Installation
 
 The following instructions assume you have read and understood the [general installation instructions](../README.md#installation).
 
-### Containerized Environments
-If you're deploying the `nrdot-collector` distribution as a container, make sure to configure the [root_path](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/hostmetricsreceiver/README.md#collecting-host-metrics-from-inside-a-container-linux-only) and mount the host's file system accordingly, otherwise NRDOT will not be able to collect host metrics properly.
-See also [our troubleshooting guide](./TROUBLESHOOTING.md) for more details.
+#### Containerized Environments
+When deploying as a container, configure the [root_path](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/hostmetricsreceiver/README.md#collecting-host-metrics-from-inside-a-container-linux-only) and mount the host's file system accordingly for proper host metrics collection. See [troubleshooting guide](./TROUBLESHOOTING.md) for details.
 
-### Gateway Mode Deployment
-When deploying in gateway mode, the collector acts as a central aggregation point for telemetry data. This mode is particularly useful for:
-- Reducing the number of direct connections to backend services
-- Centralizing telemetry processing and transformation
-- Implementing sampling and filtering policies
-- Buffering and batching telemetry data
+### Configuration
 
-## Configuration
+See [general README](../README.md) for configuration that applies to all distributions.
 
-Note: See [general README](../README.md) for information that applies to all distributions.
-
-### Distribution-specific configuration
+#### Use-case specific configuration
 
 | Environment Variable | Description | Default |
 |---|---|---|
 | `OTEL_RESOURCE_ATTRIBUTES` | Key-value pairs to be used as resource attributes, see [OTel Docs](https://opentelemetry.io/docs/languages/sdk-configuration/general/#otel_resource_attributes) | N/A |
 
 #### Enable process metrics
-Process metrics are disabled by default as they are quite noisy. If you want to enable them, you can do so by reconfiguring the `hostmetricsreceiver`, see also [receiver docs](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/hostmetricsreceiver#getting-started). Note that there is a [processesscraper (`system.processes.*` metrics)](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/hostmetricsreceiver/internal/scraper/processesscraper/documentation.md) and a [processscraper (`process.*` metrics)](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/hostmetricsreceiver/internal/scraper/processscraper/documentation.md) with separate options. An example configuration would look like this:
+Process metrics are disabled by default due to their high cardinality. To enable them, reconfigure the `hostmetricsreceiver` per the [receiver docs](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/hostmetricsreceiver#getting-started). Note the distinction between [processesscraper (`system.processes.*` metrics)](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/hostmetricsreceiver/internal/scraper/processesscraper/documentation.md) and [processscraper (`process.*` metrics)](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/hostmetricsreceiver/internal/scraper/processscraper/documentation.md).
+
+Example configuration:
 ```shell
 newrelic/nrdot-collector --config /etc/nrdot-collector/config.yaml \
 --config='yaml:receivers::hostmetrics::scrapers::processes: ' \
 --config='yaml:receivers::hostmetrics::scrapers::process: { metrics: { process.cpu.utilization: { enabled: true }, process.cpu.time: { enabled: false } } }'
 ```
 
+---
+
+## Kubernetes Monitoring
+
+Gather telemetry in Kubernetes environments.
+
+### Installation
+
+The distribution's primary purpose for Kubernetes is to serve as a building block for the [nr-k8s-otel-collector](https://github.com/newrelic/helm-charts/tree/master/charts/nr-k8s-otel-collector) helm chart, which is the recommended installation method.
+
+The helm chart handles all configuration required for smooth operation and drives the New Relic Kubernetes experience, including:
+- Deploying the collector as daemonset and deployment with distinct configurations for node vs cluster-level metrics
+- Setting up necessary permissions via service accounts
+- Integrating [kube-state-metrics](https://github.com/kubernetes/kube-state-metrics) for additional metrics
+
+While the `nrdot-collector` image can be used directly in Kubernetes, we do not provide support for this use case. For helmless installation options, refer to the [chart's helmless installation docs](https://github.com/newrelic/helm-charts/tree/master/charts/nr-k8s-otel-collector#helmless-installation).
+
+---
+
+## Gateway Mode
+
+Centralized telemetry collection and processing for environments with multiple sources.
+
+### Overview
+
+Gateway mode deploys the collector as a central aggregation point for telemetry data. This mode is useful for:
+- Reducing direct connections to backend services
+- Centralizing telemetry processing and transformation
+- Implementing sampling and filtering policies
+- Buffering and batching telemetry data
+
+Gateway mode includes additional components beyond host monitoring capabilities to support centralized collection and processing.
+
+---
+
 ## Troubleshooting
 
-Please refer to our [troubleshooting guide](./TROUBLESHOOTING.md).
+Refer to the [troubleshooting guide](./TROUBLESHOOTING.md).
