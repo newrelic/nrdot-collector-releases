@@ -82,12 +82,12 @@ resource "helm_release" "ci_e2e_nightly_nr_k8s_otel_collector" {
   dependency_update = true
 
   set {
-    name  = "image.repository"
+    name  = "images.collector.repository"
     value = data.aws_ecr_repository.ecr_repo.repository_url
   }
 
   set {
-    name  = "image.tag"
+    name  = "images.collector.tag"
     value = var.image_tag
   }
 
