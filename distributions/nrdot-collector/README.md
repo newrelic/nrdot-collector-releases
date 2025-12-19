@@ -1,8 +1,8 @@
 # nrdot-collector
 
-| Status    |                                                                                                                                                                                                             |
 |-----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Distro    | `nrdot-collector`                                                                                                                                                                                      |
+| Stability | defined by use case, see [below](#use-cases)                                                                                                                                                                                                    |
 | Artifacts | [Docker images on DockerHub](https://hub.docker.com/r/newrelic/nrdot-collector)<br> [Linux packages and archives under GitHub Releases](https://github.com/newrelic/nrdot-collector-releases/releases) |
 
 The core NRDOT collector distribution with components for various monitoring needs. Once stable it will replace `nrdot-collector-k8s` and `nrdot-collector-host` as a drop-in replacement. 
