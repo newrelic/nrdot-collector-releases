@@ -36,10 +36,6 @@ docker run -v /:/hostfs \
 --config 'yaml:receivers::hostmetrics::root_path: /hostfs'
 ```
 
-## Kubernetes Monitoring
-
-As mentioned in the [README](./README.md), the Kubernetes use case is supported by the `nr-k8s-otl-collector` helm chart, so please refere to [its documentation](https://github.com/newrelic/helm-charts/tree/master/charts/nr-k8s-otel-collector).
-
 ## Gateway Mode
 
 ### High memory usage in gateway deployments

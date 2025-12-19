@@ -14,7 +14,6 @@ Note: See [general README](../README.md) for information that applies to all dis
 | Use Case              | Stability | Replaces                  | Documentation |
 |-----------------------|-----------|---------------------------|---------------|
 | Host Monitoring (default)      | `public`  | `nrdot-collector-host`    | [See below](#host-monitoring) |
-| Kubernetes Monitoring | `public`  | `nrdot-collector-k8s`     | [See below](#kubernetes-monitoring) |
 | Gateway Mode          | `alpha`   | N/A (new)                 | [See below](#gateway-mode) |
 
 While it's technically possible to have a single collector serve multiple use cases at the same time, we generally do not recommend or support this pattern due to the operational complexity that comes with it (configuration, deployment, scaling). Instead we recommend deploying one collector per use case and chain them as necessary. Please note that when we say 'one collector' we refer to a logical service, not a single instance, i.e. you should still employ common scaling practices to keep your architecture resilient.  
@@ -51,23 +50,6 @@ newrelic/nrdot-collector --config /etc/nrdot-collector/config.yaml \
 --config='yaml:receivers::hostmetrics::scrapers::processes: ' \
 --config='yaml:receivers::hostmetrics::scrapers::process: { metrics: { process.cpu.utilization: { enabled: true }, process.cpu.time: { enabled: false } } }'
 ```
-
----
-
-## Kubernetes Monitoring
-
-Gather telemetry in Kubernetes environments.
-
-### Installation
-
-The distribution's primary purpose for Kubernetes is to serve as a building block for the [nr-k8s-otel-collector](https://github.com/newrelic/helm-charts/tree/master/charts/nr-k8s-otel-collector) helm chart, which is the recommended installation method.
-
-The helm chart handles all configuration required for smooth operation and drives the New Relic Kubernetes experience, including:
-- Deploying the collector as daemonset and deployment with distinct configurations for node vs cluster-level metrics
-- Setting up necessary permissions via service accounts
-- Integrating [kube-state-metrics](https://github.com/kubernetes/kube-state-metrics) for additional metrics
-
-While the `nrdot-collector` image can be used directly in Kubernetes, we do not provide support for this use case. For helmless installation options, refer to the [chart's helmless installation docs](https://github.com/newrelic/helm-charts/tree/master/charts/nr-k8s-otel-collector#helmless-installation).
 
 ---
 
