@@ -234,7 +234,6 @@ jobs:
     name: E2E Tests
     runs-on: ubuntu-latest
     needs: [setup, terraform-destroy-legacy]
-    if: ${{ hashFiles(format('distributions/{0}/test/spec-nightly-action.yaml', inputs.distro)) != '' }}
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
