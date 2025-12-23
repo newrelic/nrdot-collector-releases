@@ -44,8 +44,13 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
+            {{- if .Values.isLegacyTest }}
             - name: OTEL_RESOURCE_ATTRIBUTES
               value: "testKey={{ .Values.testKey }}-$(KUBE_NODE_NAME)"
+            {{- else }}
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: "testKey={{ .Values.testKey }}"
+            {{- end }}
       {{- if (contains "experimental" .Values.image.repository) }}
       volumes:
         - name: nrdot-collector-minimal-config

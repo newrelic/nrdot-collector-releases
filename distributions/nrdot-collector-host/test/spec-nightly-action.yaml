@@ -168,9 +168,8 @@ scenarios:
         --set image.pullPolicy=Always \
         --set secrets.nrBackendUrl=${NR_BACKEND_URL} \
         --set secrets.nrIngestKey=${LICENSE_KEY} \
-        --set testKey=${SCENARIO_TAG} \
-        --set clusterName=${CLUSTER_NAME} \
-        --set demoService.enabled=true
+        --set testKey=${SCENARIO_TAG} 
+
     after:
       - kubectl logs -l app=nrdot-collector-daemonset -n nr-${SCENARIO_TAG} --all-containers --prefix=true
       - kubectl get all -o wide -n nr-${SCENARIO_TAG}

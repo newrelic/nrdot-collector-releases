@@ -60,14 +60,10 @@ resource "helm_release" "ci_e2e_nightly_nr_backend" {
   }
 
   set {
-    name  = "clusterName"
-    value = data.aws_eks_cluster.eks_cluster.name
-  }
-
-  set {
-    name  = "demoService.enabled"
+    name = "isLegacyTest"
     value = "true"
   }
+
 }
 
 resource "helm_release" "ci_e2e_nightly_nr_k8s_otel_collector" {
