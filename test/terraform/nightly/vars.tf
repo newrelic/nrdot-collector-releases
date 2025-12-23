@@ -9,6 +9,12 @@ variable "aws_region" {
   default     = "us-east-1"
 }
 
+variable "aws_profile" {
+  type        = string
+  description = "AWS profile to use (if set, skips role assumption)"
+  default     = ""
+}
+
 variable "distro" {
   description = "Distro to test during nightly"
   type        = string
