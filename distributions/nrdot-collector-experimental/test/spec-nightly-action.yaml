@@ -1,29 +1,32 @@
-description: nrdot-collector-experimental E2E Nightly Test (Action-based)
+description: nrdot-collector-experimental E2E Nightly Test
 
 # Scoping is achieved via an implicit attribute `testKey=${SCENARIO_TAG}` expected on all tested telemetry
 
 scenarios:
-  - description: k8s node host metrics smoke test
+  - description: smoke test (using system.%)
     before:
       - kubectl create ns nr-${SCENARIO_TAG}
       - |
-        helm upgrade --install ${SCENARIO_TAG} ../../../test/charts/nr_backend \
-        --namespace nr-${SCENARIO_TAG} \
+        kubectl create secret generic 'collector-secrets' --namespace=nr-${SCENARIO_TAG} \
+        --from-literal="nrIngestKey=${LICENSE_KEY}" --from-literal="nrBackendUrl=${NR_BACKEND_URL}" \
+        --from-literal="serviceName=nrdot-collector-experimental-e2e" --from-literal="scenarioTag=${SCENARIO_TAG}"
+      - "helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts || echo 'skipping repo add: open-telemetry repo already exists'"
+      - |
+        chart_version=$(../../../scripts/get-otel-collector-chart-version.sh)
+        helm upgrade --install ${SCENARIO_TAG} open-telemetry/opentelemetry-collector \
+        --namespace nr-${SCENARIO_TAG} --version ${chart_version} \
+        --values ./smoke-collector-values.yaml \
         --set image.tag=${IMAGE_TAG} \
-        --set image.repository=${IMAGE_REPO} \
-        --set image.pullPolicy=Always \
-        --set secrets.nrBackendUrl=${NR_BACKEND_URL} \
-        --set secrets.nrIngestKey=${LICENSE_KEY} \
-        --set testKey=${SCENARIO_TAG} 
+        --set image.repository=${IMAGE_REPO}
     after:
-      - kubectl logs -l app=nrdot-collector-daemonset -n nr-${SCENARIO_TAG} --all-containers --prefix=true
-      - kubectl get all -o wide -n nr-${SCENARIO_TAG}
+      - kubectl logs -l e2eTestLogSelector=nrdot-collector-experimental-e2e -n nr-${SCENARIO_TAG} --all-containers --prefix=true
+      - kubectl get all -o wide
       - helm uninstall ${SCENARIO_TAG} --namespace nr-${SCENARIO_TAG}
       - kubectl delete namespace nr-${SCENARIO_TAG}
     tests:
+      # Tests for existence of signal + specific attributes
       nrqls:
-        # Smoke test: any system metric
-        - query: FROM Metric SELECT count(*) as system_metric_count WHERE metricName LIKE 'system.%'
+        - query: FROM Metric SELECT count(system.%) as system_count
           expected_results:
-            - key: system_metric_count
+            - key: system_count
               lowerBoundedValue: 1
