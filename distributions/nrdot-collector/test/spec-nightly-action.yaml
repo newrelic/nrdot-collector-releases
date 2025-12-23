@@ -1,191 +1,312 @@
-description: nrdot-collector E2E Nightly Test (Action-based)
+description: nrdot-collector E2E Nightly Test
 
 # Scoping is achieved via an implicit attribute `testKey=${SCENARIO_TAG}` expected on all tested telemetry
 
-# YAML anchor for all host metrics NRQL queries (includes EC2 resourcedetection test)
-# The resourcedetection query validates EC2 metadata attachment (harmless for K8s as it checks host.name LIKE 'ip-%')
+# YAML anchors for reusing test queries across scenarios
 .host_metrics_nrqls: &host_metrics_nrqls
-  # All host metrics
-  - query: FROM Metric SELECT max(system.cpu.utilization) as cpu_util_user WHERE state='user'
+  - query: FROM Metric SELECT filter(count(*), state='user') as state_user WHERE metricName = 'system.cpu.utilization'
     expected_results:
-      - key: cpu_util_user
-        lowerBoundedValue: 0
-  - query: FROM Metric SELECT max(system.cpu.utilization) as cpu_util_idle WHERE state='idle'
+      - key: state_user
+        lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), state='idle') as state_idle WHERE metricName = 'system.cpu.utilization'
     expected_results:
-      - key: cpu_util_idle
-        lowerBoundedValue: 0
-  - query: FROM Metric SELECT max(system.cpu.utilization) as cpu_util_wait WHERE state='wait'
+      - key: state_idle
+        lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), state='wait') as state_wait WHERE metricName = 'system.cpu.utilization'
     expected_results:
-      - key: cpu_util_wait
-        lowerBoundedValue: 0
-  - query: FROM Metric SELECT max(system.cpu.utilization) as cpu_util_steal WHERE state='steal'
+      - key: state_wait
+        lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), state='steal') as state_steal WHERE metricName = 'system.cpu.utilization'
     expected_results:
-      - key: cpu_util_steal
-        lowerBoundedValue: 0
-  - query: FROM Metric SELECT max(system.disk.io) as disk_io_read WHERE direction='read'
+      - key: state_steal
+        lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), direction='read') as direction_read WHERE metricName = 'system.disk.io'
     expected_results:
-      - key: disk_io_read
-        lowerBoundedValue: 0
-  - query: FROM Metric SELECT max(system.disk.io) as disk_io_write WHERE direction='write'
+      - key: direction_read
+        lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), direction='write') as direction_write WHERE metricName = 'system.disk.io'
     expected_results:
-      - key: disk_io_write
-        lowerBoundedValue: 0
-  - query: FROM Metric SELECT max(system.disk.io_time) as disk_io_time
+      - key: direction_write
+        lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), direction='read') as direction_read WHERE metricName = 'system.disk.operation_time'
     expected_results:
-      - key: disk_io_time
-        lowerBoundedValue: 0
-  - query: FROM Metric SELECT max(system.disk.operation_time) as disk_op_time_read WHERE direction='read'
+      - key: direction_read
+        lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), direction='write') as direction_write WHERE metricName = 'system.disk.operation_time'
     expected_results:
-      - key: disk_op_time_read
-        lowerBoundedValue: 0
-  - query: FROM Metric SELECT max(system.disk.operation_time) as disk_op_time_write WHERE direction='write'
+      - key: direction_write
+        lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), direction='read') as direction_read WHERE metricName = 'system.disk.operations'
     expected_results:
-      - key: disk_op_time_write
-        lowerBoundedValue: 0
-  - query: FROM Metric SELECT max(system.disk.operations) as disk_ops_read WHERE direction='read'
+      - key: direction_read
+        lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), direction='write') as direction_write WHERE metricName = 'system.disk.operations'
     expected_results:
-      - key: disk_ops_read
-        lowerBoundedValue: 0
-  - query: FROM Metric SELECT max(system.disk.operations) as disk_ops_write WHERE direction='write'
+      - key: direction_write
+        lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), state='cached') as state_cached WHERE metricName = 'system.memory.usage'
     expected_results:
-      - key: disk_ops_write
-        lowerBoundedValue: 0
-  - query: FROM Metric SELECT max(`system.cpu.load_average.1m`) as cpu_load_1m
+      - key: state_cached
+        lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), state='free') as state_free WHERE metricName = 'system.memory.usage'
     expected_results:
-      - key: cpu_load_1m
-        lowerBoundedValue: 0
-  - query: FROM Metric SELECT max(`system.cpu.load_average.5m`) as cpu_load_5m
+      - key: state_free
+        lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), state='slab_reclaimable') as state_slab_reclaimable WHERE metricName = 'system.memory.usage'
     expected_results:
-      - key: cpu_load_5m
-        lowerBoundedValue: 0
-  - query: FROM Metric SELECT max(`system.cpu.load_average.15m`) as cpu_load_15m
+      - key: state_slab_reclaimable
+        lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), state='buffered') as state_buffered WHERE metricName = 'system.memory.usage'
     expected_results:
-      - key: cpu_load_15m
-        lowerBoundedValue: 0
-  - query: FROM Metric SELECT max(system.memory.usage) as mem_usage_cached WHERE state='cached'
+      - key: state_buffered
+        lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), state='used') as state_used WHERE metricName = 'system.memory.usage'
     expected_results:
-      - key: mem_usage_cached
-        lowerBoundedValue: 0
-  - query: FROM Metric SELECT max(system.memory.usage) as mem_usage_free WHERE state='free'
+      - key: state_used
+        lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), state='free') as state_free WHERE metricName = 'system.memory.utilization'
     expected_results:
-      - key: mem_usage_free
-        lowerBoundedValue: 0
-  - query: FROM Metric SELECT max(system.memory.usage) as mem_usage_slab_reclaim WHERE state='slab_reclaimable'
+      - key: state_free
+        lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), state='used') as state_used WHERE metricName = 'system.memory.utilization'
     expected_results:
-      - key: mem_usage_slab_reclaim
-        lowerBoundedValue: 0
-  - query: FROM Metric SELECT max(system.memory.usage) as mem_usage_buffered WHERE state='buffered'
+      - key: state_used
+        lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), direction='page_out') as direction_page_out WHERE metricName = 'system.paging.operations'
     expected_results:
-      - key: mem_usage_buffered
-        lowerBoundedValue: 0
-  - query: FROM Metric SELECT max(system.memory.usage) as mem_usage_used WHERE state='used'
+      - key: direction_page_out
+        lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), direction='page_in') as direction_page_in WHERE metricName = 'system.paging.operations'
     expected_results:
-      - key: mem_usage_used
-        lowerBoundedValue: 0
-  - query: FROM Metric SELECT max(system.memory.utilization) as mem_util_free WHERE state='free'
+      - key: direction_page_in
+        lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), state='free') as state_free WHERE metricName = 'system.filesystem.inodes.usage'
     expected_results:
-      - key: mem_util_free
-        lowerBoundedValue: 0
-  - query: FROM Metric SELECT max(system.memory.utilization) as mem_util_used WHERE state='used'
+      - key: state_free
+        lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), state='used') as state_used WHERE metricName = 'system.filesystem.inodes.usage'
     expected_results:
-      - key: mem_util_used
-        lowerBoundedValue: 0
-  - query: FROM Metric SELECT max(system.paging.operations) as paging_ops_out WHERE direction='page_out'
+      - key: state_used
+        lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), state='used') as state_used WHERE metricName = 'system.filesystem.usage'
     expected_results:
-      - key: paging_ops_out
-        lowerBoundedValue: 0
-  - query: FROM Metric SELECT max(system.paging.operations) as paging_ops_in WHERE direction='page_in'
+      - key: state_used
+        lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), state='free') as state_free WHERE metricName = 'system.filesystem.usage'
     expected_results:
-      - key: paging_ops_in
-        lowerBoundedValue: 0
-  - query: FROM Metric SELECT max(system.filesystem.inodes.usage) as fs_inodes_free WHERE state='free'
+      - key: state_free
+        lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), type != 'squashfs') as type_not_squashfs WHERE metricName = 'system.filesystem.utilization'
     expected_results:
-      - key: fs_inodes_free
-        lowerBoundedValue: 0
-  - query: FROM Metric SELECT max(system.filesystem.inodes.usage) as fs_inodes_used WHERE state='used'
+      - key: type_not_squashfs
+        lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), direction='receive') as direction_receive WHERE metricName = 'system.network.dropped'
     expected_results:
-      - key: fs_inodes_used
-        lowerBoundedValue: 0
-  - query: FROM Metric SELECT max(system.filesystem.usage) as fs_usage_used WHERE state='used'
+      - key: direction_receive
+        lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), direction='transmit') as direction_transmit WHERE metricName = 'system.network.dropped'
     expected_results:
-      - key: fs_usage_used
-        lowerBoundedValue: 0
-  - query: FROM Metric SELECT max(system.filesystem.usage) as fs_usage_free WHERE state='free'
+      - key: direction_transmit
+        lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), direction='receive') as direction_receive WHERE metricName = 'system.network.errors'
     expected_results:
-      - key: fs_usage_free
-        lowerBoundedValue: 0
-  - query: FROM Metric SELECT max(system.filesystem.utilization) as fs_util WHERE type != 'squashfs'
+      - key: direction_receive
+        lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), direction='transmit') as direction_transmit WHERE metricName = 'system.network.errors'
     expected_results:
-      - key: fs_util
-        lowerBoundedValue: 0
-  - query: FROM Metric SELECT max(system.network.dropped) as net_dropped_rx WHERE direction='receive'
+      - key: direction_transmit
+        lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), direction='receive') as direction_receive WHERE metricName = 'system.network.io'
     expected_results:
-      - key: net_dropped_rx
-        lowerBoundedValue: 0
-  - query: FROM Metric SELECT max(system.network.dropped) as net_dropped_tx WHERE direction='transmit'
+      - key: direction_receive
+        lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), direction='transmit') as direction_transmit WHERE metricName = 'system.network.io'
     expected_results:
-      - key: net_dropped_tx
-        lowerBoundedValue: 0
-  - query: FROM Metric SELECT max(system.network.errors) as net_errors_rx WHERE direction='receive'
+      - key: direction_transmit
+        lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), direction='receive') as direction_receive WHERE metricName = 'system.network.packets'
     expected_results:
-      - key: net_errors_rx
-        lowerBoundedValue: 0
-  - query: FROM Metric SELECT max(system.network.errors) as net_errors_tx WHERE direction='transmit'
+      - key: direction_receive
+        lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), direction='transmit') as direction_transmit WHERE metricName = 'system.network.packets'
     expected_results:
-      - key: net_errors_tx
-        lowerBoundedValue: 0
-  - query: FROM Metric SELECT max(system.network.io) as net_io_rx WHERE direction='receive'
+      - key: direction_transmit
+        lowerBoundedValue: 1
+
+.internal_telemetry_nrqls: &internal_telemetry_nrqls
+  # Resource attributes (any signal would work)
+  - query: FROM Log SELECT filter(count(*), service.name is not null) as logs_service_name
     expected_results:
-      - key: net_io_rx
-        lowerBoundedValue: 0
-  - query: FROM Metric SELECT max(system.network.io) as net_io_tx WHERE direction='transmit'
+      - key: logs_service_name
+        lowerBoundedValue: 1
+  - query: FROM Log SELECT filter(count(*), newrelic.collector_telemetry.version is not null) as logs_telemetry_version
     expected_results:
-      - key: net_io_tx
-        lowerBoundedValue: 0
-  - query: FROM Metric SELECT max(system.network.packets) as net_packets_rx WHERE direction='receive'
+      - key: logs_telemetry_version
+        lowerBoundedValue: 1
+  - query: FROM Log SELECT filter(count(*), newrelic.service.type='otel_collector') as logs_service_type
     expected_results:
-      - key: net_packets_rx
-        lowerBoundedValue: 0
-  - query: FROM Metric SELECT max(system.network.packets) as net_packets_tx WHERE direction='transmit'
+        - key: logs_service_type
+          lowerBoundedValue: 1
+  # Logs
+  - query: FROM Log SELECT count(*) as logs_all
     expected_results:
-      - key: net_packets_tx
-        lowerBoundedValue: 0
-  # EC2 resourcedetection test
-  - query: FROM Metric SELECT max(system.cpu.utilization) as ec2_resource_detection WHERE host.name LIKE 'ip-%'
+      - key: logs_all
+        lowerBoundedValue: 1
+  - query: FROM Log SELECT filter(count(*), otelcol.pipeline.id is not null) as logs_pipeline
     expected_results:
-      - key: ec2_resource_detection
-        lowerBoundedValue: 0
+        - key: logs_pipeline
+          lowerBoundedValue: 1
+  - query: FROM Log SELECT filter(count(*), otelcol.signal is not null) as logs_signal
+    expected_results:
+      - key: logs_signal
+        lowerBoundedValue: 1
+  - query: FROM Log SELECT count(*) as logs_attributes WHERE message like 'one or more paths were modified to include their context prefix, please rewrite them accordingly%'
+    expected_results:
+      - key: logs_attributes
+        upperBoundedValue: 0
+  # Spans
+  - query: FROM Span SELECT count(*) as spans_all
+    expected_results:
+      - key: spans_all
+        value: 0 # traces are disabled by default
+  # Process metrics
+  - query: FROM Metric SELECT filter(count(*), service.instance.id is not null) as process_instance_id WHERE metricName like 'otelcol_process_%'
+    expected_results:
+      - key: process_instance_id
+        lowerBoundedValue: 1
+  # Receiver metrics
+  - query: FROM Metric SELECT filter(count(*), receiver is not null) as receiver_receiver WHERE metricName like 'otelcol_receiver_%'
+    expected_results:
+      - key: receiver_receiver
+        lowerBoundedValue: 1
+  # Processor metrics
+  - query: FROM Metric SELECT filter(count(*), processor is not null) as processor_processor WHERE metricName like 'otelcol_processor_%'
+    expected_results:
+      - key: processor_processor
+        lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), otel.signal = 'metrics') as processor_signal_metrics WHERE metricName like 'otelcol_processor_%'
+    expected_results:
+      - key: processor_signal_metrics
+        lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), otel.signal = 'logs') as processor_signal_logs WHERE metricName like 'otelcol_processor_%'
+    expected_results:
+      - key: processor_signal_logs
+        lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), otel.signal = 'traces') as processor_signal_traces WHERE metricName like 'otelcol_processor_%'
+    expected_results:
+      - key: processor_signal_traces
+        lowerBoundedValue: 1
+  # Exporter metrics
+  - query: FROM Metric SELECT filter(count(*), exporter is not null) as exporter_exporter WHERE metricName like 'otelcol_exporter_%'
+    expected_results:
+      - key: exporter_exporter
+        lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), exporter is not null) as queue_exporter WHERE metricName like 'otelcol_exporter_queue_%'
+    expected_results:
+      - key: queue_exporter
+        lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), data_type is not null) as queue_type WHERE metricName like 'otelcol_exporter_queue_%'
+    expected_results:
+      - key: queue_type
+        lowerBoundedValue: 1
+  # Batch processor metrics
+  - query: FROM Metric SELECT filter(count(*), processor is not null) as batch_processor WHERE metricName like 'otelcol_processor_batch_%'
+    expected_results:
+     - key: batch_processor
+       lowerBoundedValue: 1
+  # Http metrics
+  - query: FROM Metric SELECT filter(count(*), server.address is not null) as http_server_address WHERE metricName like 'http.client.request.duration'
+    expected_results:
+      - key: http_server_address
+        lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), server.address is not null) as http_server_address WHERE metricName like 'http.client.request.body.size'
+    expected_results:
+      - key: http_server_address
+        lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), http.response.status_code is not null) as http_code WHERE metricName like 'http.client.request.duration'
+    expected_results:
+    - key: http_code
+      lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), http.response.status_code is not null) as http_code WHERE metricName like 'http.server.request.duration'
+    expected_results:
+    - key: http_code
+      lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), server.port is not null) as http_port WHERE metricName = 'http.server.request.duration'
+    expected_results:
+    - key: http_port
+      lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), rpc.grpc.status_code is not null) as rpc_code WHERE metricName like 'rpc.%.duration'
+    expected_results:
+      - key: rpc_code
+        lowerBoundedValue: 1
 
 scenarios:
   - description: host telemetry
     before:
       - kubectl create ns nr-${SCENARIO_TAG}
       - |
-        helm upgrade --install ${SCENARIO_TAG} ../../../test/charts/nr_backend \
-        --namespace nr-${SCENARIO_TAG} \
+        kubectl create secret generic 'collector-secrets' --namespace=nr-${SCENARIO_TAG} \
+        --from-literal="nrIngestKey=${LICENSE_KEY}" --from-literal="nrBackendUrl=${NR_BACKEND_URL}" \
+        --from-literal="serviceName=nrdot-collector-e2e-host" --from-literal="scenarioTag=${SCENARIO_TAG}"
+      - "helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts || echo 'skipping repo add: open-telemetry repo already exists'"
+      - |
+        chart_version=$(../../../scripts/get-otel-collector-chart-version.sh)
+        helm upgrade --install ${SCENARIO_TAG} open-telemetry/opentelemetry-collector \
+        --namespace nr-${SCENARIO_TAG} --version ${chart_version} \
+        --values ./host-collector-values.yaml \
         --set image.tag=${IMAGE_TAG} \
-        --set image.repository=${IMAGE_REPO} \
-        --set image.pullPolicy=Always \
-        --set secrets.nrBackendUrl=${NR_BACKEND_URL} \
-        --set secrets.nrIngestKey=${LICENSE_KEY} \
-        --set testKey=${SCENARIO_TAG}
+        --set image.repository=${IMAGE_REPO}
     after:
-      - kubectl logs -l app=nrdot-collector-daemonset -n nr-${SCENARIO_TAG} --all-containers --prefix=true
-      - kubectl get all -o wide -n nr-${SCENARIO_TAG}
+      - kubectl logs -l e2eTestLogSelector=nrdot-collector-e2e -n nr-${SCENARIO_TAG} --all-containers --prefix=true
+      - kubectl get all -o wide
       - helm uninstall ${SCENARIO_TAG} --namespace nr-${SCENARIO_TAG}
       - kubectl delete namespace nr-${SCENARIO_TAG}
     tests:
+      # Tests for existence of metrics
+      metrics:
+        - source: "host-expected-metrics.yaml"
+      # Tests for existence of signal + specific attributes
       nrqls: *host_metrics_nrqls
 
-  - description: ec2 host metrics and resourcedetection
+  - description: receiver-based + internal telemetry
     before:
-      # - terraform workspace select ${TF_WORKSPACE} || terraform workspace new ${TF_WORKSPACE}
-      # - terraform apply -auto-approve -var="test_key=${SCENARIO_TAG}"
-      - cd ../../../test/terraform/nightly && terraform plan -var="test_key=${SCENARIO_TAG}"
-      # - echo "Waiting for EC2 instances to start and report metrics..."
-      # - sleep 120
-    # after:
-    #   - cd ../../../test/terraform/nightly
-    #   - terraform destroy -auto-approve -var="test_key=${SCENARIO_TAG}"
-    # tests:
-    #   nrqls: *host_metrics_nrqls
+      - kubectl create ns nr-${SCENARIO_TAG}
+      - cp ../../../examples/internal-telemetry-config.yaml ./relay
+      - kubectl create configmap 'collector-config' --from-file=relay --namespace=nr-${SCENARIO_TAG}
+      - |
+        kubectl create secret generic 'collector-secrets' --namespace=nr-${SCENARIO_TAG} \
+        --from-literal="nrIngestKey=${LICENSE_KEY}" --from-literal="nrBackendUrl=${NR_BACKEND_URL}" \
+        --from-literal="serviceName=nrdot-collector-e2e-internal" --from-literal="scenarioTag=${SCENARIO_TAG}"
+      - "helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts || echo 'skipping repo add: open-telemetry repo already exists'"
+      - |
+        chart_version=$(../../../scripts/get-otel-collector-chart-version.sh)
+        helm upgrade --install ${SCENARIO_TAG} open-telemetry/opentelemetry-collector \
+        --namespace nr-${SCENARIO_TAG} --version ${chart_version} \
+        --values ./internal-collector-values.yaml \
+        --set image.tag=${IMAGE_TAG} \
+        --set image.repository=${IMAGE_REPO}
+    after:
+      - kubectl logs -l e2eTestLogSelector=nrdot-collector-e2e -n nr-${SCENARIO_TAG} --all-containers --prefix=true
+      - kubectl get all -o wide
+      - helm uninstall ${SCENARIO_TAG} --namespace nr-${SCENARIO_TAG}
+      - kubectl delete namespace nr-${SCENARIO_TAG}
+    tests:
+      # Tests for existence of metrics
+      metrics:
+        - source: "internal-expected-metrics.yaml"
+      # Tests for existence of signal + specific attributes
+      nrqls: *internal_telemetry_nrqls
+
+  # EC2 scenario - commented out for now, will be enabled later
+  # - description: ec2 host metrics and resourcedetection
+  #   before:
+  #     - cd ../../../test/terraform/nightly
+  #     - terraform workspace select ${TF_WORKSPACE} || terraform workspace new ${TF_WORKSPACE}
+  #     - terraform apply -auto-approve -var="test_key=${SCENARIO_TAG}"
+  #     - echo "Waiting for EC2 instances to start and report metrics..."
+  #     - sleep 120
+  #   after:
+  #     - cd ../../../test/terraform/nightly
+  #     - terraform destroy -auto-approve -var="test_key=${SCENARIO_TAG}"
+  #   tests:
+  #     nrqls: *host_metrics_nrqls
