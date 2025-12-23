@@ -180,10 +180,9 @@ scenarios:
 
   - description: ec2 host metrics and resourcedetection
     before:
-      - cd ../../../test/terraform/nightly
       # - terraform workspace select ${TF_WORKSPACE} || terraform workspace new ${TF_WORKSPACE}
       # - terraform apply-auto-approve -var="test_key=${SCENARIO_TAG}"
-      - terraform plan -var="test_key=${SCENARIO_TAG}"
+      - cd ../../../test/terraform/nightly && terraform plan -var="test_key=${SCENARIO_TAG}"
       # - echo "Waiting for EC2 instances to start and report metrics..."
       # - sleep 120
     # after:
