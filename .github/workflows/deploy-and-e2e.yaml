@@ -259,11 +259,16 @@ jobs:
           working_directory: ./test/terraform/nightly
           workspace: ${{ needs.setup.outputs.workspace }}
 
-      - name: Configure AWS CLI
+      - name: Assume AWS role
         run: |
-          aws configure set aws_access_key_id ${{ secrets.aws_access_key_id }}
-          aws configure set aws_secret_access_key ${{ secrets.aws_secret_access_key }}
-          aws configure set region us-east-1
+          # Assume the resource-provisioner role to get EKS permissions
+          ROLE_ARN="arn:aws:iam::${{ secrets.aws_account_id }}:role/resource-provisioner"
+          CREDS=$(aws sts assume-role --role-arn "$ROLE_ARN" --role-session-name deploy-and-e2e-${{ github.run_id }}-${{ inputs.distro }}${{ inputs.fips && '-fips' || '' }})
+
+          # Export credentials for subsequent steps
+          echo "AWS_ACCESS_KEY_ID=$(echo $CREDS | jq -r '.Credentials.AccessKeyId')" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=$(echo $CREDS | jq -r '.Credentials.SecretAccessKey')" >> $GITHUB_ENV
+          echo "AWS_SESSION_TOKEN=$(echo $CREDS | jq -r '.Credentials.SessionToken')" >> $GITHUB_ENV
 
       - name: Configure kubectl
         run: |
