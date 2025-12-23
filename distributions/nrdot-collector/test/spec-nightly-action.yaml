@@ -50,15 +50,15 @@ description: nrdot-collector E2E Nightly Test (Action-based)
     expected_results:
       - key: disk_ops_write
         lowerBoundedValue: 0
-  - query: FROM Metric SELECT max(system.cpu.load_average.1m) as cpu_load_1m
+  - query: FROM Metric SELECT max(`system.cpu.load_average.1m`) as cpu_load_1m
     expected_results:
       - key: cpu_load_1m
         lowerBoundedValue: 0
-  - query: FROM Metric SELECT max(system.cpu.load_average.5m) as cpu_load_5m
+  - query: FROM Metric SELECT max(`system.cpu.load_average.5m`) as cpu_load_5m
     expected_results:
       - key: cpu_load_5m
         lowerBoundedValue: 0
-  - query: FROM Metric SELECT max(system.cpu.load_average.15m) as cpu_load_15m
+  - query: FROM Metric SELECT max(`system.cpu.load_average.15m`) as cpu_load_15m
     expected_results:
       - key: cpu_load_15m
         lowerBoundedValue: 0
