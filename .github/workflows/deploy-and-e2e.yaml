@@ -259,16 +259,24 @@ jobs:
           working_directory: ./test/terraform/nightly
           workspace: ${{ needs.setup.outputs.workspace }}
 
-      - name: Assume AWS role
+      - name: Assume AWS role and configure profile
         run: |
           # Assume the resource-provisioner role to get EKS permissions
           ROLE_ARN="arn:aws:iam::${{ secrets.aws_account_id }}:role/resource-provisioner"
           CREDS=$(aws sts assume-role --role-arn "$ROLE_ARN" --role-session-name deploy-and-e2e-${{ github.run_id }}-${{ inputs.distro }}${{ inputs.fips && '-fips' || '' }})
 
-          # Export credentials for subsequent steps
-          echo "AWS_ACCESS_KEY_ID=$(echo $CREDS | jq -r '.Credentials.AccessKeyId')" >> $GITHUB_ENV
-          echo "AWS_SECRET_ACCESS_KEY=$(echo $CREDS | jq -r '.Credentials.SecretAccessKey')" >> $GITHUB_ENV
-          echo "AWS_SESSION_TOKEN=$(echo $CREDS | jq -r '.Credentials.SessionToken')" >> $GITHUB_ENV
+          # Configure AWS profile with assumed role credentials
+          mkdir -p ~/.aws
+          cat >> ~/.aws/credentials << EOF
+          [resource_provisioner]
+          aws_access_key_id = $(echo $CREDS | jq -r '.Credentials.AccessKeyId')
+          aws_secret_access_key = $(echo $CREDS | jq -r '.Credentials.SecretAccessKey')
+          aws_session_token = $(echo $CREDS | jq -r '.Credentials.SessionToken')
+          EOF
+
+          # Set AWS_PROFILE for subsequent steps
+          echo "AWS_PROFILE=resource_provisioner" >> $GITHUB_ENV
+          echo "TF_VAR_aws_profile=resource_provisioner" >> $GITHUB_ENV
 
       - name: Configure kubectl
         run: |
