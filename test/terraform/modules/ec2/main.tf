@@ -141,7 +141,7 @@ resource "aws_instance" "ubuntu" {
               echo 'Configuring Collector'
               echo 'NEW_RELIC_LICENSE_KEY=${var.nr_ingest_key}' >> /etc/${var.collector_distro}/${var.collector_distro}.conf
               testKey='${var.test_key != "" ? var.test_key : "${local.collector_reported_hostname_prefix}-${local.instance_config[count.index].hostname_suffix}"}'
-              echo "OTEL_RESOURCE_ATTRIBUTES='testKey=$$testKey'" >> /etc/${var.collector_distro}/${var.collector_distro}.conf
+              echo "OTEL_RESOURCE_ATTRIBUTES='testKey=$${testKey}'" >> /etc/${var.collector_distro}/${var.collector_distro}.conf
               systemctl reload-or-restart ${var.collector_distro}.service
               sleep 30
               journalctl | grep ${var.collector_distro}
