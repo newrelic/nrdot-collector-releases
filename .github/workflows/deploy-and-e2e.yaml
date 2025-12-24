@@ -274,6 +274,12 @@ jobs:
           aws_session_token = $(echo $CREDS | jq -r '.Credentials.SessionToken')
           EOF
 
+          # Unset base credentials so profile takes precedence
+          # AWS CLI prioritizes env vars over profiles, so we must clear them
+          echo "AWS_ACCESS_KEY_ID=" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=" >> $GITHUB_ENV
+          echo "AWS_SESSION_TOKEN=" >> $GITHUB_ENV
+
           # Set AWS_PROFILE for subsequent steps
           echo "AWS_PROFILE=resource_provisioner" >> $GITHUB_ENV
           echo "TF_VAR_aws_profile=resource_provisioner" >> $GITHUB_ENV
