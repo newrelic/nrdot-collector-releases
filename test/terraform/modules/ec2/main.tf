@@ -135,6 +135,7 @@ resource "aws_instance" "ubuntu" {
               latest_deb_package_filename=$(aws s3 ls $${deb_package_basepath} | sort -r | grep '${var.collector_distro}' | grep 'amd64.deb$' | head -n1 | awk '{print $NF}')
               echo "Installing collector from: $${deb_package_basepath}$${latest_deb_package_filename}"
               aws s3 cp "$${deb_package_basepath}$${latest_deb_package_filename}" /tmp/collector.deb
+              export NRDOT_MODE=ROOT
               dpkg -i /tmp/collector.deb
               ################################################
               echo 'Configuring Collector'
