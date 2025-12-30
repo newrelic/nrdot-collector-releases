@@ -5,7 +5,21 @@ podLabels:
 
 mode: daemonset
 # disable exposing default ports to avoid k8s scheduling conflicts
-ports: {}
+ports:
+  otlp:
+    enabled: false
+  otlp-http:
+    enabled: false
+  jaeger-compact:
+    enabled: false
+  jaeger-thrift:
+    enabled: false
+  jaeger-grpc:
+    enabled: false
+  zipkin:
+    enabled: false
+  metrics:
+    enabled: false
 
 config:
   receivers:
