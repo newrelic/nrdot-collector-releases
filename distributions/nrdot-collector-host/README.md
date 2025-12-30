@@ -3,7 +3,7 @@
 | Status    |                                                                                                                                                                                                             |
 |-----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Distro    | `nrdot-collector-host`                                                                                                                                                                                      |
-| Stability | `public`                                                                                                                                                                                                    |
+| Stability | `public` (deprecated in favor of [nrdot-collector](../nrdot-collector/README.md)) as drop-in replacement                                                                                                                                                                                                  |
 | Artifacts | [Docker images on DockerHub](https://hub.docker.com/r/newrelic/nrdot-collector-host)<br> [Linux packages and archives under GitHub Releases](https://github.com/newrelic/nrdot-collector-releases/releases) |
 
 A distribution of the NRDOT collector focused on
