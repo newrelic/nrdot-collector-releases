@@ -28,12 +28,12 @@ provider "aws" {
 
   # Only assume role if not using a profile (legacy behavior)
   # When using a profile, credentials should already be assumed via profile configuration
-  dynamic "assume_role" {
-    for_each = var.aws_profile == "" ? [1] : []
-    content {
-      role_arn = "arn:aws:iam::${var.aws_account_id}:role/resource-provisioner"
-    }
-  }
+#   dynamic "assume_role" {
+#     for_each = var.aws_profile == "" ? [1] : []
+#     content {
+#       role_arn = "arn:aws:iam::${var.aws_account_id}:role/resource-provisioner"
+#     }
+#   }
 }
 
 data "aws_eks_cluster" "eks_cluster" {
