@@ -248,14 +248,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Terraform Setup & Workspace
-        uses: ./.github/actions/terraform-setup
-        with:
-          terraform_version: 1.9.8
-          aws_account_id: ${{ secrets.aws_account_id }}
-          working_directory: ./test/terraform/nightly
-          workspace: ${{ needs.setup.outputs.workspace }}
-      
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -265,6 +257,14 @@ jobs:
           role-to-assume: arn:aws:iam::${{ secrets.aws_account_id }}:role/resource-provisioner
           role-skip-session-tagging: true
 
+      - name: Terraform Setup & Workspace
+        uses: ./.github/actions/terraform-setup
+        with:
+          terraform_version: 1.9.8
+          aws_account_id: ${{ secrets.aws_account_id }}
+          working_directory: ./test/terraform/nightly
+          workspace: ${{ needs.setup.outputs.workspace }}
+      
       # - name: Assume AWS role and configure profile
       #   run: |
       #     # Assume the resource-provisioner role to get EKS permissions
