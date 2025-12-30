@@ -4,6 +4,17 @@ podLabels:
   e2eTestLogSelector: nrdot-collector-host-e2e
 
 mode: daemonset
+# expose ports for telemetrygen
+ports:
+  otlp:
+    enabled: true
+    containerPort: 4317
+    protocol: TCP
+    appProtocol: grpc
+  otlp-http:
+    enabled: true
+    containerPort: 4318
+    protocol: TCP
 
 configMap:
   create: false

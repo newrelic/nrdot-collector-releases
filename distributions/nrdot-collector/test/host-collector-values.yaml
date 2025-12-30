@@ -4,6 +4,7 @@ podLabels:
   e2eTestLogSelector: nrdot-collector-e2e
 
 mode: daemonset
+ports: {}
 
 configMap:
   create: false

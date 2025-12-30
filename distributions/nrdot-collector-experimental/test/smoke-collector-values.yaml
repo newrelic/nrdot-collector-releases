@@ -4,6 +4,8 @@ podLabels:
   e2eTestLogSelector: nrdot-collector-experimental-e2e
 
 mode: daemonset
+# disable exposing default ports to avoid k8s scheduling conflicts
+ports: {}
 
 config:
   receivers:
