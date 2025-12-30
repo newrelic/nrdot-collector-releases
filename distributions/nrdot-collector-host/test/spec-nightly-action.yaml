@@ -300,6 +300,7 @@ scenarios:
   # EC2 scenario
   - description: ec2 host metrics and resourcedetection
     before:
+      - echo "TF_VAR_aws_profile: ${TF_VAR_aws_profile}"
       - cd ../../../test/terraform/nightly &&
           terraform plan -var="test_key=${SCENARIO_TAG}"
   #     - terraform workspace select ${TF_WORKSPACE} || terraform workspace new ${TF_WORKSPACE}
