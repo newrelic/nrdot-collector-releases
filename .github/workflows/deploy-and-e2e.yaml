@@ -235,9 +235,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: [setup, terraform-destroy-legacy]
     env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
-      AWS_REGION: us-east-1
       TF_INPUT: "false"
       TF_VAR_aws_account_id: ${{ secrets.aws_account_id }}
       TF_VAR_nr_backend_url: ${{ secrets.nr_backend_url }}
@@ -258,31 +255,40 @@ jobs:
           aws_account_id: ${{ secrets.aws_account_id }}
           working_directory: ./test/terraform/nightly
           workspace: ${{ needs.setup.outputs.workspace }}
+      
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.aws_access_key_id }}
+          aws-secret-access-key: ${{ secrets.aws_secret_access_key }}
+          aws-region: us-east-1
+          role-to-assume: arn:aws:iam::${{ secrets.aws_account_id }}:role/resource-provisioner
+          role-skip-session-tagging: true
 
-      - name: Assume AWS role and configure profile
-        run: |
-          # Assume the resource-provisioner role to get EKS permissions
-          ROLE_ARN="arn:aws:iam::${{ secrets.aws_account_id }}:role/resource-provisioner"
-          CREDS=$(aws sts assume-role --role-arn "$ROLE_ARN" --role-session-name deploy-and-e2e-${{ github.run_id }}-${{ inputs.distro }}${{ inputs.fips && '-fips' || '' }})
+      # - name: Assume AWS role and configure profile
+      #   run: |
+      #     # Assume the resource-provisioner role to get EKS permissions
+      #     ROLE_ARN="arn:aws:iam::${{ secrets.aws_account_id }}:role/resource-provisioner"
+      #     CREDS=$(aws sts assume-role --role-arn "$ROLE_ARN" --role-session-name deploy-and-e2e-${{ github.run_id }}-${{ inputs.distro }}${{ inputs.fips && '-fips' || '' }})
 
-          # Configure AWS profile with assumed role credentials
-          mkdir -p ~/.aws
-          cat >> ~/.aws/credentials << EOF
-          [resource_provisioner]
-          aws_access_key_id = $(echo $CREDS | jq -r '.Credentials.AccessKeyId')
-          aws_secret_access_key = $(echo $CREDS | jq -r '.Credentials.SecretAccessKey')
-          aws_session_token = $(echo $CREDS | jq -r '.Credentials.SessionToken')
-          EOF
+      #     # Configure AWS profile with assumed role credentials
+      #     mkdir -p ~/.aws
+      #     cat >> ~/.aws/credentials << EOF
+      #     [resource_provisioner]
+      #     aws_access_key_id = $(echo $CREDS | jq -r '.Credentials.AccessKeyId')
+      #     aws_secret_access_key = $(echo $CREDS | jq -r '.Credentials.SecretAccessKey')
+      #     aws_session_token = $(echo $CREDS | jq -r '.Credentials.SessionToken')
+      #     EOF
 
-          # Unset base credentials so profile takes precedence
-          # AWS CLI prioritizes env vars over profiles, so we must clear them
-          echo "AWS_ACCESS_KEY_ID=" >> $GITHUB_ENV
-          echo "AWS_SECRET_ACCESS_KEY=" >> $GITHUB_ENV
-          echo "AWS_SESSION_TOKEN=" >> $GITHUB_ENV
+      #     # Unset base credentials so profile takes precedence
+      #     # AWS CLI prioritizes env vars over profiles, so we must clear them
+      #     echo "AWS_ACCESS_KEY_ID=" >> $GITHUB_ENV
+      #     echo "AWS_SECRET_ACCESS_KEY=" >> $GITHUB_ENV
+      #     echo "AWS_SESSION_TOKEN=" >> $GITHUB_ENV
 
-          # Set AWS_PROFILE for subsequent steps
-          echo "AWS_PROFILE=resource_provisioner" >> $GITHUB_ENV
-          echo "TF_VAR_aws_profile=resource_provisioner" >> $GITHUB_ENV
+      #     # Set AWS_PROFILE for subsequent steps
+      #     echo "AWS_PROFILE=resource_provisioner" >> $GITHUB_ENV
+      #     echo "TF_VAR_aws_profile=resource_provisioner" >> $GITHUB_ENV
 
       - name: Configure kubectl
         run: |
