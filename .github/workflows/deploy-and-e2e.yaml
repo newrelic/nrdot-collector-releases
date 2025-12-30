@@ -154,21 +154,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Terraform Setup & Workspace
-        uses: ./.github/actions/terraform-setup
-        with:
-          terraform_version: 1.9.8
-          aws_account_id: ${{ secrets.aws_account_id }}
-          working_directory: ./test/terraform/nightly
-          workspace: ${{ needs.setup.outputs.workspace }}
+      # - name: Terraform Setup & Workspace
+      #   uses: ./.github/actions/terraform-setup
+      #   with:
+      #     terraform_version: 1.9.8
+      #     aws_account_id: ${{ secrets.aws_account_id }}
+      #     working_directory: ./test/terraform/nightly
+      #     workspace: ${{ needs.setup.outputs.workspace }}
 
-      - name: Terraform Plan
-        run: terraform plan
-        working-directory: ./test/terraform/nightly
+      # - name: Terraform Plan
+      #   run: terraform plan
+      #   working-directory: ./test/terraform/nightly
 
-      - name: Terraform Apply
-        run: terraform apply -auto-approve
-        working-directory: ./test/terraform/nightly
+      # - name: Terraform Apply
+      #   run: terraform apply -auto-approve
+      #   working-directory: ./test/terraform/nightly
 
   e2e-tests-legacy:
     name: E2E Tests Legacy
@@ -180,21 +180,21 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: "~1.24"
-          check-latest: true
+      # - name: Setup Go
+      #   uses: actions/setup-go@v5
+      #   with:
+      #     go-version: "~1.24"
+      #     check-latest: true
 
-      - name: Run Tests
-        run: make -f ./test/e2e/Makefile ci_test-nightly
-        env:
-          NR_API_KEY: ${{ secrets.nr_api_key }}
-          NR_ACCOUNT_ID: ${{ secrets.nr_account_id }}
-          NR_API_BASE_URL: ${{ secrets.nr_api_base_url }}
-          DISTRO: ${{ inputs.distro }}
-          K8S_CONTEXT_NAME: "aws-ci-e2etest"
-          FIPS: ${{ inputs.fips && 'true' || 'false' }}
+      # - name: Run Tests
+      #   run: make -f ./test/e2e/Makefile ci_test-nightly
+      #   env:
+      #     NR_API_KEY: ${{ secrets.nr_api_key }}
+      #     NR_ACCOUNT_ID: ${{ secrets.nr_account_id }}
+      #     NR_API_BASE_URL: ${{ secrets.nr_api_base_url }}
+      #     DISTRO: ${{ inputs.distro }}
+      #     K8S_CONTEXT_NAME: "aws-ci-e2etest"
+      #     FIPS: ${{ inputs.fips && 'true' || 'false' }}
           # TEST_MODE is set internally by the ci_test-nightly target (nightlyOnly)
 
   terraform-destroy-legacy:
@@ -218,17 +218,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Terraform Setup & Workspace
-        uses: ./.github/actions/terraform-setup
-        with:
-          terraform_version: 1.9.8
-          aws_account_id: ${{ secrets.aws_account_id }}
-          working_directory: ./test/terraform/nightly
-          workspace: ${{ needs.setup.outputs.workspace }}
+      # - name: Terraform Setup & Workspace
+      #   uses: ./.github/actions/terraform-setup
+      #   with:
+      #     terraform_version: 1.9.8
+      #     aws_account_id: ${{ secrets.aws_account_id }}
+      #     working_directory: ./test/terraform/nightly
+      #     workspace: ${{ needs.setup.outputs.workspace }}
 
-      - name: Terraform Destroy
-        run: terraform destroy -auto-approve
-        working-directory: ./test/terraform/nightly
+      # - name: Terraform Destroy
+      #   run: terraform destroy -auto-approve
+      #   working-directory: ./test/terraform/nightly
 
   e2e-tests:
     name: E2E Tests
