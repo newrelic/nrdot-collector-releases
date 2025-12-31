@@ -133,107 +133,11 @@ jobs:
           echo "digest=${docker_manifest_digest}" >> $GITHUB_OUTPUT
           
           echo "image_tag=${version}${{ format('{0}',inputs.fips && '-fips' || '') }}@${docker_manifest_digest}" >> $GITHUB_OUTPUT
-  
-  terraform-deploy-legacy:
-    name: Terraform Deploy Legacy
-    needs: setup
-    runs-on: ubuntu-latest
-    env:
-      TF_INPUT: "false"
-      AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
-      TF_VAR_aws_account_id: ${{ secrets.aws_account_id }}
-      TF_VAR_nr_backend_url: ${{ secrets.nr_backend_url }}
-      TF_VAR_nr_ingest_key: ${{ secrets.nr_ingest_key }}
-      TF_VAR_distro: ${{ inputs.distro }}
-      TF_VAR_fips: ${{ inputs.fips }}
-      TF_VAR_image_tag: ${{ needs.setup.outputs.image-tag }}
-      TF_VAR_k8s_namespace_prefix: ${{ inputs.workspace_prefix }}
-      TF_VAR_is_legacy_test: true
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      # - name: Terraform Setup & Workspace
-      #   uses: ./.github/actions/terraform-setup
-      #   with:
-      #     terraform_version: 1.9.8
-      #     aws_account_id: ${{ secrets.aws_account_id }}
-      #     working_directory: ./test/terraform/nightly
-      #     workspace: ${{ needs.setup.outputs.workspace }}
-
-      # - name: Terraform Plan
-      #   run: terraform plan
-      #   working-directory: ./test/terraform/nightly
-
-      # - name: Terraform Apply
-      #   run: terraform apply -auto-approve
-      #   working-directory: ./test/terraform/nightly
-
-  e2e-tests-legacy:
-    name: E2E Tests Legacy
-    runs-on: ubuntu-latest
-    needs: terraform-deploy-legacy
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      # - name: Setup Go
-      #   uses: actions/setup-go@v5
-      #   with:
-      #     go-version: "~1.24"
-      #     check-latest: true
-
-      # - name: Run Tests
-      #   run: make -f ./test/e2e/Makefile ci_test-nightly
-      #   env:
-      #     NR_API_KEY: ${{ secrets.nr_api_key }}
-      #     NR_ACCOUNT_ID: ${{ secrets.nr_account_id }}
-      #     NR_API_BASE_URL: ${{ secrets.nr_api_base_url }}
-      #     DISTRO: ${{ inputs.distro }}
-      #     K8S_CONTEXT_NAME: "aws-ci-e2etest"
-      #     FIPS: ${{ inputs.fips && 'true' || 'false' }}
-          # TEST_MODE is set internally by the ci_test-nightly target (nightlyOnly)
-
-  terraform-destroy-legacy:
-    name: Terraform Destroy Legacy
-    needs: [setup, e2e-tests-legacy]
-    if: always()
-    runs-on: ubuntu-latest
-    env:
-      TF_INPUT: "false"
-      AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
-      TF_VAR_aws_account_id: ${{ secrets.aws_account_id }}
-      TF_VAR_nr_backend_url: ${{ secrets.nr_backend_url }}
-      TF_VAR_nr_ingest_key: ${{ secrets.nr_ingest_key }}
-      TF_VAR_distro: ${{ inputs.distro }}
-      TF_VAR_fips: ${{ inputs.fips }}
-      TF_VAR_image_tag: ${{ needs.setup.outputs.image-tag }}
-      TF_VAR_k8s_namespace_prefix: ${{ inputs.workspace_prefix }}
-      TF_VAR_is_legacy_test: true
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      # - name: Terraform Setup & Workspace
-      #   uses: ./.github/actions/terraform-setup
-      #   with:
-      #     terraform_version: 1.9.8
-      #     aws_account_id: ${{ secrets.aws_account_id }}
-      #     working_directory: ./test/terraform/nightly
-      #     workspace: ${{ needs.setup.outputs.workspace }}
-
-      # - name: Terraform Destroy
-      #   run: terraform destroy -auto-approve
-      #   working-directory: ./test/terraform/nightly
 
   e2e-tests:
     name: E2E Tests
     runs-on: ubuntu-latest
-    needs: [setup, terraform-destroy-legacy]
+    needs: [setup]
     env:
       TF_INPUT: "false"
       TF_VAR_aws_account_id: ${{ secrets.aws_account_id }}
@@ -243,7 +147,6 @@ jobs:
       TF_VAR_fips: ${{ inputs.fips }}
       TF_VAR_image_tag: ${{ needs.setup.outputs.image-tag }}
       TF_VAR_k8s_namespace_prefix: ${{ inputs.workspace_prefix }}
-      TF_VAR_is_legacy_test: false
       TF_VAR_aws_provider_assume_role: false
     steps:
       - name: Checkout

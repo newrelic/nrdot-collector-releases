@@ -1,6 +1,0 @@
-nightly:
-  ec2:
-    enabled: true
-  testCaseSpecs:
-    - "nightlyTest1"
-    - "nightlyTest2"

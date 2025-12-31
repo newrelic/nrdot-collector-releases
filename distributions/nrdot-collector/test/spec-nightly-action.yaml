@@ -2,6 +2,9 @@ description: nrdot-collector E2E Nightly Test
 
 # Scoping is achieved via an implicit attribute `testKey=${SCENARIO_TAG}` expected on all tested telemetry
 
+terraform:
+  deploy_ec2: true
+
 # YAML anchors for reusing test queries across scenarios
 .host_metrics_nrqls: &host_metrics_nrqls
   - query: FROM Metric SELECT filter(count(*), state='user') as state_user WHERE metricName = 'system.cpu.utilization'
