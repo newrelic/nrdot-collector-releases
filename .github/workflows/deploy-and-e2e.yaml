@@ -259,7 +259,7 @@ jobs:
           aws-region: us-east-1
           role-to-assume: arn:aws:iam::${{ secrets.aws_account_id }}:role/resource-provisioner
           role-skip-session-tagging: true
-          output-env-credentials: false
+          output-env-credentials: true
           output-credentials: true
           role-chaining: true
           unset-current-credentials: true
@@ -277,6 +277,7 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
+          AWS_SESSION_TOKEN: ""
         with:
           terraform_version: 1.9.8
           aws_account_id: ${{ secrets.aws_account_id }}
@@ -314,6 +315,7 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
+          AWS_SESSION_TOKEN: ""
           NR_BACKEND_URL: ${{ secrets.nr_backend_url }}
           LICENSE_KEY: ${{ secrets.nr_ingest_key }}
           IMAGE_TAG: ${{ needs.setup.outputs.image-tag }}
