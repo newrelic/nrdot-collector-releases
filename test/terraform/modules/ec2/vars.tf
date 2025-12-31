@@ -28,10 +28,9 @@ variable "collector_distro" {
   type        = string
 }
 
-variable "collector_version" {
+variable "nrdot_version" {
   description = "Version of NRDOT to install"
   type        = string
-  default     = "nightly"
 }
 
 variable "test_key" {

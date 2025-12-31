@@ -147,6 +147,7 @@ jobs:
       TF_VAR_fips: ${{ inputs.fips }}
       TF_VAR_image_tag: ${{ needs.setup.outputs.image-tag }}
       TF_VAR_test_env_prefix: ${{ inputs.workspace_prefix }}
+      TF_VAR_nrdot_version: ${{ needs.setup.outputs.image-tag }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4

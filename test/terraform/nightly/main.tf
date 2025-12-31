@@ -22,4 +22,5 @@ module "ci_e2e_ec2" {
   vpc_id              = data.aws_eks_cluster.eks_cluster.vpc_config[0].vpc_id
   permission_boundary = local.required_permissions_boundary_arn_for_new_roles
   test_key            = var.test_key
+  nrdot_version       = var.nrdot_version
 }
