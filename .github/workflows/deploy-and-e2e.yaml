@@ -261,6 +261,7 @@ jobs:
           role-skip-session-tagging: true
           output-env-credentials: false
           output-credentials: true
+          role-chaining: true
       
       - name: Configure kubectl
         env:
