@@ -274,6 +274,9 @@ jobs:
 
       - name: Terraform Setup & Workspace
         uses: ./.github/actions/terraform-setup
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
         with:
           terraform_version: 1.9.8
           aws_account_id: ${{ secrets.aws_account_id }}
@@ -309,6 +312,8 @@ jobs:
       - name: Run Action-based E2E Tests
         uses: newrelic/newrelic-integration-e2e-action@v1
         env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
           NR_BACKEND_URL: ${{ secrets.nr_backend_url }}
           LICENSE_KEY: ${{ secrets.nr_ingest_key }}
           IMAGE_TAG: ${{ needs.setup.outputs.image-tag }}
