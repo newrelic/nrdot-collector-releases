@@ -36,6 +36,8 @@ archives:
           - zip
     files:
       - src: config.yaml
+      - src: LICENSE*
+      - src: THIRD_PARTY_NOTICES.md
 nfpms:
   - file_name_template: '{{ .PackageName }}_{{ .Version }}_{{ .Os }}_{{- if not (eq (filter .ConventionalFileName "\\.rpm$") "") }}{{- replace .Arch "amd64" "x86_64" }}{{- else }}{{- .Arch }}{{- end }}{{- with .Arm }}v{{ . }}{{- end }}{{- with .Mips }}_{{ . }}{{- end }}{{- if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{- end }}'
     package_name: nrdot-collector
@@ -45,6 +47,12 @@ nfpms:
       - src: nrdot-collector.conf
         dst: /etc/nrdot-collector/nrdot-collector.conf
         type: config|noreplace
+      - src: LICENSE*
+        dst: ""
+        type: license
+      - src: THIRD_PARTY_NOTICES.md
+        dst: ""
+        type: license
       - src: config.yaml
         dst: /etc/nrdot-collector/config.yaml
         type: config
@@ -86,6 +94,8 @@ dockers:
       - '{{ .Env.REGISTRY }}/nrdot-collector:latest-amd64'
     extra_files:
       - config.yaml
+      - LICENSE*
+      - THIRD_PARTY_NOTICES.md
     build_flag_templates:
       - --pull
       - --platform=linux/amd64
@@ -105,6 +115,8 @@ dockers:
       - '{{ .Env.REGISTRY }}/nrdot-collector:latest-arm64'
     extra_files:
       - config.yaml
+      - LICENSE*
+      - THIRD_PARTY_NOTICES.md
     build_flag_templates:
       - --pull
       - --platform=linux/arm64
