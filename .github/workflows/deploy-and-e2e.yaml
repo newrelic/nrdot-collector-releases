@@ -257,6 +257,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.aws_secret_access_key }}
           aws-region: us-east-1
           role-to-assume: arn:aws:iam::${{ secrets.aws_account_id }}:role/resource-provisioner
+          role-skip-session-tagging: true
       
       - name: Configure kubectl
         run: |
