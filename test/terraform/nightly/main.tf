@@ -8,12 +8,6 @@ locals {
   k8s_namespace                                   = "${var.k8s_namespace_prefix}${local.fips_str}-${var.distro}"
 }
 
-resource "random_string" "deploy_id" {
-  length  = 6
-  special = false
-}
-
-
 data "aws_ecr_repository" "ecr_repo" {
   name = var.distro
 }
@@ -27,7 +21,6 @@ module "ci_e2e_ec2" {
   nr_ingest_key        = var.nr_ingest_key
   # reuse vpc to avoid having to pay for second NAT gateway for this simple use case
   vpc_id              = data.aws_eks_cluster.eks_cluster.vpc_config[0].vpc_id
-  deploy_id           = random_string.deploy_id.result
   permission_boundary = local.required_permissions_boundary_arn_for_new_roles
   test_key            = var.test_key
 }
