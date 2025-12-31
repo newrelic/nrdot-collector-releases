@@ -297,16 +297,13 @@ scenarios:
       # Tests for existence of signal + specific attributes
       nrqls: *internal_telemetry_nrqls
 
-  # EC2 scenario - commented out for now, will be enabled later
-  # - description: ec2 host metrics and resourcedetection
-  #   before:
-  #     - cd ../../../test/terraform/nightly
-  #     - terraform workspace select ${TF_WORKSPACE} || terraform workspace new ${TF_WORKSPACE}
-  #     - terraform apply -auto-approve -var="test_key=${SCENARIO_TAG}"
-  #     - echo "Waiting for EC2 instances to start and report metrics..."
-  #     - sleep 120
-  #   after:
-  #     - cd ../../../test/terraform/nightly
-  #     - terraform destroy -auto-approve -var="test_key=${SCENARIO_TAG}"
-  #   tests:
-  #     nrqls: *host_metrics_nrqls
+  # EC2 scenario
+  - description: ec2 host metrics and resourcedetection
+    before:
+      - cd ../../../test/terraform/nightly &&
+          terraform apply -auto-approve -var="test_key=${SCENARIO_TAG}"
+    after:
+      - cd ../../../test/terraform/nightly &&
+          terraform destroy -auto-approve -var="test_key=${SCENARIO_TAG}"
+    tests:
+      nrqls: *host_metrics_nrqls
