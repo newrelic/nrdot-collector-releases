@@ -1,8 +1,0 @@
-nightly:
-  collectorChart:
-    name: nr_backend
-  ec2:
-    enabled: true
-  testCaseSpecs:
-    - host
-    - resourcedetection
