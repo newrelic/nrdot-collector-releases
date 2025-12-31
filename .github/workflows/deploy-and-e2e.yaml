@@ -256,9 +256,16 @@ jobs:
           aws-region: us-east-1
           role-to-assume: arn:aws:iam::${{ secrets.aws_account_id }}:role/resource-provisioner
           role-skip-session-tagging: true
+      
+      - name: Configure kubectl
+        run: |
+          aws eks update-kubeconfig --name aws-ci-e2etest --region us-east-1
 
       - name: Terraform Setup & Workspace
         uses: ./.github/actions/terraform-setup
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
         with:
           terraform_version: 1.9.8
           aws_account_id: ${{ secrets.aws_account_id }}
@@ -290,9 +297,6 @@ jobs:
       #     echo "AWS_PROFILE=resource_provisioner" >> $GITHUB_ENV
       #     echo "TF_VAR_aws_profile=resource_provisioner" >> $GITHUB_ENV
 
-      - name: Configure kubectl
-        run: |
-          aws eks update-kubeconfig --name aws-ci-e2etest --region us-east-1
 
       - name: Run Action-based E2E Tests
         uses: newrelic/newrelic-integration-e2e-action@v1
@@ -302,6 +306,8 @@ jobs:
           IMAGE_TAG: ${{ needs.setup.outputs.image-tag }}
           IMAGE_REPO: ${{ secrets.aws_account_id }}.dkr.ecr.us-east-1.amazonaws.com/${{ inputs.distro }}
           CLUSTER_NAME: aws-ci-e2etest
+          AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
         with:
           retry_seconds: 30
           retry_attempts: 20
