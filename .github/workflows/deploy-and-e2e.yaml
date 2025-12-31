@@ -262,6 +262,7 @@ jobs:
           output-env-credentials: false
           output-credentials: true
           role-chaining: true
+          unset-current-credentials: true
       
       - name: Configure kubectl
         env:
