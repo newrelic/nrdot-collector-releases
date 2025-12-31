@@ -9,6 +9,12 @@ variable "aws_region" {
   default     = "us-east-1"
 }
 
+variable "aws_provider_assume_role" {
+  description = "Whether to assume role for AWS provider or use existing credentials"
+  type        = bool
+  default     = false
+}
+
 variable "distro" {
   description = "Distro to test during nightly"
   type        = string
@@ -47,4 +53,16 @@ variable "k8s_namespace_prefix" {
 variable "image_tag" {
   description = "Tag of the nightly docker image"
   type        = string
+}
+
+variable "is_legacy_test" {
+  description = "Whether to deploy helm charts (enabled for Go tests, disabled for action tests)"
+  type        = bool
+  default     = false
+}
+
+variable "test_key" {
+  description = "Test key for scoping queries (used by action-based tests, Go tests use generated pattern)"
+  type        = string
+  default     = ""
 }

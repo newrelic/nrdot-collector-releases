@@ -4,6 +4,22 @@ podLabels:
   e2eTestLogSelector: nrdot-collector-experimental-e2e
 
 mode: daemonset
+# disable exposing default ports to avoid k8s scheduling conflicts
+ports:
+  otlp:
+    enabled: false
+  otlp-http:
+    enabled: false
+  jaeger-compact:
+    enabled: false
+  jaeger-thrift:
+    enabled: false
+  jaeger-grpc:
+    enabled: false
+  zipkin:
+    enabled: false
+  metrics:
+    enabled: false
 
 config:
   receivers:

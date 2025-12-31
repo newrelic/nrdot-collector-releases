@@ -23,10 +23,16 @@ terraform {
 provider "aws" {
   region              = var.aws_region
   allowed_account_ids = [var.aws_account_id]
-  # expect AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY as env vars
+#   assume_role {
+    # role_arn = "arn:aws:iam::${var.aws_account_id}:role/resource-provisioner"
+#   }
 
-  assume_role {
-    role_arn = "arn:aws:iam::${var.aws_account_id}:role/resource-provisioner"
+  # Assume role if necessary
+  dynamic "assume_role" {
+    for_each = var.aws_provider_assume_role ? [1] : []
+    content {
+      role_arn = "arn:aws:iam::${var.aws_account_id}:role/resource-provisioner"
+    }
   }
 }
 
