@@ -9,12 +9,6 @@ variable "aws_region" {
   default     = "us-east-1"
 }
 
-variable "aws_provider_assume_role" {
-  description = "Whether to assume role for AWS provider or use existing credentials"
-  type        = bool
-  default     = false
-}
-
 variable "distro" {
   description = "Distro to test during nightly"
   type        = string

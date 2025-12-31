@@ -23,17 +23,7 @@ terraform {
 provider "aws" {
   region              = var.aws_region
   allowed_account_ids = [var.aws_account_id]
-#   assume_role {
-    # role_arn = "arn:aws:iam::${var.aws_account_id}:role/resource-provisioner"
-#   }
-
-  # Assume role if necessary
-  dynamic "assume_role" {
-    for_each = var.aws_provider_assume_role ? [1] : []
-    content {
-      role_arn = "arn:aws:iam::${var.aws_account_id}:role/resource-provisioner"
-    }
-  }
+  # necessary role is already assumed as part of nightly workflow
 }
 
 data "aws_eks_cluster" "eks_cluster" {

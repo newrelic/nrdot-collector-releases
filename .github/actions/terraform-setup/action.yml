@@ -9,8 +9,6 @@ runs:
         terraform_version: ${{ inputs.terraform_version }}
     - name: Terraform Init
       shell: bash
-      env:
-        TF_VAR_aws_provider_assume_role: ${{ inputs.assume_role }}
       run: |
         role_arg=""
         if [[ "${{ inputs.assume_role }}" == "true" ]]; then
