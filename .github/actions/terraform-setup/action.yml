@@ -12,9 +12,11 @@ runs:
       env:
         TF_VAR_aws_provider_assume_role: ${{ inputs.assume_role }}
       run: |
-        terraform init \
-          -backend-config="bucket=nr-terraform-states-${{ inputs.aws_account_id }}" \
-          ${{ inputs.assume_role == "true" && "-backend-config=\"role_arn=arn:aws:iam::${{ inputs.aws_account_id }}:role/resource-provisioner\"" || "" }}
+        role_arg=""
+        if [[ "${{ inputs.assume_role }}" == "true" ]]; then
+          role_arg='-backend-config="role_arn=arn:aws:iam::${{ inputs.aws_account_id }}:role/resource-provisioner"'
+        fi
+        terraform init -backend-config="bucket=nr-terraform-states-${{ inputs.aws_account_id }}" $role_arg
           
       working-directory: ${{ inputs.working_directory }}
     - name: Select/Create Workspace
