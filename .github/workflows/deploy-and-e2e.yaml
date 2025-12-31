@@ -235,8 +235,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: [setup, terraform-destroy-legacy]
     env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
       TF_INPUT: "false"
       TF_VAR_aws_account_id: ${{ secrets.aws_account_id }}
       TF_VAR_nr_backend_url: ${{ secrets.nr_backend_url }}
@@ -246,6 +244,7 @@ jobs:
       TF_VAR_image_tag: ${{ needs.setup.outputs.image-tag }}
       TF_VAR_k8s_namespace_prefix: ${{ inputs.workspace_prefix }}
       TF_VAR_is_legacy_test: false
+      TF_VAR_aws_provider_assume_role: false
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -258,31 +257,19 @@ jobs:
           aws-secret-access-key: ${{ secrets.aws_secret_access_key }}
           aws-region: us-east-1
           role-to-assume: arn:aws:iam::${{ secrets.aws_account_id }}:role/resource-provisioner
-          role-skip-session-tagging: true
-          output-env-credentials: true
-          output-credentials: true
-          role-chaining: true
-          unset-current-credentials: true
       
       - name: Configure kubectl
-        env:
-          AWS_ACCESS_KEY_ID: ${{ steps.configure-aws-credentials-for-eks.outputs.aws-access-key-id }}
-          AWS_SECRET_ACCESS_KEY: ${{ steps.configure-aws-credentials-for-eks.outputs.aws-secret-access-key }}
-          AWS_SESSION_TOKEN: ${{ steps.configure-aws-credentials-for-eks.outputs.aws-session-token }}
         run: |
           aws eks update-kubeconfig --name aws-ci-e2etest --region us-east-1
 
       - name: Terraform Setup & Workspace
         uses: ./.github/actions/terraform-setup
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
-          AWS_SESSION_TOKEN: ""
         with:
           terraform_version: 1.9.8
           aws_account_id: ${{ secrets.aws_account_id }}
           working_directory: ./test/terraform/nightly
           workspace: ${{ needs.setup.outputs.workspace }}
+          assume_role: "false"
       
       # - name: Assume AWS role and configure profile
       #   run: |
@@ -313,9 +300,6 @@ jobs:
       - name: Run Action-based E2E Tests
         uses: newrelic/newrelic-integration-e2e-action@v1
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
-          AWS_SESSION_TOKEN: ""
           NR_BACKEND_URL: ${{ secrets.nr_backend_url }}
           LICENSE_KEY: ${{ secrets.nr_ingest_key }}
           IMAGE_TAG: ${{ needs.setup.outputs.image-tag }}

@@ -23,22 +23,17 @@ terraform {
 provider "aws" {
   region              = var.aws_region
   allowed_account_ids = [var.aws_account_id]
-  assume_role {
-    role_arn = "arn:aws:iam::${var.aws_account_id}:role/resource-provisioner"
-  }
-  # role "arn:aws:iam::${var.aws_account_id}:role/resource-provisioner" is expected to have been assumed
-
-  # Use profile if provided, otherwise expect AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY as env vars
-#   profile = var.aws_profile
-
-  # Only assume role if not using a profile (legacy behavior)
-  # When using a profile, credentials should already be assumed via profile configuration
-#   dynamic "assume_role" {
-#     for_each = var.aws_profile == "" ? [1] : []
-#     content {
-#       role_arn = "arn:aws:iam::${var.aws_account_id}:role/resource-provisioner"
-#     }
+#   assume_role {
+    # role_arn = "arn:aws:iam::${var.aws_account_id}:role/resource-provisioner"
 #   }
+
+  # Assume role if necessary
+  dynamic "assume_role" {
+    for_each = var.aws_provider_assume_role ? [1] : []
+    content {
+      role_arn = "arn:aws:iam::${var.aws_account_id}:role/resource-provisioner"
+    }
+  }
 }
 
 data "aws_eks_cluster" "eks_cluster" {
