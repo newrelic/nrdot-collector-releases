@@ -59,10 +59,16 @@ jobs:
       artifact_name: ${{ steps.set-outputs.outputs.artifact_name }}
       docker_manifest_sha_name: ${{ steps.set-outputs.outputs.docker_manifest_sha_name }}
     steps:
+      # run df -h to check disk space before caching/building
+      - name: Check disk space
+        run: df -h
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0 # required for tag metadata
+
+      - name: Check disk space
+        run: df -h
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -70,9 +76,15 @@ jobs:
           go-version: "~1.24"
           cache: ${{ env.caching_enabled }}
           check-latest: true
+        
+      - name: Check disk space
+        run: df -h
 
       - name: Tidy go.mod files
         run: go mod tidy
+
+      - name: Check disk space
+        run: df -h
 
       - name: Ensure goreleaser up to date
         run: make check
@@ -106,6 +118,9 @@ jobs:
       - name: Skip source generation (cached)
         if: steps.cache-sources.outputs.cache-hit == 'true'
         run: echo "✅ Source generation skipped - no source changes detected"
+
+      - name: Check disk space
+        run: df -h
 
       - name: Verify source files exist
         run: ./scripts/validate-source-files.sh -d ${{ inputs.distribution }} -f ${{ inputs.fips }}
@@ -200,6 +215,9 @@ jobs:
           ARGS_HASH=$(echo "${{ env.goreleaser_args }}" | sha256sum | cut -d' ' -f1)
           echo binary_key=goreleaser-build-${{ inputs.distribution }}-${ARGS_HASH}-${BINARY_HASH} >> $GITHUB_OUTPUT
 
+      - name: Check disk space
+        run: df -h
+
       - name: Cache goreleaser build
         id: cache-goreleaser
         if: ${{ env.caching_enabled }}
@@ -208,6 +226,7 @@ jobs:
           path: |
             distributions/${{ inputs.distribution }}/dist
           key: ${{ steps.generate_binary_key.outputs.binary_key }}
+
 
       - name: Force artifact version via git tag
         run: |
@@ -220,6 +239,9 @@ jobs:
             echo "Tagging locally with $version to force goreleaser to use correct version in artifact names"
             git tag "$version"
           fi
+
+      - name: Check disk space
+        run: df -h
 
       - name: Build binaries & packages with GoReleaser
         if: inputs.publish || steps.cache-goreleaser.outputs.cache-hit != 'true'
@@ -235,10 +257,14 @@ jobs:
           version: "2.11.2"
           args: ${{ env.goreleaser_args }}
           workdir: distributions/${{ inputs.distribution }}
+        
       
       - name: Skip GoReleaser build (cached)
         if: steps.cache-goreleaser.outputs.cache-hit == 'true'
         run: echo "✅ GoReleaser build skipped - using cached binaries"
+
+      - name: Check disk space
+        run: df -h
 
       - name: Validate GoReleaser build
         run: ./scripts/validate-goreleaser-build.sh -d ${{ inputs.distribution }}
