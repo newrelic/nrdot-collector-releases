@@ -131,4 +131,5 @@ module "ci_e2e_ec2" {
   vpc_id              = data.aws_eks_cluster.eks_cluster.vpc_config[0].vpc_id
   deploy_id           = random_string.deploy_id.result
   permission_boundary = local.required_permissions_boundary_arn_for_new_roles
+  nrdot_version       = var.nrdot_version
 }

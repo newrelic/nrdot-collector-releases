@@ -14,6 +14,11 @@ variable "distro" {
   type        = string
 }
 
+variable "nrdot_version" {
+  description = "Version of NRDOT to test during nightly"
+  type        = string
+}
+
 variable "nr_backend_url" {
   type        = string
   description = "NR endpoint used in test cluster"
