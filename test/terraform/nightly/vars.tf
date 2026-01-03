@@ -14,6 +14,17 @@ variable "distro" {
   type        = string
 }
 
+variable "collector_version" {
+  description = "Version of collector to install"
+  type        = string
+  default     = "nightly"
+}
+
+variable "full_commit_sha" {
+  description = "Full commit sha of the commit to test during nightly"
+  type        = string
+}
+
 variable "nr_backend_url" {
   type        = string
   description = "NR endpoint used in test cluster"

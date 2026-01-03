@@ -66,8 +66,10 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       workspace: ${{ format('{0}{1}-{2}', inputs.workspace_prefix, inputs.fips && '-fips' || '', inputs.distro) }}
-      docker-manifest-sha: ${{ steps.get-docker-manifest-sha.outputs.sha }}
-      image-tag: ${{ steps.get-docker-manifest-sha.outputs.image_tag }}
+      docker-manifest-sha: ${{ steps.output-artifact-metadata.outputs.sha }}
+      image-tag: ${{ steps.output-artifact-metadata.outputs.image_tag }}
+      goreleaser_artifact_version: ${{ steps.output-artifact-metadata.outputs.goreleaser_artifact_version }}
+      goreleaser_artifact_commit: ${{ steps.output-artifact-metadata.outputs.goreleaser_artifact_commit }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -94,8 +96,8 @@ jobs:
           run-id: ${{ inputs.workflow_run_id || github.run_id }}
           github-token: ${{ github.token }}
 
-      - name: Output docker manifest sha
-        id: get-docker-manifest-sha
+      - name: Output artifact metadata
+        id: output-artifact-metadata
         run: |
           # Debug: Show metadata.json contents
           echo "=== Debugging metadata.json ==="
@@ -133,6 +135,11 @@ jobs:
           echo "digest=${docker_manifest_digest}" >> $GITHUB_OUTPUT
           
           echo "image_tag=${version}${{ format('{0}',inputs.fips && '-fips' || '') }}@${docker_manifest_digest}" >> $GITHUB_OUTPUT
+
+          # Output metadata for blobs
+          echo "goreleaser_metadata_version=${version}" >> $GITHUB_OUTPUT
+          commit=$(cat ./artifacts/dist/metadata.json | jq -r '.commit')
+          echo "goreleaser_metadata_commit=${commit}" >> $GITHUB_OUTPUT
   
   terraform-deploy:
     name: Terraform Deploy
@@ -146,6 +153,8 @@ jobs:
       TF_VAR_nr_backend_url: ${{ secrets.nr_backend_url }}
       TF_VAR_nr_ingest_key: ${{ secrets.nr_ingest_key }}
       TF_VAR_distro: ${{ inputs.distro }}
+      TF_VAR_collector_version: ${{ needs.setup.outputs.goreleaser_artifact_version }}
+      TF_VAR_full_commit_sha: ${{ needs.setup.outputs.goreleaser_artifact_commit }}
       TF_VAR_fips: ${{ inputs.fips }}
       TF_VAR_image_tag: ${{ needs.setup.outputs.image-tag }}
       TF_VAR_k8s_namespace_prefix: ${{ inputs.workspace_prefix }}
@@ -209,6 +218,7 @@ jobs:
       TF_VAR_nr_backend_url: ${{ secrets.nr_backend_url }}
       TF_VAR_nr_ingest_key: ${{ secrets.nr_ingest_key }}
       TF_VAR_distro: ${{ inputs.distro }}
+      TF_VAR_collector_version: ${{ }}
       TF_VAR_fips: ${{ inputs.fips }}
       TF_VAR_image_tag: ${{ needs.setup.outputs.image-tag }}
       TF_VAR_k8s_namespace_prefix: ${{ inputs.workspace_prefix }}
