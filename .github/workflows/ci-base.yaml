@@ -59,7 +59,10 @@ jobs:
       artifact_name: ${{ steps.set-outputs.outputs.artifact_name }}
       docker_manifest_sha_name: ${{ steps.set-outputs.outputs.docker_manifest_sha_name }}
     steps:
-      # run df -h to check disk space before caching/building
+      - name: Check disk space
+        run: df -h
+      - name: remove android sdk
+        run: sudo rm -rf /usr/local/lib/android
       - name: Check disk space
         run: df -h
       - name: Checkout
