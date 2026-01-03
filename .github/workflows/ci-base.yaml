@@ -59,19 +59,16 @@ jobs:
       artifact_name: ${{ steps.set-outputs.outputs.artifact_name }}
       docker_manifest_sha_name: ${{ steps.set-outputs.outputs.docker_manifest_sha_name }}
     steps:
-      - name: Check disk space
-        run: df -h
-      - name: remove android sdk
-        run: sudo rm -rf /usr/local/lib/android
-      - name: Check disk space
-        run: df -h
+      - name: Clean Github Runner to free up space
+        run: |
+          df -h
+          # unused android sdk: https://github.com/actions/runner-images/issues/13315#issuecomment-3541347562
+          sudo rm -rf /usr/local/lib/android
+          df -h
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0 # required for tag metadata
-
-      - name: Check disk space
-        run: df -h
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -80,14 +77,8 @@ jobs:
           cache: ${{ env.caching_enabled }}
           check-latest: true
         
-      - name: Check disk space
-        run: df -h
-
       - name: Tidy go.mod files
         run: go mod tidy
-
-      - name: Check disk space
-        run: df -h
 
       - name: Ensure goreleaser up to date
         run: make check
@@ -121,9 +112,6 @@ jobs:
       - name: Skip source generation (cached)
         if: steps.cache-sources.outputs.cache-hit == 'true'
         run: echo "✅ Source generation skipped - no source changes detected"
-
-      - name: Check disk space
-        run: df -h
 
       - name: Verify source files exist
         run: ./scripts/validate-source-files.sh -d ${{ inputs.distribution }} -f ${{ inputs.fips }}
@@ -218,9 +206,6 @@ jobs:
           ARGS_HASH=$(echo "${{ env.goreleaser_args }}" | sha256sum | cut -d' ' -f1)
           echo binary_key=goreleaser-build-${{ inputs.distribution }}-${ARGS_HASH}-${BINARY_HASH} >> $GITHUB_OUTPUT
 
-      - name: Check disk space
-        run: df -h
-
       - name: Cache goreleaser build
         id: cache-goreleaser
         if: ${{ env.caching_enabled }}
@@ -243,9 +228,6 @@ jobs:
             git tag "$version"
           fi
 
-      - name: Check disk space
-        run: df -h
-
       - name: Build binaries & packages with GoReleaser
         if: inputs.publish || steps.cache-goreleaser.outputs.cache-hit != 'true'
         id: goreleaser
@@ -265,9 +247,6 @@ jobs:
       - name: Skip GoReleaser build (cached)
         if: steps.cache-goreleaser.outputs.cache-hit == 'true'
         run: echo "✅ GoReleaser build skipped - using cached binaries"
-
-      - name: Check disk space
-        run: df -h
 
       - name: Validate GoReleaser build
         run: ./scripts/validate-goreleaser-build.sh -d ${{ inputs.distribution }}
