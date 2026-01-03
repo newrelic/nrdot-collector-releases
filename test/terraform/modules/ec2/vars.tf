@@ -38,3 +38,8 @@ variable "collector_version" {
   type        = string
   default     = "nightly"
 }
+
+variable "full_commit_sha" {
+  description = "Full commit sha for the nightly build"
+  type        = string
+}

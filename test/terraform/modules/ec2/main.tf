@@ -120,6 +120,7 @@ resource "aws_instance" "ubuntu" {
       Name = "${var.test_environment}-${var.collector_distro}-${local.instance_config[count.index].hostname_suffix}"
   }
   
+  # TODO: scope s3 install to commit sha once publish with sha is merged to main
   user_data_replace_on_change = true
   user_data                   = <<-EOF
               #!/bin/bash
@@ -131,7 +132,7 @@ resource "aws_instance" "ubuntu" {
               curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
               unzip -q awscliv2.zip
               ./aws/install
-              deb_package_basepath='s3://${var.releases_bucket_name}/nrdot-collector-releases/${var.collector_distro}/${var.collector_version}/'
+              deb_package_basepath='s3://${var.releases_bucket_name}/nrdot-collector-releases/${var.collector_distro}/${var.collector_version}'
               latest_deb_package_filename=$(aws s3 ls $${deb_package_basepath} | sort -r | grep '${var.collector_distro}' | grep 'amd64.deb$' | head -n1 | awk '{print $NF}')
               echo "Installing collector from: $${deb_package_basepath}$${latest_deb_package_filename}"
               aws s3 cp "$${deb_package_basepath}$${latest_deb_package_filename}" /tmp/collector.deb

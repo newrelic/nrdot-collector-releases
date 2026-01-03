@@ -126,6 +126,8 @@ module "ci_e2e_ec2" {
   test_environment     = local.test_env_name
   releases_bucket_name = local.releases_bucket_name
   collector_distro     = var.distro
+  collector_version    = var.collector_version
+  full_commit_sha      = var.full_commit_sha
   nr_ingest_key        = var.nr_ingest_key
   # reuse vpc to avoid having to pay for second NAT gateway for this simple use case
   vpc_id              = data.aws_eks_cluster.eks_cluster.vpc_config[0].vpc_id
