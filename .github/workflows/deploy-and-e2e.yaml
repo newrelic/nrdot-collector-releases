@@ -68,6 +68,7 @@ jobs:
       workspace: ${{ format('{0}{1}-{2}', inputs.workspace_prefix, inputs.fips && '-fips' || '', inputs.distro) }}
       docker-manifest-sha: ${{ steps.get-docker-manifest-sha.outputs.sha }}
       image-tag: ${{ steps.get-docker-manifest-sha.outputs.image_tag }}
+      distro-version: ${{ steps.get-docker-manifest-sha.outputs.distro_version }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -130,8 +131,9 @@ jobs:
           fi
           
           echo "Using docker manifest digest: ${docker_manifest_digest}"
+          echo "Using version: ${version}"
           echo "digest=${docker_manifest_digest}" >> $GITHUB_OUTPUT
-          
+          echo "distro_version=${version}" >> $GITHUB_OUTPUT
           echo "image_tag=${version}${{ format('{0}',inputs.fips && '-fips' || '') }}@${docker_manifest_digest}" >> $GITHUB_OUTPUT
 
   e2e-tests:
@@ -147,7 +149,7 @@ jobs:
       TF_VAR_fips: ${{ inputs.fips }}
       TF_VAR_image_tag: ${{ needs.setup.outputs.image-tag }}
       TF_VAR_test_env_prefix: ${{ inputs.workspace_prefix }}
-      TF_VAR_nrdot_version: ${{ needs.setup.outputs.image-tag }}
+      TF_VAR_nrdot_version: ${{ needs.setup.outputs.distro-version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
