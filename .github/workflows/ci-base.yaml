@@ -59,16 +59,13 @@ jobs:
       artifact_name: ${{ steps.set-outputs.outputs.artifact_name }}
       docker_manifest_sha_name: ${{ steps.set-outputs.outputs.docker_manifest_sha_name }}
     steps:
-      - name: Clean Github Runner to free up space
-        run: |
-          df -h
-          # unused android sdk: https://github.com/actions/runner-images/issues/13315#issuecomment-3541347562
-          sudo rm -rf /usr/local/lib/android
-          df -h
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0 # required for tag metadata
+
+      - name: Free disk space
+        uses: ./.github/actions/free-disk-space
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -76,7 +73,7 @@ jobs:
           go-version: "~1.24"
           cache: ${{ env.caching_enabled }}
           check-latest: true
-        
+
       - name: Tidy go.mod files
         run: go mod tidy
 
@@ -215,7 +212,6 @@ jobs:
             distributions/${{ inputs.distribution }}/dist
           key: ${{ steps.generate_binary_key.outputs.binary_key }}
 
-
       - name: Force artifact version via git tag
         run: |
           version=$(./scripts/get-version.sh)
@@ -242,8 +238,7 @@ jobs:
           version: "2.11.2"
           args: ${{ env.goreleaser_args }}
           workdir: distributions/${{ inputs.distribution }}
-        
-      
+
       - name: Skip GoReleaser build (cached)
         if: steps.cache-goreleaser.outputs.cache-hit == 'true'
         run: echo "✅ GoReleaser build skipped - using cached binaries"
