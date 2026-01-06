@@ -181,7 +181,7 @@ licenses: go $(GO_LICENCE_DETECTOR)
 
 
 .PHONY: licenses-check
-licenses-check: licenses-check
+licenses-check: licenses
 	@git diff --name-only | grep -q $(NOTICE_OUTPUT) \
 		&& { \
 			echo "📜 Third party notices out of date, please run \"make licenses\" and commit the changes in this PR.";\

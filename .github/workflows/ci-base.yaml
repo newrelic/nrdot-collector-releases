@@ -99,7 +99,7 @@ jobs:
             distributions/${{ inputs.distribution }}/_build-fips
           key: ${{ steps.sources-cache-key.outputs.sources_key }}
 
-      - name: Generate sources
+      - name: Generate and validate sources
         if: steps.cache-sources.outputs.cache-hit != 'true'
         run: make ci DISTRO=${{ inputs.distribution }}
 
