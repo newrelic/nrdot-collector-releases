@@ -33,6 +33,11 @@ variable "nrdot_version" {
   type        = string
 }
 
+variable "commit_sha_short" {
+  description = "Short commit SHA (7 chars) for S3 artifact path"
+  type        = string
+}
+
 variable "test_key" {
   description = "Test key for scoping queries"
   type        = string

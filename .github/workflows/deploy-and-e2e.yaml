@@ -69,6 +69,7 @@ jobs:
       docker-manifest-sha: ${{ steps.get-docker-manifest-sha.outputs.sha }}
       image-tag: ${{ steps.get-docker-manifest-sha.outputs.image_tag }}
       distro-version: ${{ steps.get-docker-manifest-sha.outputs.distro_version }}
+      commit-sha-short: ${{ steps.get-docker-manifest-sha.outputs.commit_sha_short }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -112,15 +113,27 @@ jobs:
           fi
           
           version=$(cat ./artifacts/dist/metadata.json | jq -r '.version')
-          
+
           # Check if version exists and is not null/empty
           if [[ -z "$version" || "$version" == "null" ]]; then
             echo "::error::Version not found or empty in metadata.json"
             echo "Extracted version value: '$version'"
-            # List contents of ./artifacts with tree 
+            # List contents of ./artifacts with tree
             tree ./artifacts || echo "Could not list artifacts directory"
             exit 1
           fi
+
+          commit=$(cat ./artifacts/dist/metadata.json | jq -r '.commit')
+
+          # Check if commit exists and is not null/empty
+          if [[ -z "$commit" || "$commit" == "null" ]]; then
+            echo "::error::Commit not found or empty in metadata.json"
+            echo "Extracted commit value: '$commit'"
+            exit 1
+          fi
+
+          # Shorten commit to 7 characters
+          commit_short="${commit:0:7}"
           
           docker_manifest_digest=$(jq -r '.[] | select(.type == "Docker Manifest") | .extra.Digest' ./artifacts/dist/artifacts.json | head -1)
           # Check if docker_manifest_digest is valid
@@ -132,8 +145,10 @@ jobs:
           
           echo "Using docker manifest digest: ${docker_manifest_digest}"
           echo "Using version: ${version}"
+          echo "Using commit (short): ${commit_short}"
           echo "digest=${docker_manifest_digest}" >> $GITHUB_OUTPUT
           echo "distro_version=${version}" >> $GITHUB_OUTPUT
+          echo "commit_sha_short=${commit_short}" >> $GITHUB_OUTPUT
           echo "image_tag=${version}${{ format('{0}',inputs.fips && '-fips' || '') }}@${docker_manifest_digest}" >> $GITHUB_OUTPUT
 
   e2e-tests:
@@ -150,6 +165,7 @@ jobs:
       TF_VAR_image_tag: ${{ needs.setup.outputs.image-tag }}
       TF_VAR_test_env_prefix: ${{ inputs.workspace_prefix }}
       TF_VAR_nrdot_version: ${{ needs.setup.outputs.distro-version }}
+      TF_VAR_commit_sha_short: ${{ needs.setup.outputs.commit-sha-short }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4

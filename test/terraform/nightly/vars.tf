@@ -19,6 +19,11 @@ variable "nrdot_version" {
   type        = string
 }
 
+variable "commit_sha_short" {
+  description = "Short commit SHA (7 chars) for S3 artifact path"
+  type        = string
+}
+
 variable "nr_backend_url" {
   type        = string
   description = "NR endpoint used in test cluster"

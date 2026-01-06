@@ -23,4 +23,5 @@ module "ci_e2e_ec2" {
   permission_boundary = local.required_permissions_boundary_arn_for_new_roles
   test_key            = var.test_key
   nrdot_version       = var.nrdot_version
+  commit_sha_short    = var.commit_sha_short
 }

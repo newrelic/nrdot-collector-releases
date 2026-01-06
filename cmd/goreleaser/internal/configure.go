@@ -148,13 +148,12 @@ func Blobs(dist Distribution) []config.Blob {
 
 func Blob(dist Distribution) config.Blob {
 	version := "{{ .Version }}"
-	// TODO: name of uploaded artifacts should ideally contain sha,
-	//   then nightly could filter by that instead of relying on subsequent builds overwriting each other
+	shortCommit := "{{ .ShortCommit }}"
 	return config.Blob{
 		Provider:  "s3",
 		Region:    "us-east-1",
 		Bucket:    "nr-releases",
-		Directory: fmt.Sprintf("nrdot-collector-releases/%s/%s", dist.FullName, version),
+		Directory: fmt.Sprintf("nrdot-collector-releases/%s/%s/%s", dist.FullName, version, shortCommit),
 	}
 }
 
