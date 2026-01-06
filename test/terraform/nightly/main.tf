@@ -1,14 +1,10 @@
 locals {
   fips_str                                        = var.fips ? "-fips" : ""
-  test_env_name                                   = "${var.k8s_namespace_prefix}${local.fips_str}"
+  test_env_name                                   = "${var.test_env_prefix}${local.fips_str}"
   test_spec                                       = yamldecode(file("${path.module}/../../../distributions/${var.distro}/test/spec-nightly-action.yaml"))
   ec2_enabled                                     = try(local.test_spec.terraform.deploy_ec2, false)
   releases_bucket_name                            = "nr-releases"
   required_permissions_boundary_arn_for_new_roles = "arn:aws:iam::${var.aws_account_id}:policy/resource-provisioner-boundary"
-}
-
-data "aws_ecr_repository" "ecr_repo" {
-  name = var.distro
 }
 
 module "ci_e2e_ec2" {
