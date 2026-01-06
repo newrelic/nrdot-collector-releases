@@ -7,6 +7,10 @@ terraform {
     helm = {
       version = "2.17.0"
     }
+    # Required to delete random resources, can be removed after successful apply
+    random = {
+      version = "3.7.2"
+    }
   }
 }
 
@@ -23,11 +27,7 @@ terraform {
 provider "aws" {
   region              = var.aws_region
   allowed_account_ids = [var.aws_account_id]
-  # expect AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY as env vars
-
-  assume_role {
-    role_arn = "arn:aws:iam::${var.aws_account_id}:role/resource-provisioner"
-  }
+  # necessary role is already assumed as part of nightly workflow
 }
 
 data "aws_eks_cluster" "eks_cluster" {

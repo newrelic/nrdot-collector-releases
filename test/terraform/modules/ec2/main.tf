@@ -1,5 +1,4 @@
 locals {
-  collector_reported_hostname_prefix = "${var.test_environment}-${var.deploy_id}-${var.collector_distro}"
   instance_config = [
     {
       hostname_suffix    = "ec2_ubuntu22_04-0"
@@ -135,11 +134,14 @@ resource "aws_instance" "ubuntu" {
               latest_deb_package_filename=$(aws s3 ls $${deb_package_basepath} | sort -r | grep '${var.collector_distro}' | grep 'amd64.deb$' | head -n1 | awk '{print $NF}')
               echo "Installing collector from: $${deb_package_basepath}$${latest_deb_package_filename}"
               aws s3 cp "$${deb_package_basepath}$${latest_deb_package_filename}" /tmp/collector.deb
+              export NRDOT_MODE=ROOT
               dpkg -i /tmp/collector.deb
               ################################################
               echo 'Configuring Collector'
               echo 'NEW_RELIC_LICENSE_KEY=${var.nr_ingest_key}' >> /etc/${var.collector_distro}/${var.collector_distro}.conf
-              echo "OTEL_RESOURCE_ATTRIBUTES='testKey=${local.collector_reported_hostname_prefix}-${local.instance_config[count.index].hostname_suffix}'" >> /etc/${var.collector_distro}/${var.collector_distro}.conf
+              echo "OTEL_RESOURCE_ATTRIBUTES='testKey=${var.test_key}'" >> /etc/${var.collector_distro}/${var.collector_distro}.conf
               systemctl reload-or-restart ${var.collector_distro}.service
+              sleep 30
+              journalctl | grep ${var.collector_distro}
               EOF
 }

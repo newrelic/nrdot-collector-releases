@@ -4,6 +4,31 @@ podLabels:
   e2eTestLogSelector: nrdot-collector-host-e2e
 
 mode: daemonset
+# disable unused ports to avoid scheduling conflicts
+ports:
+  # otlp for telemetrygen sidecars
+  otlp:
+    enabled: true
+    containerPort: 4317
+    hostPort: null
+    protocol: TCP
+    appProtocol: grpc
+  otlp-http:
+    enabled: true
+    containerPort: 4318
+    hostPort: null
+    protocol: TCP
+  jaeger-compact:
+    enabled: false
+  jaeger-thrift:
+    enabled: false
+  jaeger-grpc:
+    enabled: false
+  zipkin:
+    enabled: false
+  metrics:
+    enabled: false
+
 
 configMap:
   create: false

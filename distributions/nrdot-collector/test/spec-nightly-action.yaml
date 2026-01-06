@@ -1,6 +1,9 @@
-description: nrdot-collector-host E2E Test
+description: nrdot-collector E2E Nightly Test
 
-# scoping is achieved via an implicit attribute `testKey=${SCENARIO_TAG}` expected on all tested telemetry
+# Scoping is achieved via an implicit attribute `testKey=${SCENARIO_TAG}` expected on all tested telemetry
+
+terraform:
+  deploy_ec2: true
 
 # YAML anchors for reusing test queries across scenarios
 .host_metrics_nrqls: &host_metrics_nrqls
@@ -247,7 +250,7 @@ scenarios:
       - |
         kubectl create secret generic 'collector-secrets' --namespace=nr-${SCENARIO_TAG} \
         --from-literal="nrIngestKey=${LICENSE_KEY}" --from-literal="nrBackendUrl=${NR_BACKEND_URL}" \
-        --from-literal="serviceName=nrdot-collector-host-e2e-host" --from-literal="scenarioTag=${SCENARIO_TAG}"
+        --from-literal="serviceName=nrdot-collector-e2e-host" --from-literal="scenarioTag=${SCENARIO_TAG}"
       - "helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts || echo 'skipping repo add: open-telemetry repo already exists'"
       - |
         chart_version=$(../../../scripts/get-otel-collector-chart-version.sh)
@@ -257,7 +260,7 @@ scenarios:
         --set image.tag=${IMAGE_TAG} \
         --set image.repository=${IMAGE_REPO}
     after:
-      - kubectl logs -l e2eTestLogSelector=nrdot-collector-host-e2e -n nr-${SCENARIO_TAG} --all-containers --prefix=true
+      - kubectl logs -l e2eTestLogSelector=nrdot-collector-e2e -n nr-${SCENARIO_TAG} --all-containers --prefix=true
       - kubectl get all -o wide
       - helm uninstall ${SCENARIO_TAG} --namespace nr-${SCENARIO_TAG}
       - kubectl delete namespace nr-${SCENARIO_TAG}
@@ -276,7 +279,7 @@ scenarios:
       - |
         kubectl create secret generic 'collector-secrets' --namespace=nr-${SCENARIO_TAG} \
         --from-literal="nrIngestKey=${LICENSE_KEY}" --from-literal="nrBackendUrl=${NR_BACKEND_URL}" \
-        --from-literal="serviceName=nrdot-collector-host-e2e-internal" --from-literal="scenarioTag=${SCENARIO_TAG}"
+        --from-literal="serviceName=nrdot-collector-e2e-internal" --from-literal="scenarioTag=${SCENARIO_TAG}"
       - "helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts || echo 'skipping repo add: open-telemetry repo already exists'"
       - |
         chart_version=$(../../../scripts/get-otel-collector-chart-version.sh)
@@ -286,7 +289,7 @@ scenarios:
         --set image.tag=${IMAGE_TAG} \
         --set image.repository=${IMAGE_REPO}
     after:
-      - kubectl logs -l e2eTestLogSelector=nrdot-collector-host-e2e -n nr-${SCENARIO_TAG} --all-containers --prefix=true
+      - kubectl logs -l e2eTestLogSelector=nrdot-collector-e2e -n nr-${SCENARIO_TAG} --all-containers --prefix=true
       - kubectl get all -o wide
       - helm uninstall ${SCENARIO_TAG} --namespace nr-${SCENARIO_TAG}
       - kubectl delete namespace nr-${SCENARIO_TAG}
@@ -297,3 +300,13 @@ scenarios:
       # Tests for existence of signal + specific attributes
       nrqls: *internal_telemetry_nrqls
 
+  # EC2 scenario
+  - description: ec2 host metrics and resourcedetection
+    before:
+      - cd ../../../test/terraform/nightly &&
+          terraform apply -auto-approve -var="test_key=${SCENARIO_TAG}"
+    after:
+      - cd ../../../test/terraform/nightly &&
+          terraform destroy -auto-approve -var="test_key=${SCENARIO_TAG}"
+    tests:
+      nrqls: *host_metrics_nrqls
