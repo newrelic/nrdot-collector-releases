@@ -116,7 +116,7 @@ resource "aws_instance" "ubuntu" {
   iam_instance_profile   = aws_iam_instance_profile.s3_read_access.name
 
   tags = {
-      Name = "${var.test_environment}-${var.collector_distro}-${local.instance_config[count.index].hostname_suffix}"
+      Name = "${var.test_environment}-${var.collector_distro}-${local.instance_config[count.index].test_key_suffix}"
   }
   
   user_data_replace_on_change = true
