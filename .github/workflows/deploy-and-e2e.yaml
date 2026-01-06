@@ -146,7 +146,7 @@ jobs:
       TF_VAR_distro: ${{ inputs.distro }}
       TF_VAR_fips: ${{ inputs.fips }}
       TF_VAR_image_tag: ${{ needs.setup.outputs.image-tag }}
-      TF_VAR_test_env_prefix: ${{ inputs.workspace_prefix }}
+      TF_VAR_k8s_namespace_prefix: ${{ inputs.workspace_prefix }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4

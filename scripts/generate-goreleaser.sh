@@ -19,7 +19,7 @@ if [[ -z $distributions ]]; then
     exit 1
 fi
 
-echo "📋 Generating goreleaser files for distributions: $distributions";
+echo "Generating goreleaser files for distributions: $distributions";
 
 for distribution in $(echo "$distributions" | tr "," "\n")
 do
