@@ -7,6 +7,10 @@ locals {
   required_permissions_boundary_arn_for_new_roles = "arn:aws:iam::${var.aws_account_id}:policy/resource-provisioner-boundary"
 }
 
+data "aws_eks_cluster" "eks_cluster" {
+  name = "aws-ci-e2etest"
+}
+
 module "ci_e2e_ec2" {
   count                = local.ec2_enabled ? 1 : 0
   source               = "../modules/ec2"
