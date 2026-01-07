@@ -7,10 +7,6 @@ terraform {
     helm = {
       version = "2.17.0"
     }
-    # Required to delete random resources, can be removed after successful apply
-    random = {
-      version = "3.7.2"
-    }
   }
 }
 
