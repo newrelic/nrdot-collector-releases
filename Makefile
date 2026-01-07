@@ -20,13 +20,11 @@ DISTRO ?= nrdot-collector-host
 ALL_DISTROS = nrdot-collector-host nrdot-collector-k8s nrdot-collector nrdot-collector-experimental
 
 
-.PHONY: ci
-ci: pre-sourcegen-check generate-sources generate-sources-fips post-sourcegen-check
-
+.PHONY: sources
+sources: generate-sources generate-sources-fips
 
 .PHONY: pre-sourcegen-check
 pre-sourcegen-check: ensure-goreleaser-up-to-date version-check
-
 
 .PHONY: post-sourcegen-check
 post-sourcegen-check: licenses-check

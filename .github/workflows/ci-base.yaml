@@ -99,9 +99,9 @@ jobs:
             distributions/${{ inputs.distribution }}/_build-fips
           key: ${{ steps.sources-cache-key.outputs.sources_key }}
 
-      - name: Generate and validate sources
+      - name: Generate sources
         if: steps.cache-sources.outputs.cache-hit != 'true'
-        run: make ci DISTRO=${{ inputs.distribution }}
+        run: make sources DISTRO=${{ inputs.distribution }}
 
       - name: Skip source generation (cached)
         if: steps.cache-sources.outputs.cache-hit == 'true'
@@ -109,6 +109,9 @@ jobs:
 
       - name: Verify source files exist
         run: ./scripts/validate-source-files.sh -d ${{ inputs.distribution }} -f ${{ inputs.fips }}
+
+      - name: Validate sources
+        run: make post-sourcegen-check DISTRO=${{ inputs.distribution }}
       
       - name: Configure AWS Credentials
         if: ${{ inputs.publish }}
