@@ -1,12 +1,12 @@
 locals {
   instance_config = [
     {
-      hostname_suffix    = "ec2_ubuntu22_04-0"
+      test_key_prefix    = "ec2_ubuntu22_04-0"
       release_verion     = "22.04"
       release_short_name = "jammy"
     },
     {
-      hostname_suffix    = "ec2_ubuntu24_04-0"
+      test_key_prefix    = "ec2_ubuntu24_04-0"
       release_verion     = "24.04"
       release_short_name = "noble"
     },
@@ -116,7 +116,7 @@ resource "aws_instance" "ubuntu" {
   iam_instance_profile   = aws_iam_instance_profile.s3_read_access.name
 
   tags = {
-      Name = "${var.test_environment}-${var.collector_distro}-${local.instance_config[count.index].hostname_suffix}"
+      Name = "${var.test_environment}-${var.collector_distro}-${local.instance_config[count.index].test_key_prefix}"
   }
   
   user_data_replace_on_change = true

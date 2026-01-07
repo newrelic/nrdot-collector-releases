@@ -29,19 +29,3 @@ provider "aws" {
   allowed_account_ids = [var.aws_account_id]
   # necessary role is already assumed as part of nightly workflow
 }
-
-data "aws_eks_cluster" "eks_cluster" {
-  name = "aws-ci-e2etest"
-}
-
-data "aws_eks_cluster_auth" "eks_cluster_auth" {
-  name = "aws-ci-e2etest"
-}
-
-provider "helm" {
-  kubernetes {
-    host                   = data.aws_eks_cluster.eks_cluster.endpoint
-    cluster_ca_certificate = base64decode(data.aws_eks_cluster.eks_cluster.certificate_authority[0].data)
-    token                  = data.aws_eks_cluster_auth.eks_cluster_auth.token
-  }
-}
