@@ -28,10 +28,14 @@ variable "collector_distro" {
   type        = string
 }
 
-variable "collector_version" {
+variable "nrdot_version" {
   description = "Version of NRDOT to install"
   type        = string
-  default     = "nightly"
+}
+
+variable "commit_sha_short" {
+  description = "Short commit SHA (7 chars) for S3 artifact path"
+  type        = string
 }
 
 variable "test_key" {

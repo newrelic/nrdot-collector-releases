@@ -11,7 +11,6 @@ locals {
       release_short_name = "noble"
     },
   ]
-  collector_version_specifier = "${var.collector_version == "" ? "" : "="}${var.collector_version}"
 }
 
 data "aws_ami" "ubuntu_ami" {
@@ -130,7 +129,7 @@ resource "aws_instance" "ubuntu" {
               curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
               unzip -q awscliv2.zip
               ./aws/install
-              deb_package_basepath='s3://${var.releases_bucket_name}/nrdot-collector-releases/${var.collector_distro}/${var.collector_version}/'
+              deb_package_basepath='s3://${var.releases_bucket_name}/nrdot-collector-releases/${var.collector_distro}/${var.nrdot_version}/${var.commit_sha_short}/'
               latest_deb_package_filename=$(aws s3 ls $${deb_package_basepath} | sort -r | grep '${var.collector_distro}' | grep 'amd64.deb$' | head -n1 | awk '{print $NF}')
               echo "Installing collector from: $${deb_package_basepath}$${latest_deb_package_filename}"
               aws s3 cp "$${deb_package_basepath}$${latest_deb_package_filename}" /tmp/collector.deb

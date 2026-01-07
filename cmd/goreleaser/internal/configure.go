@@ -148,11 +148,12 @@ func Blobs(dist Distribution) []config.Blob {
 
 func Blob(dist Distribution) config.Blob {
 	version := "{{ .Version }}"
+	shortCommit := "{{ .ShortCommit }}"
 	return config.Blob{
 		Provider:  "s3",
 		Region:    "us-east-1",
 		Bucket:    "nr-releases",
-		Directory: fmt.Sprintf("nrdot-collector-releases/%s/%s", dist.FullName, version),
+		Directory: fmt.Sprintf("nrdot-collector-releases/%s/%s/%s", dist.FullName, version, shortCommit),
 	}
 }
 

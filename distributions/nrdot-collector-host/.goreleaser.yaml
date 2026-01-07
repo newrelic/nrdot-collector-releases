@@ -129,7 +129,7 @@ blobs:
   - bucket: nr-releases
     provider: s3
     region: us-east-1
-    directory: nrdot-collector-releases/nrdot-collector-host/{{ .Version }}
+    directory: nrdot-collector-releases/nrdot-collector-host/{{ .Version }}/{{ .ShortCommit }}
 changelog:
   disable: "true"
 signs:

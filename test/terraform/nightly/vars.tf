@@ -14,6 +14,16 @@ variable "distro" {
   type        = string
 }
 
+variable "nrdot_version" {
+  description = "Version of NRDOT to test during nightly"
+  type        = string
+}
+
+variable "commit_sha_short" {
+  description = "Short commit SHA (7 chars) for S3 artifact path"
+  type        = string
+}
+
 variable "nr_backend_url" {
   type        = string
   description = "NR endpoint used in test cluster"
