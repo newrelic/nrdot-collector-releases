@@ -2,9 +2,13 @@ name: 🔄 CI | PR / Merge
 
 on:
   push:
-    branches: [main]
+    branches:
+      - 'main'
+      - 'feature/*'
   pull_request:
-    branches: [main]
+    branches:
+      - 'main'
+      - 'feature/*'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -36,6 +40,9 @@ jobs:
       matrix:
         fips: [false, true]
         distribution: ${{ fromJson(needs.setup.outputs.distributions) }}
+        exclude:
+          - fips: true
+            distribution: nrdot-collector-plus
     uses: ./.github/workflows/ci-base.yaml
     with:
       distribution: ${{ matrix.distribution }}

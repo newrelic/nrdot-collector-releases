@@ -29,6 +29,7 @@ const (
 	K8sDistro          = "nrdot-collector-k8s"
 	CoreDistro         = "nrdot-collector"
 	ExperimentalDistro = "nrdot-collector-experimental"
+	PlusDistro         = "nrdot-collector-plus"
 
 	ConfigFile = "config.yaml"
 )
@@ -129,11 +130,11 @@ func NewDistribution(baseDist string, fips bool) Distribution {
 }
 
 func isNoConfigDistro(dist string) bool {
-	return dist == K8sDistro || dist == ExperimentalDistro
+	return dist == K8sDistro || dist == ExperimentalDistro || dist == PlusDistro
 }
 
 func isImageOnlyDistro(dist string, fips bool) bool {
-	return dist == K8sDistro || fips
+	return dist == K8sDistro || dist == PlusDistro || fips
 }
 
 func Blobs(dist Distribution) []config.Blob {

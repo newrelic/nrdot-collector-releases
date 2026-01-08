@@ -1,0 +1,76 @@
+version: 2
+project_name: nrdot-collector-releases
+release:
+  draft: true
+  use_existing_draft: true
+  disable: "true"
+builds:
+  - id: nrdot-collector-plus
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm64
+    dir: _build
+    binary: nrdot-collector-plus
+    ldflags:
+      - -s
+      - -w
+    flags:
+      - -trimpath
+    env:
+      - CGO_ENABLED=0
+      - GOEXPERIMENT=
+archives:
+  - formats:
+      - binary
+snapshot:
+  version_template: '{{ incpatch .Version }}-SNAPSHOT-{{.ShortCommit}}'
+checksum:
+  disable: true
+dockers:
+  - goos: linux
+    goarch: amd64
+    dockerfile: Dockerfile
+    image_templates:
+      - '{{ .Env.REGISTRY }}/nrdot-collector-plus:{{ .Version }}-amd64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-plus:latest-amd64'
+    build_flag_templates:
+      - --pull
+      - --platform=linux/amd64
+      - --label=org.opencontainers.image.created={{.Date}}
+      - --label=org.opencontainers.image.name={{.ProjectName}}
+      - --label=org.opencontainers.image.revision={{.FullCommit}}
+      - --label=org.opencontainers.image.version={{.Version}}
+      - --label=org.opencontainers.image.source={{.GitURL}}
+      - --label=org.opencontainers.image.licenses=Apache-2.0
+      - --build-arg=DIST_NAME=nrdot-collector-plus
+    use: buildx
+  - goos: linux
+    goarch: arm64
+    dockerfile: Dockerfile
+    image_templates:
+      - '{{ .Env.REGISTRY }}/nrdot-collector-plus:{{ .Version }}-arm64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-plus:latest-arm64'
+    build_flag_templates:
+      - --pull
+      - --platform=linux/arm64
+      - --label=org.opencontainers.image.created={{.Date}}
+      - --label=org.opencontainers.image.name={{.ProjectName}}
+      - --label=org.opencontainers.image.revision={{.FullCommit}}
+      - --label=org.opencontainers.image.version={{.Version}}
+      - --label=org.opencontainers.image.source={{.GitURL}}
+      - --label=org.opencontainers.image.licenses=Apache-2.0
+      - --build-arg=DIST_NAME=nrdot-collector-plus
+    use: buildx
+docker_manifests:
+  - name_template: '{{ .Env.REGISTRY }}/nrdot-collector-plus:{{ .Version }}'
+    image_templates:
+      - '{{ .Env.REGISTRY }}/nrdot-collector-plus:{{ .Version }}-amd64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-plus:{{ .Version }}-arm64'
+  - name_template: '{{ .Env.REGISTRY }}/nrdot-collector-plus:latest'
+    image_templates:
+      - '{{ .Env.REGISTRY }}/nrdot-collector-plus:latest-amd64'
+      - '{{ .Env.REGISTRY }}/nrdot-collector-plus:latest-arm64'
+changelog:
+  disable: "true"
