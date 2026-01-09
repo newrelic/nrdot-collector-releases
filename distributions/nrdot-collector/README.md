@@ -29,8 +29,15 @@ This is the default use case for `nrdot-collector`, i.e. the published artifacts
 
 The following instructions assume you have read and understood the [general installation instructions](../README.md#installation).
 
+#### Linux Packages and NRDOT_MODE=ROOT
+Our linux packages (deb, rpm) install the collector as a `systemd` service. By default the collector is installed as a non-root user to prevent unintended access by accident. While this is usually sufficient for the `hostmetricsreceiver` to scrape host metrics, the `filelogreceiver` is likely to run into permission issues reading the default files from the `/var/log` directory and report errors for the affected files.
+Your options to address this issue are:
+- adjust the list of files to avoid accessing privileged files, either by providing your own complete config or by overwriting the list, e.g. `--config 'yaml:receivers::filelog::include: [/var/log/dpkg.log, /var/log/messages]'`
+- provide access to those files for the collector user, see `nrdot-collector.service` for the exact IDs
+- install the collector in root mode by setting the environment variable `NRDOT_MODE=ROOT` before calling `dpkg`/`rpm` to install the service
+
 #### Containerized Environments
-When deploying as a container, configure the [root_path](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/hostmetricsreceiver/README.md#collecting-host-metrics-from-inside-a-container-linux-only) and mount the host's file system accordingly for proper host metrics collection. See [troubleshooting guide](./TROUBLESHOOTING.md) for details.
+If you're deploying the collector as a container, make sure to configure the [root_path](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/hostmetricsreceiver/README.md#collecting-host-metrics-from-inside-a-container-linux-only) and mount the host's file system accordingly, otherwise NRDOT will not be able to collect host metrics. See also [our troubleshooting guide](./TROUBLESHOOTING.md) for more details.
 
 ### Configuration
 

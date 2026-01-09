@@ -132,6 +132,23 @@ If the distribution provides a default configuration, some options are exposed v
 
 We recommend using the default configuration, but you can always supply your own via the `--config` [flag](https://opentelemetry.io/docs/collector/configuration/). The full list of components available for configuration is available in the respective `manifest.yaml`.
 
+### Security Best Practices
+
+This section summarizes security practices we deem the most crucial. For comprehensive security guidance, refer to the [Collector configuration best practices](https://opentelemetry.io/docs/security/config-best-practices/).
+
+#### Minimize Privileged Access
+
+The collector should run as a non-root user whenever possible. If a use-case requires elevated privileges or RBAC, this will be documented in its installation instructions.
+
+#### Store secrets securely
+Store secrets like API keys or certificates in a dedicated secret store and avoid hardcoding secrets in your config and instead prefer [environment variable expansion](https://opentelemetry.io/docs/collector/configuration/#environment-variables).
+
+#### Secure connections
+Receivers and Exporters should always be configured to use a secure and authenticated connection. In practical terms this means
+- using TLS for outgoing and incoming (requires [setting up certificates](https://opentelemetry.io/docs/collector/configuration/#setting-up-certificates)) connections
+- require authentication for backends the collector writes to, e.g. via an API Key
+- bind receivers to specific network interfaces, such as a pod’s IP, or `localhost` instead of `0.0.0.0` ([#1](https://opentelemetry.io/docs/security/config-best-practices/#protect-against-denial-of-service-attacks), [#2](https://cwe.mitre.org/data/definitions/1327.html)) to prevent exposing unintended access
+
 ## Additional Notes
 
 ### Healthcheck
