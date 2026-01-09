@@ -1,20 +1,22 @@
 # NRDOT FIPS Compliance
 
+Note: This feature is preview-only as the FIPS-compliance is still under internal compliance review.
+
 ## What is FIPS?
 
 FIPS (Federal Information Processing Standards) are a set of computer security standards developed by [NIST (National Institute of Standards and Technology)](https://csrc.nist.gov/projects/cryptographic-module-validation-program/certificate/4953) and used by non-military government agencies and contractors. For encryption guidance, look [here](https://newrelic.atlassian.net/wiki/spaces/STAN/pages/3500179508/Encryption+-+New+FY25).
 
-We are currently targeting FIPS version 1.40.2 .
+We are currently targeting [FIPS version 140-2](https://csrc.nist.gov/pubs/fips/140-2/upd2/final).
 
 ## How does NRDOT achieve FIPS compliance?
 
-NRDOT achieves FIPS compliance by having dependencies that are also FIPS compliant.
-Go >=1.24 is not verified as FIPS compliant, but we can force our distro to only use cryptographic functions from BoringCrypto, which is an approved encryption library.
+NRDOT achieves FIPS 140-2 compliance by instructing the golang compiler to replace the standard cryptographic library with the [FIPS 140-2-compliant library BoringCrypto](https://csrc.nist.gov/projects/cryptographic-module-validation-program/certificate/4407) and ensuring that TLS uses [approved ciphers](https://github.com/newrelic/nrdot-collector-releases/blob/main/fips/validation/validate.sh#L27), see also below.
+
+Note: Once [golang is successfully FIPS 140-3 certified](https://go.dev/doc/security/fips140#in-process-module-versions), we will transition to using golang's native implementation.
 
 ## Which distributions are FIPS compliant?
 
-Where a given non-compliant distribution may have a simple version tag like `1.5.0`, 
-the corresponding FIPS-compliant distribution would have `-fips` tacked onto the end of the tag like `1.5.0-fips`.
+Compliant artifacts have a `-fips` suffix added to the version string, e.g. `1.5.0-fips`.
 
 _Note: FIPS-compliant distributions are only available for linux_
 

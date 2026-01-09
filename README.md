@@ -13,8 +13,6 @@ Generated assets are available in the corresponding Github [release page](https:
 - [nrdot-collector](./distributions/nrdot-collector/README.md): comprehensive core distribution with full OTLP gateway capabilities and host monitoring
 - [nrdot-collector-experimental](./distributions/nrdot-collector-experimental/README.md): Experimental integrations
 
-We also provide [FIPS-compliant docker images](./fips/README.md).
-
 Please refer to [this README](./distributions/README.md) for documentation on our distributions.
 
 ## Support
