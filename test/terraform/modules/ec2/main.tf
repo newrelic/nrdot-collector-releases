@@ -118,7 +118,6 @@ resource "aws_instance" "ubuntu" {
       Name = "${var.test_environment}-${var.collector_distro}-${local.instance_config[count.index].test_key_prefix}"
   }
   
-  # TODO: scope s3 install to commit sha once publish with sha is merged to main
   user_data_replace_on_change = true
   user_data                   = <<-EOF
               #!/bin/bash
