@@ -1,0 +1,12 @@
+name: "Free Disk Space"
+description: "Clean GitHub Runner to free up disk space by removing unused components"
+runs:
+  using: "composite"
+  steps:
+    - name: Clean GitHub Runner to free up space
+      shell: bash
+      run: |
+        df -h
+        # unused android sdk: https://github.com/actions/runner-images/issues/13315#issuecomment-3541347562
+        sudo rm -rf /usr/local/lib/android
+        df -h
