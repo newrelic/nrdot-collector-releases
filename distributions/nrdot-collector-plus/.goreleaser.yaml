@@ -35,6 +35,9 @@ dockers:
     image_templates:
       - '{{ .Env.REGISTRY }}/nrdot-collector-plus:{{ .Version }}-amd64'
       - '{{ .Env.REGISTRY }}/nrdot-collector-plus:latest-amd64'
+    extra_files:
+      - LICENSE_*
+      - THIRD_PARTY_NOTICES.md
     build_flag_templates:
       - --pull
       - --platform=linux/amd64
@@ -52,6 +55,9 @@ dockers:
     image_templates:
       - '{{ .Env.REGISTRY }}/nrdot-collector-plus:{{ .Version }}-arm64'
       - '{{ .Env.REGISTRY }}/nrdot-collector-plus:latest-arm64'
+    extra_files:
+      - LICENSE_*
+      - THIRD_PARTY_NOTICES.md
     build_flag_templates:
       - --pull
       - --platform=linux/arm64

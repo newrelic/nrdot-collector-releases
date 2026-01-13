@@ -32,6 +32,8 @@ const (
 	PlusDistro         = "nrdot-collector-plus"
 
 	ConfigFile = "config.yaml"
+	LicenseFile = "LICENSE_*"
+	ThirdPartyNoticesFile = "THIRD_PARTY_NOTICES.md"
 )
 
 type Distribution struct {
@@ -240,9 +242,13 @@ func Archives(dist Distribution) []config.Archive {
 // Archive configures a goreleaser archive (tarball).
 // https://goreleaser.com/customization/archive/
 func Archive(dist Distribution) config.Archive {
-	files := make([]config.File, 0)
 	goos := "windows"
 
+	files := make([]config.File, 0)
+	files = append(files,
+		config.File{Source: LicenseFile},
+		config.File{Source: ThirdPartyNoticesFile},
+	)
 	if dist.IncludeConfig {
 		files = append(files, config.File{
 			Source: ConfigFile,
@@ -284,6 +290,14 @@ func Package(dist Distribution) config.NFPM {
 			Source:      fmt.Sprintf("%s.conf", dist.FullName),
 			Destination: path.Join("/etc", dist.FullName, fmt.Sprintf("%s.conf", dist.FullName)),
 			Type:        "config|noreplace",
+		},
+		{
+			Source: LicenseFile,
+			Type: "license",
+		},
+		{
+			Source: ThirdPartyNoticesFile,
+			Type: "license",
 		},
 	}
 
@@ -377,6 +391,10 @@ func DockerImage(dist Distribution, arch string) config.Docker {
 	}
 
 	files := make([]string, 0)
+	files = append(files,
+		LicenseFile,
+		ThirdPartyNoticesFile,
+	)
 	if dist.IncludeConfig {
 		files = append(files, ConfigFile)
 	}

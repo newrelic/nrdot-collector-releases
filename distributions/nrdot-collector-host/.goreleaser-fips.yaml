@@ -49,6 +49,8 @@ dockers:
     image_templates:
       - '{{ .Env.REGISTRY }}/nrdot-collector-host:{{ .Version }}-fips-amd64'
     extra_files:
+      - LICENSE_*
+      - THIRD_PARTY_NOTICES.md
       - config.yaml
     build_flag_templates:
       - --pull
@@ -67,6 +69,8 @@ dockers:
     image_templates:
       - '{{ .Env.REGISTRY }}/nrdot-collector-host:{{ .Version }}-fips-arm64'
     extra_files:
+      - LICENSE_*
+      - THIRD_PARTY_NOTICES.md
       - config.yaml
     build_flag_templates:
       - --pull

@@ -48,6 +48,9 @@ dockers:
     dockerfile: Dockerfile
     image_templates:
       - '{{ .Env.REGISTRY }}/nrdot-collector-experimental:{{ .Version }}-fips-amd64'
+    extra_files:
+      - LICENSE_*
+      - THIRD_PARTY_NOTICES.md
     build_flag_templates:
       - --pull
       - --platform=linux/amd64
@@ -64,6 +67,9 @@ dockers:
     dockerfile: Dockerfile
     image_templates:
       - '{{ .Env.REGISTRY }}/nrdot-collector-experimental:{{ .Version }}-fips-arm64'
+    extra_files:
+      - LICENSE_*
+      - THIRD_PARTY_NOTICES.md
     build_flag_templates:
       - --pull
       - --platform=linux/arm64
