@@ -9,6 +9,7 @@ receivers:
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/filelogreceiver v0.142.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/hostmetricsreceiver v0.142.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/prometheusreceiver v0.142.0
+  - gomod: github.com/newrelic/nrdot-collector-components/receiver/nopreceiver v0.142.1
 processors:
   - gomod: go.opentelemetry.io/collector/processor/batchprocessor v0.142.0
   - gomod: go.opentelemetry.io/collector/processor/memorylimiterprocessor v0.142.0

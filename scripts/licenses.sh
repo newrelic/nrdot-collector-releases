@@ -33,9 +33,10 @@ do
   echo "📜 Building notice for ${distribution}..."
 
   ${GO} list -mod=mod -m -json all | ${GO_LICENCE_DETECTOR} \
-    -rules "${REPO_DIR}/internal/assets/license/rules.json" \
-    -noticeTemplate "${REPO_DIR}/internal/assets/license/THIRD_PARTY_NOTICES.md.tmpl" \
-    -noticeOut "${REPO_DIR}/distributions/${distribution}/${NOTICE_FILE}"
+    -rules "${REPO_DIR}/distributions/${distribution}/rules.json" \
+    -noticeTemplate "${REPO_DIR}/licenses/third_party/THIRD_PARTY_NOTICES.md.tmpl" \
+    -noticeOut "${REPO_DIR}/distributions/${distribution}/${NOTICE_FILE}" \
+    -overrides "${REPO_DIR}/licenses/third_party/overrides.jsonl"
 
   popd > /dev/null || exit
 done
