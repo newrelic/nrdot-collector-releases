@@ -48,6 +48,7 @@ type Distribution struct {
 	SkipUploadToBlobStorage bool
 	SkipChecksums           bool
 	SkipSigning             bool
+	IsProprietary 			bool
 }
 
 var (
@@ -105,6 +106,7 @@ func NewDistribution(baseDist string, fips bool) Distribution {
 		SkipArchives:            false,
 		SkipSigning:             false,
 		SkipChecksums:           false,
+		IsProprietary:           isProprietaryDistro(baseDist),
 	}
 
 	if isNoConfigDistro(baseDist) {
@@ -137,6 +139,10 @@ func isNoConfigDistro(dist string) bool {
 
 func isImageOnlyDistro(dist string, fips bool) bool {
 	return dist == K8sDistro || dist == PlusDistro || fips
+}
+
+func isProprietaryDistro(dist string) bool {
+	return dist == PlusDistro
 }
 
 func Blobs(dist Distribution) []config.Blob {
@@ -308,11 +314,17 @@ func Package(dist Distribution) config.NFPM {
 			Type:        "config",
 		})
 	}
+
+	licenseText := "Apache 2.0"
+	if dist.IsProprietary {
+		licenseText = "New Relic Software License"
+	}
+
 	return config.NFPM{
 		ID:          dist.FullName,
 		IDs:         []string{dist.FullName},
 		Formats:     []string{"deb", "rpm"},
-		License:     "Apache 2.0",
+		License:     licenseText,
 		Description: fmt.Sprintf("NRDOT Collector - %s", dist.FullName),
 		Maintainer:  "New Relic <otelcomm-team@newrelic.com>",
 		Overrides: map[string]config.NFPMOverridables{
@@ -399,6 +411,11 @@ func DockerImage(dist Distribution, arch string) config.Docker {
 		files = append(files, ConfigFile)
 	}
 
+	licenseText := "Apache-2.0"
+	if dist.IsProprietary {
+		licenseText = "New-Relic-Software-License"
+	}
+
 	return config.Docker{
 		ImageTemplates: imageTemplates,
 		Dockerfile:     dockerFile,
@@ -412,7 +429,7 @@ func DockerImage(dist Distribution, arch string) config.Docker {
 			label("revision", ".FullCommit"),
 			label("version", ".Version"),
 			label("source", ".GitURL"),
-			"--label=org.opencontainers.image.licenses=Apache-2.0",
+			fmt.Sprintf("--label=org.opencontainers.image.licenses=%s", licenseText),
 			fmt.Sprint("--build-arg=DIST_NAME=", dist.FullName),
 		},
 		Files:  files,
