@@ -24,5 +24,7 @@ echo "Generating goreleaser files for distributions: $distributions";
 for distribution in $(echo "$distributions" | tr "," "\n")
 do
     ${GO} run cmd/goreleaser/main.go -d "${distribution}" > "./distributions/${distribution}/.goreleaser.yaml"
-    ${GO} run cmd/goreleaser/main.go -d "${distribution}" -f > "./distributions/${distribution}/.goreleaser-fips.yaml"
+    if [[ "${distribution}" != "nrdot-collector-plus" ]]; then
+        ${GO} run cmd/goreleaser/main.go -d "${distribution}" -f > "./distributions/${distribution}/.goreleaser-fips.yaml"
+    fi
 done
