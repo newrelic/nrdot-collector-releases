@@ -38,5 +38,14 @@ do
     -noticeOut "${REPO_DIR}/distributions/${distribution}/${NOTICE_FILE}" \
     -overrides "${REPO_DIR}/licenses/third_party/overrides.jsonl"
 
+  echo "📜 Updating license text for ${distribution}..."
+
+  licenseFile="LICENSE_APACHE"
+  if [[ "${distribtion}" == "nrdot-collector-plus" ]]; then
+    licenseFile="LICENSE_NEWRELIC"
+  fi
+
+  cp "${REPO_DIR}/licenses/${licenseFile}" "${REPO_DIR}/distributions/${distribution}/${licenseFile}_${distribution}"
+
   popd > /dev/null || exit
 done

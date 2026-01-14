@@ -306,12 +306,10 @@ func Package(dist Distribution) config.NFPM {
 		{
 			Source:      dist.LicenseFile,
 			Destination: path.Join("/usr", "share", "doc", dist.FullName, dist.LicenseFile),
-			Type:        "license",
 		},
 		{
 			Source:      ThirdPartyNoticesFile,
 			Destination: path.Join("/usr", "share", "doc", dist.FullName, ThirdPartyNoticesFile),
-			Type:        "license",
 		},
 	}
 

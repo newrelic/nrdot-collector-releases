@@ -49,10 +49,8 @@ nfpms:
         type: config|noreplace
       - src: LICENSE_APACHE_nrdot-collector-host
         dst: /usr/share/doc/nrdot-collector-host/LICENSE_APACHE_nrdot-collector-host
-        type: license
       - src: THIRD_PARTY_NOTICES.md
         dst: /usr/share/doc/nrdot-collector-host/THIRD_PARTY_NOTICES.md
-        type: license
       - src: config.yaml
         dst: /etc/nrdot-collector-host/config.yaml
         type: config
