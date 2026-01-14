@@ -156,7 +156,7 @@ licenses: go generate-sources $(GO_LICENCE_DETECTOR)
 licenses-check: licenses
 	@git diff --name-only | grep -q $(NOTICE_OUTPUT) \
 		&& { \
-			echo "Third party notices out of date, please run \"make licenses\" and commit the changes in this PR.";\
+			echo "Third party notices or license files out of date, please run \"make licenses\" and commit the changes in this PR.";\
 			echo "Diff of $(NOTICE_OUTPUT):";\
 			git --no-pager diff HEAD -- */$(NOTICE_OUTPUT);\
 			exit 1;\
