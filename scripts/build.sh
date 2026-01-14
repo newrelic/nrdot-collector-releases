@@ -48,10 +48,6 @@ do
     build_folder="_build"
 
     if [[ "$fips" == true ]]; then
-      if [[ "$distribution" == "nrdot-collector-plus" ]]; then
-        echo "FIPS is not supported in NRDOT+. Skipping FIPS build."
-        continue
-      fi
       yq eval '
          .dist.name += "-fips" |
          .dist.description += "-fips" |
