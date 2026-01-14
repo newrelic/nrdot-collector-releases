@@ -92,6 +92,35 @@ else
         else
             echo "  Checksum validated"
         fi
+
+        ## Check for license files packaged in artifacts
+        case "$artifact" in
+            *.deb)
+                licenseBytes=$(ar p "$artifact" data.tar.gz | tar -tv | grep -F "LICENSE" | head -1 | awk '{print $5}')
+                thirdPartyNotices=$(ar p "$artifact" data.tar.gz | tar -tv | grep -F "THIRD_PARTY_NOTICES" | head -1 )
+            ;;
+            *.rpm|*.tar.gz|*.zip)
+                licenseBytes=$(tar -tvf "$artifact" | grep -F "LICENSE" | head -1 | awk '{print $5}')
+                thirdPartyNotices=$(tar -tvf "$artifact" | grep -F "LICENSE" | head -1)
+            ;;
+            *)
+                echo "❌ Unhandled archive type: $artifact"
+                exit 1
+            ;;
+        esac
+        if [ -z "${licenseBytes}" ]; then
+            echo "❌ License missing from ${artifact}!"
+            exit 1
+        fi
+        if [ "${licenseBytes}" == "0" ]; then
+            echo "❌ Empty license file in ${artifact}!"
+            exit 1
+        fi
+        if [ -z "${thirdPartyNotices}" ]; then
+            echo "❌ Third party notices missing from ${artifact}!"
+            exit 1
+        fi
+        echo "  License and third-party notice validated"
     done
     echo "✅ Archives and Packages validated!"
 fi
