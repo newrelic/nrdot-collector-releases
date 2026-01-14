@@ -36,7 +36,7 @@ dockers:
       - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:{{ .Version }}-amd64'
       - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:latest-amd64'
     extra_files:
-      - LICENSE_*
+      - LICENSE_APACHE_nrdot-collector-k8s
       - THIRD_PARTY_NOTICES.md
     build_flag_templates:
       - --pull
@@ -56,7 +56,7 @@ dockers:
       - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:{{ .Version }}-arm64'
       - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:latest-arm64'
     extra_files:
-      - LICENSE_*
+      - LICENSE_APACHE_nrdot-collector-k8s
       - THIRD_PARTY_NOTICES.md
     build_flag_templates:
       - --pull

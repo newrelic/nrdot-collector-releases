@@ -49,7 +49,7 @@ dockers:
     image_templates:
       - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:{{ .Version }}-fips-amd64'
     extra_files:
-      - LICENSE_*
+      - LICENSE_APACHE_nrdot-collector-k8s
       - THIRD_PARTY_NOTICES.md
     build_flag_templates:
       - --pull
@@ -68,7 +68,7 @@ dockers:
     image_templates:
       - '{{ .Env.REGISTRY }}/nrdot-collector-k8s:{{ .Version }}-fips-arm64'
     extra_files:
-      - LICENSE_*
+      - LICENSE_APACHE_nrdot-collector-k8s
       - THIRD_PARTY_NOTICES.md
     build_flag_templates:
       - --pull

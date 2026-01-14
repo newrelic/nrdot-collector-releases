@@ -31,7 +31,7 @@ archives:
         formats:
           - zip
     files:
-      - src: LICENSE_*
+      - src: LICENSE_APACHE_nrdot-collector-experimental
       - src: THIRD_PARTY_NOTICES.md
 snapshot:
   version_template: '{{ incpatch .Version }}-SNAPSHOT-{{.ShortCommit}}'
@@ -47,7 +47,7 @@ dockers:
       - '{{ .Env.REGISTRY }}/nrdot-collector-experimental:{{ .Version }}-amd64'
       - '{{ .Env.REGISTRY }}/nrdot-collector-experimental:latest-amd64'
     extra_files:
-      - LICENSE_*
+      - LICENSE_APACHE_nrdot-collector-experimental
       - THIRD_PARTY_NOTICES.md
     build_flag_templates:
       - --pull
@@ -67,7 +67,7 @@ dockers:
       - '{{ .Env.REGISTRY }}/nrdot-collector-experimental:{{ .Version }}-arm64'
       - '{{ .Env.REGISTRY }}/nrdot-collector-experimental:latest-arm64'
     extra_files:
-      - LICENSE_*
+      - LICENSE_APACHE_nrdot-collector-experimental
       - THIRD_PARTY_NOTICES.md
     build_flag_templates:
       - --pull

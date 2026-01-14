@@ -31,14 +31,14 @@ const (
 	ExperimentalDistro = "nrdot-collector-experimental"
 	PlusDistro         = "nrdot-collector-plus"
 
-	ConfigFile = "config.yaml"
-	LicenseFile = "LICENSE_*"
+	ConfigFile            = "config.yaml"
 	ThirdPartyNoticesFile = "THIRD_PARTY_NOTICES.md"
 )
 
 type Distribution struct {
 	BaseName                string
 	FullName                string // dist or dist-fips
+	LicenseFile             string
 	Fips                    bool
 	Goos                    []string
 	IgnoredBuilds           []config.IgnoredBuild
@@ -48,7 +48,7 @@ type Distribution struct {
 	SkipUploadToBlobStorage bool
 	SkipChecksums           bool
 	SkipSigning             bool
-	IsProprietary 			bool
+	IsProprietary           bool
 }
 
 var (
@@ -93,10 +93,11 @@ func NewDistribution(baseDist string, fips bool) Distribution {
 	}
 
 	dist := Distribution{
-		BaseName: baseDist,
-		FullName: fullName,
-		Fips:     fips,
-		Goos:     []string{"linux", "windows"},
+		BaseName:    baseDist,
+		FullName:    fullName,
+		LicenseFile: fmt.Sprintf("LICENSE_APACHE_%s", baseDist),
+		Fips:        fips,
+		Goos:        []string{"linux", "windows"},
 		IgnoredBuilds: []config.IgnoredBuild{
 			{Goos: "windows", Goarch: "arm64"},
 		},
@@ -106,7 +107,12 @@ func NewDistribution(baseDist string, fips bool) Distribution {
 		SkipArchives:            false,
 		SkipSigning:             false,
 		SkipChecksums:           false,
-		IsProprietary:           isProprietaryDistro(baseDist),
+		IsProprietary:           false,
+	}
+
+	if isProprietaryDistro(baseDist) {
+		dist.IsProprietary = true
+		dist.LicenseFile = fmt.Sprintf("LICENSE_NEWRELIC_%s", baseDist)
 	}
 
 	if isNoConfigDistro(baseDist) {
@@ -252,7 +258,7 @@ func Archive(dist Distribution) config.Archive {
 
 	files := make([]config.File, 0)
 	files = append(files,
-		config.File{Source: LicenseFile},
+		config.File{Source: dist.LicenseFile},
 		config.File{Source: ThirdPartyNoticesFile},
 	)
 	if dist.IncludeConfig {
@@ -298,12 +304,14 @@ func Package(dist Distribution) config.NFPM {
 			Type:        "config|noreplace",
 		},
 		{
-			Source: LicenseFile,
-			Type: "license",
+			Source:      dist.LicenseFile,
+			Destination: path.Join("/usr", "share", "doc", dist.FullName, dist.LicenseFile),
+			Type:        "license",
 		},
 		{
-			Source: ThirdPartyNoticesFile,
-			Type: "license",
+			Source:      ThirdPartyNoticesFile,
+			Destination: path.Join("/usr", "share", "doc", dist.FullName, ThirdPartyNoticesFile),
+			Type:        "license",
 		},
 	}
 
@@ -404,7 +412,7 @@ func DockerImage(dist Distribution, arch string) config.Docker {
 
 	files := make([]string, 0)
 	files = append(files,
-		LicenseFile,
+		dist.LicenseFile,
 		ThirdPartyNoticesFile,
 	)
 	if dist.IncludeConfig {

@@ -35,7 +35,7 @@ archives:
         formats:
           - zip
     files:
-      - src: LICENSE_*
+      - src: LICENSE_APACHE_nrdot-collector-host
       - src: THIRD_PARTY_NOTICES.md
       - src: config.yaml
 nfpms:
@@ -47,11 +47,11 @@ nfpms:
       - src: nrdot-collector-host.conf
         dst: /etc/nrdot-collector-host/nrdot-collector-host.conf
         type: config|noreplace
-      - src: LICENSE_*
-        dst: ""
+      - src: LICENSE_APACHE_nrdot-collector-host
+        dst: /usr/share/doc/nrdot-collector-host/LICENSE_APACHE_nrdot-collector-host
         type: license
       - src: THIRD_PARTY_NOTICES.md
-        dst: ""
+        dst: /usr/share/doc/nrdot-collector-host/THIRD_PARTY_NOTICES.md
         type: license
       - src: config.yaml
         dst: /etc/nrdot-collector-host/config.yaml
@@ -93,7 +93,7 @@ dockers:
       - '{{ .Env.REGISTRY }}/nrdot-collector-host:{{ .Version }}-amd64'
       - '{{ .Env.REGISTRY }}/nrdot-collector-host:latest-amd64'
     extra_files:
-      - LICENSE_*
+      - LICENSE_APACHE_nrdot-collector-host
       - THIRD_PARTY_NOTICES.md
       - config.yaml
     build_flag_templates:
@@ -114,7 +114,7 @@ dockers:
       - '{{ .Env.REGISTRY }}/nrdot-collector-host:{{ .Version }}-arm64'
       - '{{ .Env.REGISTRY }}/nrdot-collector-host:latest-arm64'
     extra_files:
-      - LICENSE_*
+      - LICENSE_APACHE_nrdot-collector-host
       - THIRD_PARTY_NOTICES.md
       - config.yaml
     build_flag_templates:
