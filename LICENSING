@@ -3,7 +3,3 @@ All files and folders, except the following, are subject to the Apache 2.0 licen
 The following folders are subject to the license listed. The full license text can be found in the respective directory in a file with the name pattern `LICENSE_*`, e.g. `LICENSE_NEWRELIC`:
 
 New Relic Software License - distributions/nrdot-collector-plus
-
-The following folder contains tools intended for internal usage and not for repackaging. Each tool is licensed separately. Licensing information for each tool can be found in internal/tools/THIRD_PARTY_NOTICES.md.
-
-- internal/tools
