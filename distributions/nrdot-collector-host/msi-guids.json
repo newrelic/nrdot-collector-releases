@@ -1,0 +1,10 @@
+{
+  "standard": {
+    "product_upgrade_code": "TEMP-PRODUCT-CODE-HOST",
+    "component_guid": "TEMP-COMPONENT-GUID-HOST"
+  },
+  "fips": {
+    "product_upgrade_code": "TEMP-PRODUCT-CODE-HOST-FIPS",
+    "component_guid": "TEMP-COMPONENT-GUID-HOST-FIPS"
+  }
+}
