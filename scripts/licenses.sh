@@ -2,20 +2,18 @@
 # Copyright New Relic, Inc. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-
 REPO_DIR="$( cd "$(dirname "$( dirname "${BASH_SOURCE[0]}" )")" &> /dev/null && pwd )"
 
 GO_LICENCE_DETECTOR=''
 NOTICE_FILE=''
 
-while getopts d:b:n:g:l: flag
+while getopts d:b:n:g: flag
 do
   case "${flag}" in
     d) distributions=${OPTARG};;
     b) GO_LICENCE_DETECTOR=${OPTARG};;
     n) NOTICE_FILE=${OPTARG};;
     g) GO=${OPTARG};;
-    l) NRLICENSE=${OPTARG};;
     *) exit 1;;
   esac
 done
