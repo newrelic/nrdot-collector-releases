@@ -22,7 +22,7 @@ var errMissingGoMod = errors.New("missing gomod specification for module")
 
 const coreModule = "go.opentelemetry.io/collector"
 const contribModule = "github.com/open-telemetry/opentelemetry-collector-contrib"
-const nrModule = "github.com/newrelic/nrdot-collector-releases"
+const nrModule = "github.com/newrelic/nrdot-collector-components"
 type Versions struct {
 	BetaCoreVersion    string `json:"betaCoreVersion"`
 	BetaContribVersion string `json:"betaContribVersion"`
