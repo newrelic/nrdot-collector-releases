@@ -86,10 +86,17 @@ func TestConfig_IsOtelContribComponent(t *testing.T) {
 	assert.False(t, isOtelContribComponent("github.com/some/other/module"))
 }
 
+func TestConfig_IsNrdotComponent(t *testing.T) {
+	assert.True(t, isNrdotComponent("github.com/newrelic/nrdot-collector-components/component v1.0.0"))
+	assert.True(t, isNrdotComponent("github.com/newrelic/nrdot-collector-components/component"))
+	assert.False(t, isNrdotComponent("github.com/some/other/module"))
+}
+
 func TestConfig_SetVersions(t *testing.T) {
 	cfg := &Config{
 		Extensions: []Module{
 			{GoMod: "github.com/open-telemetry/opentelemetry-collector-contrib/component v0.1.0"},
+			{GoMod: "github.com/newrelic/nrdot-collector-components/component v0.1.0"},
 		},
 		Receivers: []Module{
 			{GoMod: "go.opentelemetry.io/collector v1.0.0"},
@@ -103,6 +110,7 @@ func TestConfig_SetVersions(t *testing.T) {
 	assert.Equal(t, "v1.0.0", cfg.Versions.StableCoreVersion)
 	assert.Equal(t, "v0.1.0", cfg.Versions.BetaCoreVersion)
 	assert.Equal(t, "v0.1.0", cfg.Versions.BetaContribVersion)
+	assert.Equal(t, "v0.1.0", cfg.Versions.NrVersion)
 }
 
 func TestConfig_SetVersions_MissingCore(t *testing.T) {
