@@ -5,13 +5,14 @@ REPO_DIR="$( cd "$(dirname "$( dirname "${BASH_SOURCE[0]}" )")" &> /dev/null && 
 GO_LICENCE_DETECTOR=''
 NOTICE_FILE=''
 
-while getopts d:b:n:g: flag
+while getopts d:b:n:g:l: flag
 do
   case "${flag}" in
     d) distributions=${OPTARG};;
     b) GO_LICENCE_DETECTOR=${OPTARG};;
     n) NOTICE_FILE=${OPTARG};;
     g) GO=${OPTARG};;
+    l) NRLICENSE=${OPTARG};;
     *) exit 1;;
   esac
 done
@@ -32,6 +33,7 @@ do
 
   echo "📜 Building notice for ${distribution}..."
 
+  # Generate third-party notices
   ${GO} list -mod=mod -m -json all | ${GO_LICENCE_DETECTOR} \
     -rules "${REPO_DIR}/distributions/${distribution}/rules.json" \
     -noticeTemplate "${REPO_DIR}/licenses/third_party/THIRD_PARTY_NOTICES.md.tmpl" \
@@ -41,10 +43,11 @@ do
   echo "📜 Updating license text for ${distribution}..."
 
   licenseFile="LICENSE_APACHE"
-  if [[ "${distribtion}" == "nrdot-collector-plus" ]]; then
+  if [[ "${distribution}" == "nrdot-collector-plus" ]]; then
     licenseFile="LICENSE_NEWRELIC"
   fi
 
+  # Generate license files
   cp "${REPO_DIR}/licenses/${licenseFile}" "${REPO_DIR}/distributions/${distribution}/${licenseFile}_${distribution}"
 
   popd > /dev/null || exit
