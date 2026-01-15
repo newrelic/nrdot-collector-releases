@@ -51,6 +51,7 @@ permissions:
 env:
   caching_enabled: ${{ !inputs.publish }}
   registry: "${{ secrets.aws_account_id }}.dkr.ecr.us-east-1.amazonaws.com"
+  GOPRIVATE: "github.com/newrelic/nrdot-collector-components" #Prevent looking at public proxy for private repo
 
 jobs:
   build:
