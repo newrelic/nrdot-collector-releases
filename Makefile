@@ -151,12 +151,12 @@ HEADER_GEN_DIRS ?= .github cmd fips internal scripts
 FILENAME?=$(shell git branch --show-current)
 NOTICE_OUTPUT?=THIRD_PARTY_NOTICES.md
 .PHONY: licenses
-licenses: go generate-sources $(GO_LICENCE_DETECTOR)
+licenses: go generate-sources $(GO_LICENCE_DETECTOR) $(NRLICENSE)
 	@./scripts/licenses.sh -d "${DISTRIBUTIONS}" -b ${GO_LICENCE_DETECTOR} -n ${NOTICE_OUTPUT} -g ${GO}
 	$(NRLICENSE) --fix --fork-commit 6451f322bfe1e62962d3d87b50d785de8048e865 ${HEADER_GEN_DIRS}
 
 .PHONY: headers-check
-headers-check:
+headers-check: go $(NRLICENSE)
 	$(NRLICENSE) --check --fork-commit 6451f322bfe1e62962d3d87b50d785de8048e865 ${HEADER_GEN_DIRS}
 
 .PHONY: licenses-check
