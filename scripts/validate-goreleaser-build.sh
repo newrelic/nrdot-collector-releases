@@ -97,14 +97,29 @@ else
         fi
 
         ## Check for license files packaged in artifacts
+        cmd=""
         case "$artifact" in
             *.deb)
-                licenseBytes=$(ar p "$artifact" data.tar.gz | tar -tv | grep -F "LICENSE" | head -1 | awk '{print $5}')
-                thirdPartyNotices=$(ar p "$artifact" data.tar.gz | tar -tv | grep -F "THIRD_PARTY_NOTICES" | head -1 )
+                licenseBytes=$(ar p "$artifact" data.tar.gz | tar -tvz | grep -F "LICENSE" | head -1 | awk '{print $5}')
+                thirdPartyNotices=$(ar p "$artifact" data.tar.gz | tar -tvz | grep -F "THIRD_PARTY_NOTICES" | head -1 )
             ;;
-            *.rpm|*.tar.gz|*.zip)
-                licenseBytes=$(tar -tvf "$artifact" | grep -F "LICENSE" | head -1 | awk '{print $5}')
-                thirdPartyNotices=$(tar -tvf "$artifact" | grep -F "LICENSE" | head -1)
+            *.rpm)
+                if command -v rpm >/dev/null 2>&1; then
+                    licenseBytes=$(rpm -qp --dump --nosignature "$artifact" | grep -F "LICENSE" | head -1 | awk '{print $2}')
+                    thirdPartyNotices=$(rpm -qp --dump --nosignature "$artifact" | grep -F "THIRD_PARTY_NOTICES" | head -1 | awk '{print $1}')
+                else
+                    # fallback for local validation; rpm is not installed by default on macOS, but tar can open rpm (only on macOS)
+                    licenseBytes=$(tar -tvf "$artifact" | grep -F "LICENSE" | head -1 | awk '{print $5}')
+                    thirdPartyNotices=$(tar -tvf "$artifact" | grep -F "THIRD_PARTY_NOTICES" | head -1)
+                fi
+            ;;
+            *.tar.gz)
+                licenseBytes=$(tar -tvzf "$artifact" | grep -F "LICENSE" | head -1 | awk '{print $5}')
+                thirdPartyNotices=$(tar -tvzf "$artifact" | grep -F "THIRD_PARTY_NOTICES" | head -1)
+            ;;
+            *.zip)
+                licenseBytes=$(unzip -l "$artifact" | grep -F "LICENSE" | head -1 | awk '{print $1}')
+                thirdPartyNotices=$(unzip -l "$artifact" | grep -F "THIRD_PARTY_NOTICES" | head -1)
             ;;
             *)
                 echo "❌ Unhandled archive type: $artifact"
