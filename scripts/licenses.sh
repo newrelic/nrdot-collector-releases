@@ -1,4 +1,6 @@
 #!/bin/bash
+# Copyright New Relic, Inc. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
 
 REPO_DIR="$( cd "$(dirname "$( dirname "${BASH_SOURCE[0]}" )")" &> /dev/null && pwd )"
 
@@ -32,10 +34,22 @@ do
 
   echo "📜 Building notice for ${distribution}..."
 
+  # Generate third-party notices
   ${GO} list -mod=mod -m -json all | ${GO_LICENCE_DETECTOR} \
-    -rules "${REPO_DIR}/internal/assets/license/rules.json" \
-    -noticeTemplate "${REPO_DIR}/internal/assets/license/THIRD_PARTY_NOTICES.md.tmpl" \
-    -noticeOut "${REPO_DIR}/distributions/${distribution}/${NOTICE_FILE}"
+    -rules "${REPO_DIR}/distributions/${distribution}/rules.json" \
+    -noticeTemplate "${REPO_DIR}/licenses/third_party/THIRD_PARTY_NOTICES.md.tmpl" \
+    -noticeOut "${REPO_DIR}/distributions/${distribution}/${NOTICE_FILE}" \
+    -overrides "${REPO_DIR}/licenses/third_party/overrides.jsonl"
+
+  echo "📜 Updating license text for ${distribution}..."
+
+  licenseFile="LICENSE_APACHE"
+  if [[ "${distribution}" == "nrdot-collector-plus" ]]; then
+    licenseFile="LICENSE_NEWRELIC"
+  fi
+
+  # Generate license files
+  cp "${REPO_DIR}/licenses/${licenseFile}" "${REPO_DIR}/distributions/${distribution}/${licenseFile}_${distribution}"
 
   popd > /dev/null || exit
 done

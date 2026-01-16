@@ -1,4 +1,7 @@
 #!/bin/bash
+# Copyright New Relic, Inc. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 # Script to validate a goreleaser distribution's dist file
 set -e
 
@@ -92,6 +95,50 @@ else
         else
             echo "  Checksum validated"
         fi
+
+        ## Check for license files packaged in artifacts
+        cmd=""
+        case "$artifact" in
+            *.deb)
+                licenseBytes=$(ar p "$artifact" data.tar.gz | tar -tvz | grep -F "LICENSE" | head -1 | awk '{print $5}')
+                thirdPartyNotices=$(ar p "$artifact" data.tar.gz | tar -tvz | grep -F "THIRD_PARTY_NOTICES" | head -1 )
+            ;;
+            *.rpm)
+                if command -v rpm >/dev/null 2>&1; then
+                    licenseBytes=$(rpm -qp --dump --nosignature "$artifact" | grep -F "LICENSE" | head -1 | awk '{print $2}')
+                    thirdPartyNotices=$(rpm -qp --dump --nosignature "$artifact" | grep -F "THIRD_PARTY_NOTICES" | head -1 | awk '{print $1}')
+                else
+                    # fallback for local validation; rpm is not installed by default on macOS, but tar can open rpm (only on macOS)
+                    licenseBytes=$(tar -tvf "$artifact" | grep -F "LICENSE" | head -1 | awk '{print $5}')
+                    thirdPartyNotices=$(tar -tvf "$artifact" | grep -F "THIRD_PARTY_NOTICES" | head -1)
+                fi
+            ;;
+            *.tar.gz)
+                licenseBytes=$(tar -tvzf "$artifact" | grep -F "LICENSE" | head -1 | awk '{print $5}')
+                thirdPartyNotices=$(tar -tvzf "$artifact" | grep -F "THIRD_PARTY_NOTICES" | head -1)
+            ;;
+            *.zip)
+                licenseBytes=$(unzip -l "$artifact" | grep -F "LICENSE" | head -1 | awk '{print $1}')
+                thirdPartyNotices=$(unzip -l "$artifact" | grep -F "THIRD_PARTY_NOTICES" | head -1)
+            ;;
+            *)
+                echo "❌ Unhandled archive type: $artifact"
+                exit 1
+            ;;
+        esac
+        if [ -z "${licenseBytes}" ]; then
+            echo "❌ License missing from ${artifact}!"
+            exit 1
+        fi
+        if [ "${licenseBytes}" == "0" ]; then
+            echo "❌ Empty license file in ${artifact}!"
+            exit 1
+        fi
+        if [ -z "${thirdPartyNotices}" ]; then
+            echo "❌ Third party notices missing from ${artifact}!"
+            exit 1
+        fi
+        echo "  License and third-party notice validated"
     done
     echo "✅ Archives and Packages validated!"
 fi

@@ -35,6 +35,9 @@ dockers:
     image_templates:
       - '{{ .Env.REGISTRY }}/nrdot-collector-plus:{{ .Version }}-amd64'
       - '{{ .Env.REGISTRY }}/nrdot-collector-plus:latest-amd64'
+    extra_files:
+      - LICENSE_NEWRELIC_nrdot-collector-plus
+      - THIRD_PARTY_NOTICES.md
     build_flag_templates:
       - --pull
       - --platform=linux/amd64
@@ -43,7 +46,7 @@ dockers:
       - --label=org.opencontainers.image.revision={{.FullCommit}}
       - --label=org.opencontainers.image.version={{.Version}}
       - --label=org.opencontainers.image.source={{.GitURL}}
-      - --label=org.opencontainers.image.licenses=Apache-2.0
+      - --label=org.opencontainers.image.licenses=New-Relic-Software-License
       - --build-arg=DIST_NAME=nrdot-collector-plus
     use: buildx
   - goos: linux
@@ -52,6 +55,9 @@ dockers:
     image_templates:
       - '{{ .Env.REGISTRY }}/nrdot-collector-plus:{{ .Version }}-arm64'
       - '{{ .Env.REGISTRY }}/nrdot-collector-plus:latest-arm64'
+    extra_files:
+      - LICENSE_NEWRELIC_nrdot-collector-plus
+      - THIRD_PARTY_NOTICES.md
     build_flag_templates:
       - --pull
       - --platform=linux/arm64
@@ -60,7 +66,7 @@ dockers:
       - --label=org.opencontainers.image.revision={{.FullCommit}}
       - --label=org.opencontainers.image.version={{.Version}}
       - --label=org.opencontainers.image.source={{.GitURL}}
-      - --label=org.opencontainers.image.licenses=Apache-2.0
+      - --label=org.opencontainers.image.licenses=New-Relic-Software-License
       - --build-arg=DIST_NAME=nrdot-collector-plus
     use: buildx
 docker_manifests:

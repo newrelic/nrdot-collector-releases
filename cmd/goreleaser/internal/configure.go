@@ -1,3 +1,6 @@
+// Copyright New Relic, Inc. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -31,12 +34,14 @@ const (
 	ExperimentalDistro = "nrdot-collector-experimental"
 	PlusDistro         = "nrdot-collector-plus"
 
-	ConfigFile = "config.yaml"
+	ConfigFile            = "config.yaml"
+	ThirdPartyNoticesFile = "THIRD_PARTY_NOTICES.md"
 )
 
 type Distribution struct {
 	BaseName                string
 	FullName                string // dist or dist-fips
+	LicenseFile             string
 	Fips                    bool
 	Goos                    []string
 	IgnoredBuilds           []config.IgnoredBuild
@@ -46,6 +51,7 @@ type Distribution struct {
 	SkipUploadToBlobStorage bool
 	SkipChecksums           bool
 	SkipSigning             bool
+	IsProprietary           bool
 }
 
 var (
@@ -90,10 +96,11 @@ func NewDistribution(baseDist string, fips bool) Distribution {
 	}
 
 	dist := Distribution{
-		BaseName: baseDist,
-		FullName: fullName,
-		Fips:     fips,
-		Goos:     []string{"linux", "windows"},
+		BaseName:    baseDist,
+		FullName:    fullName,
+		LicenseFile: fmt.Sprintf("LICENSE_APACHE_%s", baseDist),
+		Fips:        fips,
+		Goos:        []string{"linux", "windows"},
 		IgnoredBuilds: []config.IgnoredBuild{
 			{Goos: "windows", Goarch: "arm64"},
 		},
@@ -103,6 +110,12 @@ func NewDistribution(baseDist string, fips bool) Distribution {
 		SkipArchives:            false,
 		SkipSigning:             false,
 		SkipChecksums:           false,
+		IsProprietary:           false,
+	}
+
+	if isProprietaryDistro(baseDist) {
+		dist.IsProprietary = true
+		dist.LicenseFile = fmt.Sprintf("LICENSE_NEWRELIC_%s", baseDist)
 	}
 
 	if isNoConfigDistro(baseDist) {
@@ -135,6 +148,10 @@ func isNoConfigDistro(dist string) bool {
 
 func isImageOnlyDistro(dist string, fips bool) bool {
 	return dist == K8sDistro || dist == PlusDistro || fips
+}
+
+func isProprietaryDistro(dist string) bool {
+	return dist == PlusDistro
 }
 
 func Blobs(dist Distribution) []config.Blob {
@@ -240,9 +257,13 @@ func Archives(dist Distribution) []config.Archive {
 // Archive configures a goreleaser archive (tarball).
 // https://goreleaser.com/customization/archive/
 func Archive(dist Distribution) config.Archive {
-	files := make([]config.File, 0)
 	goos := "windows"
 
+	files := make([]config.File, 0)
+	files = append(files,
+		config.File{Source: dist.LicenseFile},
+		config.File{Source: ThirdPartyNoticesFile},
+	)
 	if dist.IncludeConfig {
 		files = append(files, config.File{
 			Source: ConfigFile,
@@ -285,6 +306,14 @@ func Package(dist Distribution) config.NFPM {
 			Destination: path.Join("/etc", dist.FullName, fmt.Sprintf("%s.conf", dist.FullName)),
 			Type:        "config|noreplace",
 		},
+		{
+			Source:      dist.LicenseFile,
+			Destination: path.Join("/usr", "share", "doc", dist.FullName, dist.LicenseFile),
+		},
+		{
+			Source:      ThirdPartyNoticesFile,
+			Destination: path.Join("/usr", "share", "doc", dist.FullName, ThirdPartyNoticesFile),
+		},
 	}
 
 	if dist.IncludeConfig {
@@ -294,11 +323,17 @@ func Package(dist Distribution) config.NFPM {
 			Type:        "config",
 		})
 	}
+
+	licenseText := "Apache 2.0"
+	if dist.IsProprietary {
+		licenseText = "New Relic Software License"
+	}
+
 	return config.NFPM{
 		ID:          dist.FullName,
 		IDs:         []string{dist.FullName},
 		Formats:     []string{"deb", "rpm"},
-		License:     "Apache 2.0",
+		License:     licenseText,
 		Description: fmt.Sprintf("NRDOT Collector - %s", dist.FullName),
 		Maintainer:  "New Relic <otelcomm-team@newrelic.com>",
 		Overrides: map[string]config.NFPMOverridables{
@@ -377,8 +412,17 @@ func DockerImage(dist Distribution, arch string) config.Docker {
 	}
 
 	files := make([]string, 0)
+	files = append(files,
+		dist.LicenseFile,
+		ThirdPartyNoticesFile,
+	)
 	if dist.IncludeConfig {
 		files = append(files, ConfigFile)
+	}
+
+	licenseText := "Apache-2.0"
+	if dist.IsProprietary {
+		licenseText = "New-Relic-Software-License"
 	}
 
 	return config.Docker{
@@ -394,7 +438,7 @@ func DockerImage(dist Distribution, arch string) config.Docker {
 			label("revision", ".FullCommit"),
 			label("version", ".Version"),
 			label("source", ".GitURL"),
-			"--label=org.opencontainers.image.licenses=Apache-2.0",
+			fmt.Sprintf("--label=org.opencontainers.image.licenses=%s", licenseText),
 			fmt.Sprint("--build-arg=DIST_NAME=", dist.FullName),
 		},
 		Files:  files,
