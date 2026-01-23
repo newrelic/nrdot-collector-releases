@@ -15,6 +15,7 @@ TOOLS_PKG_NAMES := $(shell grep -E $(TOOLS_MOD_REGEX) < $(TOOLS_MOD_DIR)/tools.g
 TOOLS_BIN_NAMES := $(addprefix $(TOOLS_BIN_DIR)/, $(notdir $(shell echo $(TOOLS_PKG_NAMES))))
 GO_LICENCE_DETECTOR        := $(TOOLS_BIN_DIR)/go-licence-detector
 GO_LICENCE_DETECTOR_CONFIG   := $(SRC_ROOT)/internal/assets/license/rules.json
+NRLICENSE := $(TOOLS_BIN_DIR)/nrlicense
 
 DISTRIBUTIONS ?= "nrdot-collector-host,nrdot-collector-k8s,nrdot-collector,nrdot-collector-experimental"
 
@@ -145,18 +146,24 @@ $(TOOLS_BIN_DIR):
 $(TOOLS_BIN_NAMES): $(TOOLS_BIN_DIR) $(TOOLS_MOD_DIR)/go.mod
 	cd $(TOOLS_MOD_DIR) && $(GOCMD) build -o $@ -trimpath $(filter %/$(notdir $@),$(TOOLS_PKG_NAMES))
 
+# Exclude generating headers for distribtions for now - The only relevant files have preexisting otel headers, which would be overwritten.
+HEADER_GEN_DIRS ?= .github cmd fips internal scripts
 FILENAME?=$(shell git branch --show-current)
 NOTICE_OUTPUT?=THIRD_PARTY_NOTICES.md
-
 .PHONY: licenses
-licenses: go generate-sources $(GO_LICENCE_DETECTOR)
+licenses: go generate-sources $(GO_LICENCE_DETECTOR) $(NRLICENSE)
 	@./scripts/licenses.sh -d "${DISTRIBUTIONS}" -b ${GO_LICENCE_DETECTOR} -n ${NOTICE_OUTPUT} -g ${GO}
+	$(NRLICENSE) --fix --fork-commit 6451f322bfe1e62962d3d87b50d785de8048e865 ${HEADER_GEN_DIRS}
+
+.PHONY: headers-check
+headers-check: go $(NRLICENSE)
+	$(NRLICENSE) --check --fork-commit 6451f322bfe1e62962d3d87b50d785de8048e865 ${HEADER_GEN_DIRS}
 
 .PHONY: licenses-check
-licenses-check: licenses
+licenses-check: headers-check licenses
 	@git diff --name-only | grep -q $(NOTICE_OUTPUT) \
 		&& { \
-			echo "Third party notices out of date, please run \"make licenses\" and commit the changes in this PR.";\
+			echo "Third party notices or license files out of date, please run \"make licenses\" and commit the changes in this PR.";\
 			echo "Diff of $(NOTICE_OUTPUT):";\
 			git --no-pager diff HEAD -- */$(NOTICE_OUTPUT);\
 			exit 1;\
