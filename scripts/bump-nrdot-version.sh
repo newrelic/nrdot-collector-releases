@@ -1,4 +1,7 @@
 #!/bin/bash
+# Copyright New Relic, Inc. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 # Simple script to bump versions for new release to document all places that need to be updated
 set -e
 old_version=1.7.0
