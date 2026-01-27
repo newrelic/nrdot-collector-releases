@@ -156,7 +156,7 @@ licenses: go generate-sources $(GO_LICENCE_DETECTOR) $(NRLICENSE)
 	$(NRLICENSE) --fix --fork-commit 6451f322bfe1e62962d3d87b50d785de8048e865 ${HEADER_GEN_DIRS} ${HEADER_GEN_DIST_SCRIPTS}
 
 .PHONY: headers-check
-headers-check:
+headers-check: $(NRLICENSE)
 	$(NRLICENSE) --check --fork-commit 6451f322bfe1e62962d3d87b50d785de8048e865 ${HEADER_GEN_DIRS} ${HEADER_GEN_DIST_SCRIPTS}
 
 .PHONY: licenses-check
