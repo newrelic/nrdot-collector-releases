@@ -1,4 +1,7 @@
 #!/bin/bash
+# Copyright New Relic, Inc. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 set -e
 yq --version | grep -E -q '4\.[0-9]+\.[0-9]+' ||
   { echo $? && echo "yq version 4.x.x is expected, but was '$(yq --version)'"; exit 1; }
