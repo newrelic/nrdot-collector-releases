@@ -30,6 +30,31 @@ var UpdateCmd = &cobra.Command{
 		jsonOutput, _ := cmd.Root().PersistentFlags().GetBool("json")
 		verbose, _ := cmd.Root().PersistentFlags().GetBool("verbose")
 
+		// Get nopexporter version information from persistent flags
+		nopexporterVersionFlag := cmd.Root().PersistentFlags().Lookup("nopexporter-version")
+		nopexporterVersion := nopexporterVersionFlag.Value.String()
+		nopexporterUsage := nopexporterVersionFlag.Usage
+
+		collectorCoreStableFlag := cmd.Root().PersistentFlags().Lookup("collector-core-stable")
+		collectorCoreStable := collectorCoreStableFlag.Value.String()
+		collectorCoreStableUsage := collectorCoreStableFlag.Usage
+
+		collectorContribBetaFlag := cmd.Root().PersistentFlags().Lookup("collector-contrib-beta")
+		collectorContribBeta := collectorContribBetaFlag.Value.String()
+		collectorContribBetaUsage := collectorContribBetaFlag.Usage
+
+		// Create a map with module path (usage) as key and version array as value for updates
+		nopexporterUpdates := make(map[string][]string)
+		if nopexporterVersion != "" {
+			nopexporterUpdates[nopexporterUsage] = []string{nopexporterVersion}
+		}
+		if collectorCoreStable != "" {
+			nopexporterUpdates[collectorCoreStableUsage] = []string{collectorCoreStable}
+		}
+		if collectorContribBeta != "" {
+			nopexporterUpdates[collectorContribBetaUsage] = []string{collectorContribBeta}
+		}
+
 		matches, _ := filepath.Glob(configPath)
 
 		if len(matches) == 0 {
@@ -67,9 +92,17 @@ var UpdateCmd = &cobra.Command{
 				currentVersions = cfg.Versions
 			}
 
-			updatedCfg, err := manifest.UpdateConfigModules(cfg)
-			if err != nil {
-				return fmt.Errorf("failed to update configuration: %w", err)
+			var updatedCfg *manifest.Config
+			if len(nopexporterUpdates) > 0 {
+				updatedCfg, err = manifest.CopyAndUpdateConfigModules(cfg, nopexporterUpdates)
+				if err != nil {
+					return fmt.Errorf("failed to update configuration with nopexporter versions: %w", err)
+				}
+			} else {
+				updatedCfg, err = manifest.UpdateConfigModules(cfg)
+				if err != nil {
+					return fmt.Errorf("failed to update configuration: %w", err)
+				}
 			}
 
 			if err = manifest.WriteConfigFile(updatedCfg); err != nil {
@@ -86,10 +119,29 @@ var UpdateCmd = &cobra.Command{
 			output := struct {
 				NextVersions    manifest.Versions `json:"nextVersions"`
 				CurrentVersions manifest.Versions `json:"currentVersions"`
+				Nopexporter     *struct {
+					NopexporterVersion   string `json:"nopexporterVersion,omitempty"`
+					CollectorCoreStable  string `json:"collectorCoreStable,omitempty"`
+					CollectorContribBeta string `json:"collectorContribBeta,omitempty"`
+				} `json:"nopexporter,omitempty"`
 			}{
 				NextVersions:    nextVersions,
 				CurrentVersions: currentVersions,
 			}
+
+			// Include nopexporter information if provided
+			if nopexporterVersion != "" || collectorCoreStable != "" || collectorContribBeta != "" {
+				output.Nopexporter = &struct {
+					NopexporterVersion   string `json:"nopexporterVersion,omitempty"`
+					CollectorCoreStable  string `json:"collectorCoreStable,omitempty"`
+					CollectorContribBeta string `json:"collectorContribBeta,omitempty"`
+				}{
+					NopexporterVersion:   nopexporterVersion,
+					CollectorCoreStable:  collectorCoreStable,
+					CollectorContribBeta: collectorContribBeta,
+				}
+			}
+
 			b, err := json.Marshal(output)
 			if err != nil {
 				return fmt.Errorf("failed to marshal JSON output: %w", err)

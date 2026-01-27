@@ -10,6 +10,9 @@ import (
 
 var jsonOutput bool
 var verbose bool
+var nopexporterVersion string
+var collectorCoreStableVersion string
+var collectorContribBetaVersion string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -25,6 +28,24 @@ It simplifies the process of building and deploying the collector with NRDOT-spe
 func init() {
 	rootCmd.PersistentFlags().BoolVar(&jsonOutput, "json", false, "Output results in JSON format")
 	rootCmd.PersistentFlags().BoolVar(&verbose, "verbose", false, "Verbose output")
+	rootCmd.PersistentFlags().StringVar(
+		&nopexporterVersion,
+		"nopexporter-version",
+		"",
+		"github.com/newrelic/nrdot-collector-components/exporter/nopexporter",
+	)
+	rootCmd.PersistentFlags().StringVar(
+		&collectorCoreStableVersion,
+		"collector-core-stable",
+		"",
+		"go.opentelemetry.io/collector",
+	)
+	rootCmd.PersistentFlags().StringVar(
+		&collectorContribBetaVersion,
+		"collector-contrib-beta",
+		"",
+		"github.com/open-telemetry/opentelemetry-collector-contrib",
+	)
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
