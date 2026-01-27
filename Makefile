@@ -154,11 +154,11 @@ FIRST_COMMIT_HASH=6451f322bfe1e62962d3d87b50d785de8048e865
 .PHONY: licenses
 licenses: go generate-sources $(GO_LICENCE_DETECTOR) $(NRLICENSE)
 	@./scripts/licenses.sh -d "${DISTRIBUTIONS}" -b ${GO_LICENCE_DETECTOR} -n ${NOTICE_OUTPUT} -g ${GO}
-	@$(NRLICENSE) --fix --fork-commit ${FIRST_COMMIT_HASH} ${HEADER_GEN_FILES} ${HEADER_GEN_DIST_SCRIPTS}
+	@$(NRLICENSE) --fix --fork-commit ${FIRST_COMMIT_HASH} ${HEADER_GEN_FILES}
 
 .PHONY: headers-check
 headers-check: $(NRLICENSE)
-	@$(NRLICENSE) --check --fork-commit ${FIRST_COMMIT_HASH} ${HEADER_GEN_FILES} ${HEADER_GEN_DIST_SCRIPTS}
+	@$(NRLICENSE) --check --fork-commit ${FIRST_COMMIT_HASH} ${HEADER_GEN_FILES}
 
 .PHONY: licenses-check
 licenses-check: headers-check licenses
