@@ -146,18 +146,17 @@ $(TOOLS_BIN_DIR):
 $(TOOLS_BIN_NAMES): $(TOOLS_BIN_DIR) $(TOOLS_MOD_DIR)/go.mod
 	cd $(TOOLS_MOD_DIR) && $(GOCMD) build -o $@ -trimpath $(filter %/$(notdir $@),$(TOOLS_PKG_NAMES))
 
-# postinstall.sh, preinstall.sh, and preremove.sh have OTel headers which would be overwritten without this.
-DIST_SHELL_FILES := $(shell find $(SRC_ROOT)/distributions -type f -name '*.sh' ! -name 'pre*' ! -name 'post*')
-HEADER_GEN_DIRS ?= .github cmd fips internal scripts $(DIST_SHELL_FILES)
+# postinstall.sh, preinstall.sh, and preremove.sh have OTel which would be overwritten were they not excluded.
+HEADER_GEN_FILES=$(shell find $(SRC_ROOT)/. -type f \( -name '*.go' -o -name '*.js' -o -name '*.sh' \) ! -name 'pre*' ! -name 'post*')
 NOTICE_OUTPUT?=THIRD_PARTY_NOTICES.md
 .PHONY: licenses
 licenses: go generate-sources $(GO_LICENCE_DETECTOR) $(NRLICENSE)
 	@./scripts/licenses.sh -d "${DISTRIBUTIONS}" -b ${GO_LICENCE_DETECTOR} -n ${NOTICE_OUTPUT} -g ${GO}
-	$(NRLICENSE) --fix --fork-commit 6451f322bfe1e62962d3d87b50d785de8048e865 ${HEADER_GEN_DIRS} ${HEADER_GEN_DIST_SCRIPTS}
+	@$(NRLICENSE) --fix --fork-commit 6451f322bfe1e62962d3d87b50d785de8048e865 ${HEADER_GEN_FILES} ${HEADER_GEN_DIST_SCRIPTS}
 
 .PHONY: headers-check
 headers-check: $(NRLICENSE)
-	$(NRLICENSE) --check --fork-commit 6451f322bfe1e62962d3d87b50d785de8048e865 ${HEADER_GEN_DIRS} ${HEADER_GEN_DIST_SCRIPTS}
+	@$(NRLICENSE) --check --fork-commit 6451f322bfe1e62962d3d87b50d785de8048e865 ${HEADER_GEN_FILES} ${HEADER_GEN_DIST_SCRIPTS}
 
 .PHONY: licenses-check
 licenses-check: headers-check licenses
