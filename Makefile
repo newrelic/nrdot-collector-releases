@@ -146,7 +146,7 @@ $(TOOLS_BIN_DIR):
 $(TOOLS_BIN_NAMES): $(TOOLS_BIN_DIR) $(TOOLS_MOD_DIR)/go.mod
 	cd $(TOOLS_MOD_DIR) && $(GOCMD) build -o $@ -trimpath $(filter %/$(notdir $@),$(TOOLS_PKG_NAMES))
 
-# postinstall.sh, preinstall.sh, and preremove.sh have OTel which would be overwritten were they not excluded.
+# postinstall.sh, preinstall.sh, and preremove.sh have OTel headers which would be overwritten were they not excluded.
 HEADER_GEN_FILES=$(shell find $(SRC_ROOT)/. -type f \( -name '*.go' -o -name '*.js' -o -name '*.sh' \) ! -name 'pre*' ! -name 'post*')
 NOTICE_OUTPUT?=THIRD_PARTY_NOTICES.md
 FIRST_COMMIT_HASH=6451f322bfe1e62962d3d87b50d785de8048e865
