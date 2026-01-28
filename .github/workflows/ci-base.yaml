@@ -64,8 +64,7 @@ jobs:
         with:
           fetch-depth: 0 # required for tag metadata
 
-      - name: Free disk space
-        uses: ./.github/actions/free-disk-space
+      - run: ./scripts/free-disk-space.sh
 
       - name: Setup Go
         uses: actions/setup-go@v5
