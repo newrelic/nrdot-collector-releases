@@ -87,9 +87,9 @@ func TestConfig_IsOtelContribComponent(t *testing.T) {
 }
 
 func TestConfig_IsNrdotComponent(t *testing.T) {
-	assert.True(t, isNrdotComponent("github.com/newrelic/nrdot-collector-components/component v1.0.0"))
-	assert.True(t, isNrdotComponent("github.com/newrelic/nrdot-collector-components/component"))
-	assert.False(t, isNrdotComponent("github.com/some/other/module"))
+	assert.True(t, isNrdotComponent(Module{GoMod: "github.com/newrelic/nrdot-collector-components/component v1.0.0"}))
+	assert.True(t, isNrdotComponent(Module{GoMod: "github.com/newrelic/nrdot-collector-components/component"}))
+	assert.False(t, isNrdotComponent(Module{GoMod: "github.com/some/other/module"}))
 }
 
 func TestConfig_SetVersions(t *testing.T) {
@@ -110,7 +110,7 @@ func TestConfig_SetVersions(t *testing.T) {
 	assert.Equal(t, "v1.0.0", cfg.Versions.StableCoreVersion)
 	assert.Equal(t, "v0.1.0", cfg.Versions.BetaCoreVersion)
 	assert.Equal(t, "v0.1.0", cfg.Versions.BetaContribVersion)
-	assert.Equal(t, "v0.1.0", cfg.Versions.NrVersion)
+	assert.Equal(t, "v0.1.0", cfg.Versions.NrdotVersion)
 }
 
 func TestConfig_SetVersions_MissingCore(t *testing.T) {
@@ -127,4 +127,59 @@ func TestConfig_SetVersions_MissingCore(t *testing.T) {
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "missing beta core version")
 
+}
+
+func TestIsCompatibleWithNrComponent(t *testing.T) {
+	tests := []struct {
+		name          string
+		nrdotVersion  string
+		betaVersion   string
+		expectedMatch bool
+	}{
+		{
+			name:          "nrdot version equal to beta version",
+			nrdotVersion:  "v0.142.0",
+			betaVersion:   "v0.142.0",
+			expectedMatch: true,
+		},
+		{
+			name:          "different minor versions - nrdot higher",
+			nrdotVersion:  "v0.143.0",
+			betaVersion:   "v0.142.5",
+			expectedMatch: true,
+		},
+		{
+			name:          "different minor versions - beta higher",
+			nrdotVersion:  "v0.142.0",
+			betaVersion:   "v0.142.1",
+			expectedMatch: false,
+		},
+		{
+			name:          "different patch versions - nrdot higher",
+			nrdotVersion:  "v0.142.5",
+			betaVersion:   "v0.142.3",
+			expectedMatch: true,
+		},
+		{
+			name:          "different patch versions - beta higher",
+			nrdotVersion:  "v0.142.3",
+			betaVersion:   "v0.142.5",
+			expectedMatch: false,
+		},
+		{
+			name:          "edge case - large version numbers",
+			nrdotVersion:  "v0.999.999",
+			betaVersion:   "v0.999.998",
+			expectedMatch: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := isCompatibleWithNrComponent(tt.nrdotVersion, tt.betaVersion)
+			assert.Equal(t, tt.expectedMatch, result,
+				"isCompatibleWithNrComponent(%s, %s) = %v, want %v",
+				tt.nrdotVersion, tt.betaVersion, result, tt.expectedMatch)
+		})
+	}
 }

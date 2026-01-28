@@ -28,7 +28,7 @@ type Versions struct {
 	BetaCoreVersion    string `json:"betaCoreVersion"`
 	BetaContribVersion string `json:"betaContribVersion"`
 	StableCoreVersion  string `json:"stableCoreVersion"`
-	NrVersion 		   string `json:"nrVersion"`
+	NrdotVersion 		   string `json:"nrdotVersion"`
 }
 
 // Config holds the builder's configuration
@@ -96,17 +96,9 @@ func isOtelContribComponent(mod string) bool {
 	return false
 }
 
-func isNrdotComponent(mod string) bool {
-	// Check if the component is part of NRDOT
-	if strings.HasPrefix(mod, nrModule) {
-		return true
-	}
-	return false
-}
-
-func isNrComponent(component Module) bool {
+func isNrdotComponent(component Module) bool {
 	// Check if the component is part of the NRDOT Collector
-	if isNrdotComponent(component.GoMod) {
+	if strings.HasPrefix(component.GoMod, nrModule) {
 		return true
 	}
 	return false
@@ -128,8 +120,8 @@ func isStableVersion(version string) bool {
 	return false
 }
 
-func isCompatibleWithNrComponent(nrVersion string, betaVersion string) bool {
-	if semver.Compare(nrVersion, betaVersion) >= 0 {
+func isCompatibleWithNrComponent(nrdotVersion string, betaVersion string) bool {
+	if semver.Compare(nrdotVersion, betaVersion) >= 0 {
 		return true
 	}
 	return false
@@ -140,12 +132,12 @@ func (c *Config) SetVersions() error {
 	versions := Versions{}
 
 	for _, component := range c.allNrComponents() {
-		if isNrComponent(component) {
+		if isNrdotComponent(component) {
 			componentVersion := strings.Split(component.GoMod, " ")[1]
-			versions.NrVersion = componentVersion
+			versions.NrdotVersion = componentVersion
 		}
 
-		if versions.NrVersion != "" {
+		if versions.NrdotVersion != "" {
 			break
 		}
 	}
@@ -156,12 +148,12 @@ func (c *Config) SetVersions() error {
 			if isOtelCoreComponent(component.GoMod) {
 				if isStableVersion(componentVersion) {
 					versions.StableCoreVersion = componentVersion
-				} else if isCompatibleWithNrComponent(versions.NrVersion, componentVersion) {
+				} else if isCompatibleWithNrComponent(versions.NrdotVersion, componentVersion) {
 					versions.BetaCoreVersion = componentVersion
 				}
 			}
 
-			if isOtelContribComponent(component.GoMod) && !isStableVersion(componentVersion) && isCompatibleWithNrComponent(versions.NrVersion, componentVersion) {
+			if isOtelContribComponent(component.GoMod) && !isStableVersion(componentVersion) && isCompatibleWithNrComponent(versions.NrdotVersion, componentVersion) {
 				versions.BetaContribVersion = componentVersion
 			}
 
@@ -266,7 +258,7 @@ func (cfg *Config) allOtelComponents() []Module {
 func (cfg *Config) allNrComponents() []Module {
 	allNrComponents := []Module{}
 	for _, component := range cfg.allComponents() {
-		if isNrComponent(component) {
+		if isNrdotComponent(component) {
 			allNrComponents = append(allNrComponents, component)
 		}
 	}

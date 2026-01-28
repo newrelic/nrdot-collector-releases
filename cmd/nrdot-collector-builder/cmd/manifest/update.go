@@ -30,29 +30,29 @@ var UpdateCmd = &cobra.Command{
 		jsonOutput, _ := cmd.Root().PersistentFlags().GetBool("json")
 		verbose, _ := cmd.Root().PersistentFlags().GetBool("verbose")
 
-		// Get nopexporter version information from persistent flags
-		nopexporterVersionFlag := cmd.Root().PersistentFlags().Lookup("nopexporter-version")
-		nopexporterVersion := nopexporterVersionFlag.Value.String()
-		nopexporterUsage := nopexporterVersionFlag.Usage
+		// Get nrdot version information from persistent flags
+		nrdotVersionFlag := cmd.Root().PersistentFlags().Lookup("nrdot-version")
+		nrdotVersion := nrdotVersionFlag.Value.String()
+		nrdotUsage := nrdotVersionFlag.Usage
 
-		collectorCoreStableFlag := cmd.Root().PersistentFlags().Lookup("collector-core-stable")
-		collectorCoreStable := collectorCoreStableFlag.Value.String()
-		collectorCoreStableUsage := collectorCoreStableFlag.Usage
+		coreStableFlag := cmd.Root().PersistentFlags().Lookup("core-stable")
+		coreStable := coreStableFlag.Value.String()
+		coreStableUsage := coreStableFlag.Usage
 
-		collectorContribBetaFlag := cmd.Root().PersistentFlags().Lookup("collector-contrib-beta")
-		collectorContribBeta := collectorContribBetaFlag.Value.String()
-		collectorContribBetaUsage := collectorContribBetaFlag.Usage
+		contribBetaFlag := cmd.Root().PersistentFlags().Lookup("contrib-beta")
+		contribBeta := contribBetaFlag.Value.String()
+		contribBetaUsage := contribBetaFlag.Usage
 
 		// Create a map with module path (usage) as key and version array as value for updates
-		nopexporterUpdates := make(map[string][]string)
-		if nopexporterVersion != "" {
-			nopexporterUpdates[nopexporterUsage] = []string{nopexporterVersion}
+		nrdotUpdates := make(map[string][]string)
+		if nrdotVersion != "" {
+			nrdotUpdates[nrdotUsage] = []string{nrdotVersion}
 		}
-		if collectorCoreStable != "" {
-			nopexporterUpdates[collectorCoreStableUsage] = []string{collectorCoreStable}
+		if coreStable != "" {
+			nrdotUpdates[coreStableUsage] = []string{coreStable}
 		}
-		if collectorContribBeta != "" {
-			nopexporterUpdates[collectorContribBetaUsage] = []string{collectorContribBeta}
+		if contribBeta != "" {
+			nrdotUpdates[contribBetaUsage] = []string{contribBeta}
 		}
 
 		matches, _ := filepath.Glob(configPath)
@@ -93,10 +93,10 @@ var UpdateCmd = &cobra.Command{
 			}
 
 			var updatedCfg *manifest.Config
-			if len(nopexporterUpdates) > 0 {
-				updatedCfg, err = manifest.CopyAndUpdateConfigModules(cfg, nopexporterUpdates)
+			if len(nrdotUpdates) > 0 {
+				updatedCfg, err = manifest.CopyAndUpdateConfigModules(cfg, nrdotUpdates)
 				if err != nil {
-					return fmt.Errorf("failed to update configuration with nopexporter versions: %w", err)
+					return fmt.Errorf("failed to update configuration with nrdot versions: %w", err)
 				}
 			} else {
 				updatedCfg, err = manifest.UpdateConfigModules(cfg)
@@ -119,27 +119,9 @@ var UpdateCmd = &cobra.Command{
 			output := struct {
 				NextVersions    manifest.Versions `json:"nextVersions"`
 				CurrentVersions manifest.Versions `json:"currentVersions"`
-				Nopexporter     *struct {
-					NopexporterVersion   string `json:"nopexporterVersion,omitempty"`
-					CollectorCoreStable  string `json:"collectorCoreStable,omitempty"`
-					CollectorContribBeta string `json:"collectorContribBeta,omitempty"`
-				} `json:"nopexporter,omitempty"`
 			}{
 				NextVersions:    nextVersions,
 				CurrentVersions: currentVersions,
-			}
-
-			// Include nopexporter information if provided
-			if nopexporterVersion != "" || collectorCoreStable != "" || collectorContribBeta != "" {
-				output.Nopexporter = &struct {
-					NopexporterVersion   string `json:"nopexporterVersion,omitempty"`
-					CollectorCoreStable  string `json:"collectorCoreStable,omitempty"`
-					CollectorContribBeta string `json:"collectorContribBeta,omitempty"`
-				}{
-					NopexporterVersion:   nopexporterVersion,
-					CollectorCoreStable:  collectorCoreStable,
-					CollectorContribBeta: collectorContribBeta,
-				}
 			}
 
 			b, err := json.Marshal(output)

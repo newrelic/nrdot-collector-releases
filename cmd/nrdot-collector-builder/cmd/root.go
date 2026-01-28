@@ -10,9 +10,9 @@ import (
 
 var jsonOutput bool
 var verbose bool
-var nopexporterVersion string
-var collectorCoreStableVersion string
-var collectorContribBetaVersion string
+var nrdotVersion string
+var coreStableVersion string
+var contribBetaVersion string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -29,20 +29,20 @@ func init() {
 	rootCmd.PersistentFlags().BoolVar(&jsonOutput, "json", false, "Output results in JSON format")
 	rootCmd.PersistentFlags().BoolVar(&verbose, "verbose", false, "Verbose output")
 	rootCmd.PersistentFlags().StringVar(
-		&nopexporterVersion,
-		"nopexporter-version",
+		&nrdotVersion,
+		"nrdot-version",
 		"",
-		"github.com/newrelic/nrdot-collector-components/exporter/nopexporter",
+		"github.com/newrelic/nrdot-collector-components/exporter/nrdot",
 	)
 	rootCmd.PersistentFlags().StringVar(
-		&collectorCoreStableVersion,
-		"collector-core-stable",
+		&coreStableVersion,
+		"core-stable",
 		"",
 		"go.opentelemetry.io/collector",
 	)
 	rootCmd.PersistentFlags().StringVar(
-		&collectorContribBetaVersion,
-		"collector-contrib-beta",
+		&contribBetaVersion,
+		"contrib-beta",
 		"",
 		"github.com/open-telemetry/opentelemetry-collector-contrib",
 	)
