@@ -16,7 +16,7 @@ Note: See [general README](../README.md) for information that applies to all dis
 |-----------------------|-----------|---------------------------|---------------|
 | Host Monitoring (default)      | `public`  | `nrdot-collector-host`    | [See 'Host Monitoring' below](#host-monitoring) |
 | Gateway Mode          | `alpha`   | N/A (new)                 | [See 'Gateway Mode' below](#gateway-mode) |
-| On-Host Integrations (OHI) | `public` | N/A (new)                 | <placeholder> |
+| On-Host Integrations (OHI) | `alpha` | N/A (new)                 | Coming Soon |
 
 Note: While it's technically possible to have a single collector serve multiple use cases at the same time, we generally do not recommend or support this pattern due to the operational complexity that comes with it (configuration, deployment, scaling, ...). Instead we recommend deploying one collector per use case and chain them as necessary. Please note that when we say 'one collector' we refer to a logical service, not a single instance, i.e. you should still employ common scaling practices to ensure your architecture is resilient.  
  
