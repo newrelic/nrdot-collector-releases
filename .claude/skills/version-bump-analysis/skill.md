@@ -15,7 +15,6 @@ permissions:
   - Read
   - Glob
   - Bash
-  - mcp__plugin_nr_google-search__web_fetch
 ---
 
 # Version Bump Analysis Skill
@@ -54,9 +53,9 @@ Generate a markdown comment that can be pasted directly into the PR, following t
 [Same structure as Contrib if there are relevant changes]
 ```
 
-## ⚠️ IMPORTANT: Do NOT Use google-search Plugin for CHANGELOG Files
+## ⚠️ IMPORTANT: Use Bash Script for CHANGELOG Files
 
-**The google-search plugin (web_fetch/raw_http_fetch) fails with large CHANGELOG files** (~66k tokens) causing API errors. Instead, use the provided bash script:
+**Do NOT fetch full CHANGELOG files directly** - they are very large (~66k tokens) and inefficient. Instead, use the provided bash script to extract only the relevant version section:
 
 ```bash
 .claude/skills/version-bump-analysis/extract-changelog-version.sh <changelog_url> <version>
@@ -95,16 +94,17 @@ This script efficiently fetches and extracts only the relevant version section u
    - Component names in CHANGELOG use format: `receiver/filelog`, `processor/cumulativetodelta`, etc.
 
 2. **Extract version information from the PR**:
-   - Fetch the PR page using web_fetch
+   - Use `gh pr view <pr_number> --json body --jq .body` to fetch the PR description
    - Extract the "from" and "to" versions from the PR description
    - The description includes links like: `Beta Core: [v0.142.0...v0.144.0]` and `Beta Contrib: [v0.142.0...v0.144.0]`
 
 3. **Fetch CHANGELOG sections for each version**:
    - Contrib CHANGELOG: `https://raw.githubusercontent.com/open-telemetry/opentelemetry-collector-contrib/main/CHANGELOG.md`
    - Core CHANGELOG: `https://raw.githubusercontent.com/open-telemetry/opentelemetry-collector/main/CHANGELOG.md`
-   - **Use the extract-changelog-version.sh script** (NOT web_fetch or raw_http_fetch)
+   - **Use the extract-changelog-version.sh script** to efficiently extract only the relevant version sections
    - For each version in the range, call: `.claude/skills/version-bump-analysis/extract-changelog-version.sh <url> <version>`
    - This returns only the relevant section for that version (typically <1000 lines vs 66k+ for full file)
+   - The script will exit with status 1 if the version is not found, allowing error detection
 
 4. **Parse version sections**:
    - For each version between "from" and "to" (inclusive of "to", exclusive of "from")
