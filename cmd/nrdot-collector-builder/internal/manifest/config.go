@@ -120,7 +120,7 @@ func isStableVersion(version string) bool {
 	return false
 }
 
-func isCompatibleWithNrComponent(nrdotVersion string, betaVersion string) bool {
+func isCompatibleWithNrdotComponent(nrdotVersion string, betaVersion string) bool {
 	if semver.Compare(nrdotVersion, betaVersion) >= 0 {
 		return true
 	}
@@ -131,7 +131,7 @@ func (c *Config) SetVersions() error {
 
 	versions := Versions{}
 
-	for _, component := range c.allNrComponents() {
+	for _, component := range c.allNrdotComponents() {
 		if isNrdotComponent(component) {
 			componentVersion := strings.Split(component.GoMod, " ")[1]
 			versions.NrdotVersion = componentVersion
@@ -148,12 +148,12 @@ func (c *Config) SetVersions() error {
 			if isOtelCoreComponent(component.GoMod) {
 				if isStableVersion(componentVersion) {
 					versions.StableCoreVersion = componentVersion
-				} else if isCompatibleWithNrComponent(versions.NrdotVersion, componentVersion) {
+				} else if isCompatibleWithNrdotComponent(versions.NrdotVersion, componentVersion) {
 					versions.BetaCoreVersion = componentVersion
 				}
 			}
 
-			if isOtelContribComponent(component.GoMod) && !isStableVersion(componentVersion) && isCompatibleWithNrComponent(versions.NrdotVersion, componentVersion) {
+			if isOtelContribComponent(component.GoMod) && !isStableVersion(componentVersion) && isCompatibleWithNrdotComponent(versions.NrdotVersion, componentVersion) {
 				versions.BetaContribVersion = componentVersion
 			}
 
@@ -255,14 +255,14 @@ func (cfg *Config) allOtelComponents() []Module {
 	return allOtelComponents
 }
 
-func (cfg *Config) allNrComponents() []Module {
-	allNrComponents := []Module{}
+func (cfg *Config) allNrdotComponents() []Module {
+	allNrdotComponents := []Module{}
 	for _, component := range cfg.allComponents() {
 		if isNrdotComponent(component) {
-			allNrComponents = append(allNrComponents, component)
+			allNrdotComponents = append(allNrdotComponents, component)
 		}
 	}
-	return allNrComponents
+	return allNrdotComponents
 }
 
 func validateModules(name string, mods []Module) error {

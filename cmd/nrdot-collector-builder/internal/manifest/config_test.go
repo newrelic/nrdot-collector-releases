@@ -129,7 +129,7 @@ func TestConfig_SetVersions_MissingCore(t *testing.T) {
 
 }
 
-func TestIsCompatibleWithNrComponent(t *testing.T) {
+func TestIsCompatibleWithNrdotComponent(t *testing.T) {
 	tests := []struct {
 		name          string
 		nrdotVersion  string
@@ -176,9 +176,9 @@ func TestIsCompatibleWithNrComponent(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := isCompatibleWithNrComponent(tt.nrdotVersion, tt.betaVersion)
+			result := isCompatibleWithNrdotComponent(tt.nrdotVersion, tt.betaVersion)
 			assert.Equal(t, tt.expectedMatch, result,
-				"isCompatibleWithNrComponent(%s, %s) = %v, want %v",
+				"isCompatibleWithNrdotComponent(%s, %s) = %v, want %v",
 				tt.nrdotVersion, tt.betaVersion, result, tt.expectedMatch)
 		})
 	}

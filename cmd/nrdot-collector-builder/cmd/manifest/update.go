@@ -31,17 +31,23 @@ var UpdateCmd = &cobra.Command{
 		verbose, _ := cmd.Root().PersistentFlags().GetBool("verbose")
 
 		// Get nrdot version information from persistent flags
-		nrdotVersionFlag := cmd.Root().PersistentFlags().Lookup("nrdot-version")
-		nrdotVersion := nrdotVersionFlag.Value.String()
-		nrdotUsage := nrdotVersionFlag.Usage
+		var nrdotVersion, nrdotUsage string
+		if nrdotVersionFlag := cmd.Root().PersistentFlags().Lookup("nrdot-version"); nrdotVersionFlag != nil {
+			nrdotVersion = nrdotVersionFlag.Value.String()
+			nrdotUsage = nrdotVersionFlag.Usage
+		}
 
-		coreStableFlag := cmd.Root().PersistentFlags().Lookup("core-stable")
-		coreStable := coreStableFlag.Value.String()
-		coreStableUsage := coreStableFlag.Usage
+		var coreStable, coreStableUsage string
+		if coreStableFlag := cmd.Root().PersistentFlags().Lookup("core-stable"); coreStableFlag != nil {
+			coreStable = coreStableFlag.Value.String()
+			coreStableUsage = coreStableFlag.Usage
+		}
 
-		contribBetaFlag := cmd.Root().PersistentFlags().Lookup("contrib-beta")
-		contribBeta := contribBetaFlag.Value.String()
-		contribBetaUsage := contribBetaFlag.Usage
+		var contribBeta, contribBetaUsage string
+		if contribBetaFlag := cmd.Root().PersistentFlags().Lookup("contrib-beta"); contribBetaFlag != nil {
+			contribBeta = contribBetaFlag.Value.String()
+			contribBetaUsage = contribBetaFlag.Usage
+		}
 
 		// Create a map with module path (usage) as key and version array as value for updates
 		nrdotUpdates := make(map[string][]string)

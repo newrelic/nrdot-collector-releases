@@ -77,7 +77,7 @@ func fetchAllModuleVersions(cfg *Config, modules []string) (map[string][]string,
 func fetchLatestModuleVersions(cfg *Config) (map[string][]string, error) {
 	updates := make(map[string][]string)
 
-	var components = slices.Concat(cfg.allOtelComponents(), cfg.allNrComponents())
+	var components = slices.Concat(cfg.allOtelComponents(), cfg.allNrdotComponents())
 	var modules []string
 	for _, component := range components {
 		module, _, _ := strings.Cut(component.GoMod, " ")
