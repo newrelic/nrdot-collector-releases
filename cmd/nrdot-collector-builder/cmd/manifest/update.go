@@ -31,6 +31,37 @@ var UpdateCmd = &cobra.Command{
 		jsonOutput, _ := cmd.Root().PersistentFlags().GetBool("json")
 		verbose, _ := cmd.Root().PersistentFlags().GetBool("verbose")
 
+		// Get nrdot version information from persistent flags
+		var nrdotVersion, nrdotUsage string
+		if nrdotVersionFlag := cmd.Root().PersistentFlags().Lookup("nrdot-version"); nrdotVersionFlag != nil {
+			nrdotVersion = nrdotVersionFlag.Value.String()
+			nrdotUsage = nrdotVersionFlag.Usage
+		}
+
+		var coreStable, coreStableUsage string
+		if coreStableFlag := cmd.Root().PersistentFlags().Lookup("core-stable"); coreStableFlag != nil {
+			coreStable = coreStableFlag.Value.String()
+			coreStableUsage = coreStableFlag.Usage
+		}
+
+		var contribBeta, contribBetaUsage string
+		if contribBetaFlag := cmd.Root().PersistentFlags().Lookup("contrib-beta"); contribBetaFlag != nil {
+			contribBeta = contribBetaFlag.Value.String()
+			contribBetaUsage = contribBetaFlag.Usage
+		}
+
+		// Create a map with module path (usage) as key and version array as value for updates
+		nrdotUpdates := make(map[string][]string)
+		if nrdotVersion != "" {
+			nrdotUpdates[nrdotUsage] = []string{nrdotVersion}
+		}
+		if coreStable != "" {
+			nrdotUpdates[coreStableUsage] = []string{coreStable}
+		}
+		if contribBeta != "" {
+			nrdotUpdates[contribBetaUsage] = []string{contribBeta}
+		}
+
 		matches, _ := filepath.Glob(configPath)
 
 		if len(matches) == 0 {
@@ -68,9 +99,17 @@ var UpdateCmd = &cobra.Command{
 				currentVersions = cfg.Versions
 			}
 
-			updatedCfg, err := manifest.UpdateConfigModules(cfg)
-			if err != nil {
-				return fmt.Errorf("failed to update configuration: %w", err)
+			var updatedCfg *manifest.Config
+			if len(nrdotUpdates) > 0 {
+				updatedCfg, err = manifest.CopyAndUpdateConfigModules(cfg, nrdotUpdates)
+				if err != nil {
+					return fmt.Errorf("failed to update configuration with nrdot versions: %w", err)
+				}
+			} else {
+				updatedCfg, err = manifest.UpdateConfigModules(cfg)
+				if err != nil {
+					return fmt.Errorf("failed to update configuration: %w", err)
+				}
 			}
 
 			if err = manifest.WriteConfigFile(updatedCfg); err != nil {
@@ -91,6 +130,7 @@ var UpdateCmd = &cobra.Command{
 				NextVersions:    nextVersions,
 				CurrentVersions: currentVersions,
 			}
+
 			b, err := json.Marshal(output)
 			if err != nil {
 				return fmt.Errorf("failed to marshal JSON output: %w", err)

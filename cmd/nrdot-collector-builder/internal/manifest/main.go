@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"slices"
 	"sort"
 	"strings"
 
@@ -77,8 +78,9 @@ func fetchAllModuleVersions(cfg *Config, modules []string) (map[string][]string,
 func fetchLatestModuleVersions(cfg *Config) (map[string][]string, error) {
 	updates := make(map[string][]string)
 
+	var components = slices.Concat(cfg.allOtelComponents(), cfg.allNrdotComponents())
 	var modules []string
-	for _, component := range cfg.allOtelComponents() {
+	for _, component := range components {
 		module, _, _ := strings.Cut(component.GoMod, " ")
 		modules = append(modules, module)
 	}
@@ -90,7 +92,7 @@ func fetchLatestModuleVersions(cfg *Config) (map[string][]string, error) {
 	}
 
 	// Iterate over all components in cfg.allComponents()
-	for _, component := range cfg.allOtelComponents() {
+	for _, component := range components {
 		// Extract the module name from the component's GoMod field
 		module, currentVersion, _ := strings.Cut(component.GoMod, " ")
 		// Log the current version

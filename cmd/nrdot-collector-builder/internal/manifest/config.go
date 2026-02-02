@@ -23,11 +23,13 @@ var errMissingGoMod = errors.New("missing gomod specification for module")
 
 const coreModule = "go.opentelemetry.io/collector"
 const contribModule = "github.com/open-telemetry/opentelemetry-collector-contrib"
+const nrModule = "github.com/newrelic/nrdot-collector-components"
 
 type Versions struct {
 	BetaCoreVersion    string `json:"betaCoreVersion"`
 	BetaContribVersion string `json:"betaContribVersion"`
 	StableCoreVersion  string `json:"stableCoreVersion"`
+	NrdotVersion 		   string `json:"nrdotVersion"`
 }
 
 // Config holds the builder's configuration
@@ -95,6 +97,14 @@ func isOtelContribComponent(mod string) bool {
 	return false
 }
 
+func isNrdotComponent(component Module) bool {
+	// Check if the component is part of the NRDOT Collector
+	if strings.HasPrefix(component.GoMod, nrModule) {
+		return true
+	}
+	return false
+}
+
 func isOtelComponent(component Module) bool {
 	// Check if the component is part of the OpenTelemetry Collector
 	if isOtelCoreComponent(component.GoMod) || isOtelContribComponent(component.GoMod) {
@@ -111,9 +121,27 @@ func isStableVersion(version string) bool {
 	return false
 }
 
+func isCompatibleWithNrdotComponent(nrdotVersion string, betaVersion string) bool {
+	if semver.Compare(nrdotVersion, betaVersion) >= 0 {
+		return true
+	}
+	return false
+}
+
 func (c *Config) SetVersions() error {
 
 	versions := Versions{}
+
+	for _, component := range c.allNrdotComponents() {
+		if isNrdotComponent(component) {
+			componentVersion := strings.Split(component.GoMod, " ")[1]
+			versions.NrdotVersion = componentVersion
+		}
+
+		if versions.NrdotVersion != "" {
+			break
+		}
+	}
 
 	for _, component := range c.allOtelComponents() {
 		if isOtelComponent(component) {
@@ -121,12 +149,12 @@ func (c *Config) SetVersions() error {
 			if isOtelCoreComponent(component.GoMod) {
 				if isStableVersion(componentVersion) {
 					versions.StableCoreVersion = componentVersion
-				} else {
+				} else if isCompatibleWithNrdotComponent(versions.NrdotVersion, componentVersion) {
 					versions.BetaCoreVersion = componentVersion
 				}
 			}
 
-			if isOtelContribComponent(component.GoMod) && !isStableVersion(componentVersion) {
+			if isOtelContribComponent(component.GoMod) && !isStableVersion(componentVersion) && isCompatibleWithNrdotComponent(versions.NrdotVersion, componentVersion) {
 				versions.BetaContribVersion = componentVersion
 			}
 
@@ -226,6 +254,16 @@ func (cfg *Config) allOtelComponents() []Module {
 		}
 	}
 	return allOtelComponents
+}
+
+func (cfg *Config) allNrdotComponents() []Module {
+	allNrdotComponents := []Module{}
+	for _, component := range cfg.allComponents() {
+		if isNrdotComponent(component) {
+			allNrdotComponents = append(allNrdotComponents, component)
+		}
+	}
+	return allNrdotComponents
 }
 
 func validateModules(name string, mods []Module) error {
