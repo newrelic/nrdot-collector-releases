@@ -15,6 +15,7 @@ TOOLS_PKG_NAMES := $(shell grep -E $(TOOLS_MOD_REGEX) < $(TOOLS_MOD_DIR)/tools.g
 TOOLS_BIN_NAMES := $(addprefix $(TOOLS_BIN_DIR)/, $(notdir $(shell echo $(TOOLS_PKG_NAMES))))
 GO_LICENCE_DETECTOR        := $(TOOLS_BIN_DIR)/go-licence-detector
 GO_LICENCE_DETECTOR_CONFIG   := $(SRC_ROOT)/internal/assets/license/rules.json
+NRLICENSE := $(TOOLS_BIN_DIR)/nrlicense
 
 DISTRIBUTIONS ?= "nrdot-collector-host,nrdot-collector-k8s,nrdot-collector,nrdot-collector-experimental"
 
@@ -145,15 +146,25 @@ $(TOOLS_BIN_DIR):
 $(TOOLS_BIN_NAMES): $(TOOLS_BIN_DIR) $(TOOLS_MOD_DIR)/go.mod
 	cd $(TOOLS_MOD_DIR) && $(GOCMD) build -o $@ -trimpath $(filter %/$(notdir $@),$(TOOLS_PKG_NAMES))
 
-FILENAME?=$(shell git branch --show-current)
+# Exclude files we adopted from upstream which would be overwritten were they not excluded.
+HEADER_GEN_FILES=$(shell find $(SRC_ROOT)/. \
+	-type f \( -name '*.go' -o -name '*.js' -o -name '*.sh' \) \
+	! -name 'preinstall.sh' ! -name 'postinstall.sh' ! -name 'preremove.sh' \
+	! -name 'free-disk-space.sh')
 NOTICE_OUTPUT?=THIRD_PARTY_NOTICES.md
+FIRST_COMMIT_HASH=6451f322bfe1e62962d3d87b50d785de8048e865
 
 .PHONY: licenses
-licenses: go generate-sources $(GO_LICENCE_DETECTOR)
+licenses: go generate-sources $(GO_LICENCE_DETECTOR) $(NRLICENSE)
 	@./scripts/licenses.sh -d "${DISTRIBUTIONS}" -b ${GO_LICENCE_DETECTOR} -n ${NOTICE_OUTPUT} -g ${GO}
+	@$(NRLICENSE) --fix --fork-commit ${FIRST_COMMIT_HASH} ${HEADER_GEN_FILES}
+
+.PHONY: headers-check
+headers-check: $(NRLICENSE)
+	@$(NRLICENSE) --check --fork-commit ${FIRST_COMMIT_HASH} ${HEADER_GEN_FILES}
 
 .PHONY: licenses-check
-licenses-check: licenses
+licenses-check: headers-check licenses
 	@git diff --name-only | grep -q $(NOTICE_OUTPUT) \
 		&& { \
 			echo "Third party notices out of date, please run \"make licenses\" and commit the changes in this PR.";\
