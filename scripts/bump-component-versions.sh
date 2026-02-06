@@ -45,7 +45,7 @@ fetch_nrdot_versions() {
         return 1
     }
     $GO mod init temp 2>/dev/null
-    $GO get github.com/newrelic/nrdot-collector-components/exporter/nrdot@${latest_version} 2>/dev/null
+    $GO get github.com/newrelic/nrdot-collector-components/exporter/nopexporter@${latest_version} 2>/dev/null
 
     # Extract collector core version (stable v1.x.x)
     local core_stable
