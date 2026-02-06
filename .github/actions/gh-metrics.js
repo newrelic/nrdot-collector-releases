@@ -1,6 +1,3 @@
-// Copyright New Relic, Inc. All rights reserved.
-// SPDX-License-Identifier: Apache-2.0
-
 import {Octokit} from "@octokit/action";
 import * as fs from 'fs';
 import * as path from 'path';

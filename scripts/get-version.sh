@@ -1,6 +1,4 @@
 #!/bin/bash
-# Copyright New Relic, Inc. All rights reserved.
-# SPDX-License-Identifier: Apache-2.0
 
 # This script validates that all manifest.yaml files in the distributions directory have the same version number.
 # If they do, it prints the version number to stdout and exits with status 0.

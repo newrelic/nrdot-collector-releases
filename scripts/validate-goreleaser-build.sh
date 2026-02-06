@@ -1,7 +1,4 @@
 #!/bin/bash
-# Copyright New Relic, Inc. All rights reserved.
-# SPDX-License-Identifier: Apache-2.0
-
 # Script to validate a goreleaser distribution's dist file
 set -e
 

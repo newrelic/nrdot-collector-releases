@@ -1,7 +1,4 @@
 #!/bin/bash
-# Copyright New Relic, Inc. All rights reserved.
-# SPDX-License-Identifier: Apache-2.0
-
 # Simple script to validate whether a distribution's OCB-generated source files exist.
 set -e
 

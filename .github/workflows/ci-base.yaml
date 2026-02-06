@@ -64,8 +64,6 @@ jobs:
         with:
           fetch-depth: 0 # required for tag metadata
 
-      - run: ./scripts/free-disk-space.sh
-
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
@@ -237,7 +235,7 @@ jobs:
           version: "2.11.2"
           args: ${{ env.goreleaser_args }}
           workdir: distributions/${{ inputs.distribution }}
-
+      
       - name: Skip GoReleaser build (cached)
         if: steps.cache-goreleaser.outputs.cache-hit == 'true'
         run: echo "✅ GoReleaser build skipped - using cached binaries"

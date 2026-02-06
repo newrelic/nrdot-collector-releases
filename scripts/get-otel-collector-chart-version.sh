@@ -1,7 +1,4 @@
 #!/bin/bash
-# Copyright New Relic, Inc. All rights reserved.
-# SPDX-License-Identifier: Apache-2.0
-
 REPO_DIR="$( cd "$(dirname "$( dirname "${BASH_SOURCE[0]}" )")" &> /dev/null && pwd )"
 
 collector_component_version=$(${REPO_DIR}/scripts/get-core-component-version.sh)
