@@ -18,7 +18,7 @@ ORIGINAL_DIR=$(pwd)
 
 # Function to fetch the latest version of nrdot-collector-components nrdot
 fetch_nrdot_versions() {
-    local nrdot_module="github.com/newrelic/nrdot-collector-components/exporter/nrdot"
+    local nrdot_module="github.com/newrelic/nrdot-collector-components/exporter/nopexporter"
 
     echo "Fetching latest version of nrdot-collector-components nrdot..." >&2
 
@@ -36,7 +36,7 @@ fetch_nrdot_versions() {
     echo "Downloading nrdot@$latest_version and extracting dependencies..." >&2
     ${GO} get "${nrdot_module}@${latest_version}" >/dev/null 2>&1
 
-    nrdot_info=$($GO list -m -json github.com/newrelic/nrdot-collector-components/exporter/nrdot@${latest_version} 2>/dev/null)
+    nrdot_info=$($GO list -m -json github.com/newrelic/nrdot-collector-components/exporter/nopexporter@${latest_version} 2>/dev/null)
 
     # Get the dependency graph for nrdot
     TEMP_DIR=$(mktemp -d)
@@ -49,16 +49,16 @@ fetch_nrdot_versions() {
 
     # Extract collector core version (stable v1.x.x)
     local core_stable
-    core_stable=$(${GO} list -m -json all 2>/dev/null | \
-        grep "go.opentelemetry.io/collector " | \
+    core_stable=$(${GO} list -m all 2>/dev/null | \
+        grep "^go.opentelemetry.io/collector/" | \
         awk '{print $2}' | \
         grep "^v1\." | \
         head -1)
 
-    # Extract collector core version (beta v0.x.x)
+    # Extract collector contrib version (beta v0.x.x)
     local contrib_beta
-    contrib_beta=$(${GO} list -m -json all 2>/dev/null | \
-        grep "github.com/open-telemetry/opentelemetry-collector-contrib " | \
+    contrib_beta=$(${GO} list -m all 2>/dev/null | \
+        grep "^github.com/open-telemetry/opentelemetry-collector-contrib/" | \
         awk '{print $2}' | \
         grep "^v0\." | \
         head -1)
