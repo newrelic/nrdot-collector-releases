@@ -149,12 +149,12 @@ func (c *Config) SetVersions() error {
 			if isOtelCoreComponent(component.GoMod) {
 				if isStableVersion(componentVersion) {
 					versions.StableCoreVersion = componentVersion
-				} else if versions.NrdotVersion == "" || isCompatibleWithNrdotComponent(versions.NrdotVersion, componentVersion) {
+				} else if isCompatibleWithNrdotComponent(versions.NrdotVersion, componentVersion) {
 					versions.BetaCoreVersion = componentVersion
 				}
 			}
 
-			if isOtelContribComponent(component.GoMod) && !isStableVersion(componentVersion) && (versions.NrdotVersion == "" || isCompatibleWithNrdotComponent(versions.NrdotVersion, componentVersion)) {
+			if isOtelContribComponent(component.GoMod) && !isStableVersion(componentVersion) && isCompatibleWithNrdotComponent(versions.NrdotVersion, componentVersion) {
 				versions.BetaContribVersion = componentVersion
 			}
 
