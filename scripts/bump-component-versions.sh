@@ -33,13 +33,13 @@ fetch_nrdot_versions() {
         return 1
     fi
 
-    echo "Latest nrdot version: $latest_version" >&2
+    echo "Latest nrdot version: ${latest_version}" >&2
 
     # Download the specific version and get its dependencies
-    echo "Downloading nrdot@$latest_version and extracting dependencies..." >&2
+    echo "Downloading nrdot@${latest_version} and extracting dependencies..." >&2
     ${GO} get "${nrdot_module}@${latest_version}" >/dev/null 2>&1
 
-    nrdot_info=$($GO list -m -json github.com/newrelic/nrdot-collector-components/exporter/nopexporter@${latest_version} 2>/dev/null)
+    nrdot_info=$($GO list -m -json ${nrdot_module}@${latest_version} 2>/dev/null)
 
     # Get the dependency graph for nrdot
     TEMP_DIR=$(mktemp -d)
@@ -48,7 +48,7 @@ fetch_nrdot_versions() {
         return 1
     }
     $GO mod init temp 2>/dev/null
-    $GO get github.com/newrelic/nrdot-collector-components/exporter/nopexporter@${latest_version} 2>/dev/null
+    $GO get ${nrdot_module}@${latest_version} 2>/dev/null
 
     # Extract collector core version (stable v1.x.x)
     local core_stable
