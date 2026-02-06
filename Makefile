@@ -19,7 +19,7 @@ NRLICENSE := $(TOOLS_BIN_DIR)/nrlicense
 
 DISTRIBUTIONS ?= "nrdot-collector-host,nrdot-collector-k8s,nrdot-collector,nrdot-collector-experimental"
 
-ci: check build build-fips version-check licenses-check
+ci: check manifests-check build build-fips version-check licenses-check
 check: ensure-goreleaser-up-to-date
 
 build: go ocb
@@ -173,3 +173,16 @@ licenses-check: headers-check licenses
 			exit 1;\
 		} \
 		|| exit 0
+
+# Check if all core components are present in experimental manifest
+CORE_MANIFEST="${SRC_ROOT}/distributions/nrdot-collector/manifest.yaml"
+EXPERIMENTAL_MANIFEST="${SRC_ROOT}/distributions/nrdot-collector-experimental/manifest.yaml"
+.PHONY: manifests-check
+manifests-check:
+	@diff=$$(yq 'del(.dist)' "${CORE_MANIFEST}" | \
+	grep -vxF "$$(yq 'del(.dist)' "${EXPERIMENTAL_MANIFEST}")"); \
+	[ -n "$${diff}" ] && { \
+		echo "NRDOT Experimental manifest out of sync with Core. Diff:"; \
+		echo "$${diff}"; \
+		exit 1; \
+	} || exit 0
