@@ -1,4 +1,7 @@
 #!/bin/bash
+# Copyright New Relic, Inc. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 
 # Extract a specific version section from an OpenTelemetry changelog
 # Usage: extract-changelog-version.sh <url> <version>
