@@ -15,6 +15,7 @@ Note: See [general README](../README.md) for information that applies to all dis
 | Use Case              | Stability | Replaces                  | Documentation |
 |-----------------------|-----------|---------------------------|---------------|
 | Host Monitoring (default)      | `public`  | `nrdot-collector-host`    | [See 'Host Monitoring' below](#host-monitoring) |
+| Host Monitoring Plus (w/ process metrics) | `alpha`  | N/A (new)    | Coming Soon |
 | Gateway Mode          | `alpha`   | N/A (new)                 | [See 'Gateway Mode' below](#gateway-mode) |
 | On-Host Integrations (OHI) | `alpha` | N/A (new)                 | Coming Soon |
 
