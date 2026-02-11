@@ -2,7 +2,6 @@
 # Copyright New Relic, Inc. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-
 # Extract a specific version section from an OpenTelemetry changelog
 # Usage: extract-changelog-version.sh <url> <version>
 # Example: extract-changelog-version.sh "https://raw.githubusercontent.com/open-telemetry/opentelemetry-collector/main/CHANGELOG.md" "v0.144.0"
