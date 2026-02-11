@@ -4,10 +4,11 @@
 
 # Simple script to bump versions for new release to document all places that need to be updated
 set -e
-old_version=1.9.0
-new_version=1.10.0
 
 REPO_DIR="$( cd "$(dirname "$( dirname "${BASH_SOURCE[0]}" )")" &> /dev/null && pwd )"
+old_version=$(yq ".dist.version" "${REPO_DIR}/distributions/nrdot-collector/manifest.yaml")
+new_version=1.11.0
+
 
 # Determine the OS and set the sed -i command accordingly
 if [[ "$OSTYPE" == "darwin"* ]]; then
