@@ -5,6 +5,7 @@ This document maps each component in the `nrdot-collector` distribution to the u
 **Legend:**
 - **Core**: Core (not use-case specific)
 - **Host**: Host Monitoring
+- **ATP**: Host Minitoring with process metrics
 - **Gateway**: Gateway Mode
 - **OHI**: On-Host Integrations
 
@@ -30,12 +31,15 @@ This document maps each component in the `nrdot-collector` distribution to the u
 
 | Component | Use Cases |
 |-----------|-----------|
+| `adaptivetelemetryprocessor` | ATP |
 | `attributesprocessor` | Core |
 | `batchprocessor` | Core |
 | `cumulativetodeltaprocessor` | Core |
 | `filterprocessor` | Core |
 | `groupbyattrsprocessor` | Gateway |
+| `k8sattributesprocessor` | ATP, OHI |
 | `memorylimiterprocessor` | Core |
+| `metricsgenerationprocessor` | ATP, OHI |
 | `metricstransformprocessor` | Core |
 | `resourcedetectionprocessor` | Core |
 | `resourceprocessor` | Gateway |
