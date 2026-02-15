@@ -75,9 +75,20 @@ done
 ```
 
 #### Packages
-If a distribution provides linux packages (refer to its README), you can follow the instructions below to install them (using the `host` distribution as an example).
+If a distribution provides windows installers or linux packages (refer to its README), you can follow the instructions below to install them (using the `host` distribution as an example).
 
 > Note: `systemd` is required for automatic service configuration.
+
+#### MSI Installation
+```powershell
+set collector_distro="nrdot-collector-host"
+set collector_version="1.5.0"
+set collector_arch="x64"
+set license_key="YOUR_LICENSE_KEY"
+
+iwr "https://github.com/newrelic/nrdot-collector-releases/releases/download/${collector_version}/${collector_distro}_${collector_version}_windows_${collector_arch}.msi" -OutFile "collector.msi"
+msiexec /i "collector.msi" NEW_RELIC_LICENSE_KEY="$license_key"
+```
 
 ##### DEB Installation
 ```bash
