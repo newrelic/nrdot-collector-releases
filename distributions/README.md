@@ -19,7 +19,7 @@ docker run -e NEW_RELIC_LICENSE_KEY='your-ingest-license-key' newrelic/nrdot-col
 ```
 
 ### Linux packages and Archives 
-All linux packages and archives are available under [Releases](https://github.com/newrelic/opentelemetry-collector-releases/releases), including checksums and signatures.
+All linux packages and archives are available under [Releases](https://github.com/newrelic/nrdot-collector-releases/releases), including checksums and signatures.
 
 #### Verifying Signatures
 
