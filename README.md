@@ -17,7 +17,7 @@ Please refer to [this README](./distributions/README.md) for documentation on ou
 
 ## Support
 
-New Relic hosts and moderates an online forum where customers can interact with New Relic employees as well as other customers to get help and share best practices. You can find this project's topic/threads here: [New Relic Community](https://forum.newrelic.com).
+New Relic hosts and moderates an [online forum](https://support.newrelic.com/s/) where customers can interact with New Relic employees as well as other customers to get help and share best practices. 
 
 ## Contribute
 
@@ -27,9 +27,9 @@ If you have any questions, or to execute our corporate CLA (which is required if
 
 **A note about vulnerabilities**
 
-As noted in our [security policy](../../security/policy), New Relic is committed to the privacy and security of our customers and their data. We believe that providing coordinated disclosure by security researchers and engaging with the security community are important means to achieve our security goals.
+As noted in our [security policy](https://github.com/newrelic/nrdot-collector-releases/security/policy), New Relic is committed to the privacy and security of our customers and their data. We believe that providing coordinated disclosure by security researchers and engaging with the security community are important means to achieve our security goals.
 
-If you believe you have found a security vulnerability in this project or any of New Relic's products or websites, we welcome and greatly appreciate you reporting it to New Relic through our [coordinated disclosure program](../../security/policy#coordinated-disclosure-program).
+If you believe you have found a security vulnerability in this project or any of New Relic's products or websites, we welcome and greatly appreciate you reporting it to New Relic through our [coordinated disclosure program](https://github.com/newrelic/nrdot-collector-releases/security/policy#coordinated-disclosure-program).
 
 If you would like to contribute to this project, review [these guidelines](./CONTRIBUTING.md).
 

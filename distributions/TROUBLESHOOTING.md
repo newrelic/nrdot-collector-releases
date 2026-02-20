@@ -90,7 +90,7 @@ error decoding 'processors': error reading configuration for "memory_limiter": d
 
 <a id="stablelink-telemetry-not-reaching-new-relic"></a>
 ### Telemetry not reaching New Relic
-If the UI does not light up as you expect it to and there are no [NrIntegrationError](https://docs.newrelic.com/docs/data-apis/ingest-apis/metric-api/troubleshoot-nrintegrationerror-events/), you can run some basic NRQL queries to check whether telemetry is reaching New Relic at all. If you do see some but not all the data you expect, there is either an issue with a specific pipeline or you might be running into [cardinality limits](https://docs.newrelic.com/docs/data-apis/ingest-apis/metric-api/NRQL-high-cardinality-metrics/).
+If the UI does not light up as you expect it to and there are no [NrIntegrationError](https://docs.newrelic.com/docs/data-apis/ingest-apis/metric-api/troubleshoot-nrintegrationerror-events/), you can run some basic NRQL queries to check whether telemetry is reaching New Relic at all. If you do see some but not all the data you expect, there is either an issue with a specific pipeline or you might be running into [cardinality limits](https://docs.newrelic.com/docs/data-apis/ingest-apis/metric-api/nrql-high-cardinality-metrics/).
 ```
 # Metrics
 FROM Metric SELECT * WHERE newrelic.source='api.metrics.otlp' WHERE otel.library.name like 'github.com/open-telemetry/opentelemetry-collector-contrib/receiver%' SINCE 1 hour ago
