@@ -5,7 +5,7 @@ custom_test_key: k8s.cluster.name
 
 dependencies:
   # renovatebot
-  newrelic/nr-k8s-otel-collector: 0.9.8
+  newrelic/nr-k8s-otel-collector: 0.10.8
 scenarios:
   - description: k8s telemetry
     before:
