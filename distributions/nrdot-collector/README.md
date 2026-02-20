@@ -15,7 +15,7 @@ Note: See [general README](../README.md) for information that applies to all dis
 | Use Case              | Stability | Replaces                  | Documentation |
 |-----------------------|-----------|---------------------------|---------------|
 | Host Monitoring (default)      | `public`  | `nrdot-collector-host`    | [See 'Host Monitoring' below](#host-monitoring) |
-| ATP    | `alpha`  |  N/A (new)   | [Docs](https://docs.newrelic.com/docs/opentelemetry/nrdot/atp/overview/TEST-BROKEN-LINK-WORKFLOW) |
+| ATP    | `alpha`  |  N/A (new)   | [Docs](https://docs.newrelic.com/docs/opentelemetry/nrdot/atp/overview) |
 | Gateway Mode          | `alpha`   | N/A (new)                 | [See 'Gateway Mode' below](#gateway-mode) |
 | On-Host Integrations (OHI) | `alpha` | N/A (new)                 | [Kafka](https://docs.newrelic.com/docs/opentelemetry/integrations/kafka/overview/), [NGINX](https://docs.newrelic.com/docs/opentelemetry/integrations/nginx/nginx-otel-overview/), [ElasticSearch](https://docs.newrelic.com/docs/opentelemetry/integrations/elasticsearch/elasticsearch-otel-integration-overview/), [RabbitMQ](https://docs.newrelic.com/docs/opentelemetry/integrations/rabbitmq/overview/) |
 
