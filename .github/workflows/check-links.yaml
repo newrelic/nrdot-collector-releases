@@ -23,6 +23,7 @@ jobs:
         id: lychee
         uses: lycheeverse/lychee-action@a8c4c7cb88f0c7386610c35eb25108e448569cb0 # v2.7.0
         with:
+          # no redirects to avoid accepting redirects to login pages
           args: --verbose --no-progress '**/*.md' --config .github/lychee.toml --max-redirects 0
           failIfEmpty: false
 

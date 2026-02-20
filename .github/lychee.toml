@@ -7,7 +7,9 @@ exclude  = [
     "^https://github.com/newrelic/nrdot-collector-components/discussions",
     # private org links
     "^https://www.github.com/newrelic/dbi",
-    "^https://www.github.com/newrelic/ohai"
+    "^https://www.github.com/newrelic/ohai",
+    # exclude top-level README image links
+    "https://github.com/newrelic/opensource-website/raw/main/src/images/",
 
 ]
 
