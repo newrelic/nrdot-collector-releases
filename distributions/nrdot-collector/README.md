@@ -15,9 +15,9 @@ Note: See [general README](../README.md) for information that applies to all dis
 | Use Case              | Stability | Replaces                  | Documentation |
 |-----------------------|-----------|---------------------------|---------------|
 | Host Monitoring (default)      | `public`  | `nrdot-collector-host`    | [See 'Host Monitoring' below](#host-monitoring) |
-| Host Monitoring w/ process metrics     | `alpha`  |  N/A (new)   | Coming Soon |
+| ATP    | `alpha`  |  N/A (new)   | [Docs](https://docs.newrelic.com/docs/opentelemetry/nrdot/atp/overview/TEST-BROKEN-LINK-WORKFLOW) |
 | Gateway Mode          | `alpha`   | N/A (new)                 | [See 'Gateway Mode' below](#gateway-mode) |
-| On-Host Integrations (OHI) | `alpha` | N/A (new)                 | Coming Soon |
+| On-Host Integrations (OHI) | `alpha` | N/A (new)                 | [Kafka](https://docs.newrelic.com/docs/opentelemetry/integrations/kafka/overview/), [NGINX](https://docs.newrelic.com/docs/opentelemetry/integrations/nginx/nginx-otel-overview/), [ElasticSearch](https://docs.newrelic.com/docs/opentelemetry/integrations/elasticsearch/elasticsearch-otel-integration-overview/), [RabbitMQ](https://docs.newrelic.com/docs/opentelemetry/integrations/rabbitmq/overview/) |
 
 Note: While it's technically possible to have a single collector serve multiple use cases at the same time, we generally do not recommend or support this pattern due to the operational complexity that comes with it (configuration, deployment, scaling, ...). Instead we recommend deploying one collector per use case and chain them as necessary. Please note that when we say 'one collector' we refer to a logical service, not a single instance, i.e. you should still employ common scaling practices to ensure your architecture is resilient.  
  
