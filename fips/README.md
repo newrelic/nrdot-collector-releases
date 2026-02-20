@@ -4,7 +4,7 @@ Note: This feature is preview-only as the FIPS-compliance is still under interna
 
 ## What is FIPS?
 
-FIPS (Federal Information Processing Standards) are a set of computer security standards developed by [NIST (National Institute of Standards and Technology)](https://csrc.nist.gov/projects/cryptographic-module-validation-program/certificate/4953) and used by non-military government agencies and contractors. For encryption guidance, look [here](https://newrelic.atlassian.net/wiki/spaces/STAN/pages/3500179508/Encryption+-+New+FY25).
+FIPS (Federal Information Processing Standards) are a set of computer security standards developed by [NIST (National Institute of Standards and Technology)](https://csrc.nist.gov/projects/cryptographic-module-validation-program/certificate/4953) and used by non-military government agencies and contractors.
 
 We are currently targeting [FIPS version 140-2](https://csrc.nist.gov/pubs/fips/140-2/upd2/final).
 
