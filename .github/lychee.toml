@@ -10,6 +10,9 @@ exclude  = [
     "^https://www.github.com/newrelic/ohai",
     # exclude top-level README image links
     "https://github.com/newrelic/opensource-website/raw/main/src/images/",
+    # This URL redirects to docs.newrelic.com but repolinter requires the old URL
+    # (see https://raw.githubusercontent.com/newrelic/.github/main/repolinter-rulesets/community-project.yml)
+    "^https://opensource.newrelic.com/oss-category/#community-project",
 
 ]
 
