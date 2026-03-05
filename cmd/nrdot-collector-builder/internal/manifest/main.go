@@ -134,8 +134,14 @@ func CopyAndUpdateConfigModules(cfg *Config, updates map[string][]string) (*Conf
 		updatedComponents := make([]Module, len(components))
 		for i, component := range components {
 			module, _, _ := strings.Cut(component.GoMod, " ")
-			latestVersions, exists := updates[module]
-			if exists {
+			var latestVersions []string
+			for key, versions := range updates {
+				if strings.HasPrefix(module, key) {
+					latestVersions = versions
+					break
+				}
+			}
+			if len(latestVersions) > 0 {
 				// Update the GoMod field with the latest version
 				component.GoMod = fmt.Sprintf("%s %s", module, latestVersions[len(latestVersions)-1])
 			} else {
