@@ -31,35 +31,22 @@ var UpdateCmd = &cobra.Command{
 		jsonOutput, _ := cmd.Root().PersistentFlags().GetBool("json")
 		verbose, _ := cmd.Root().PersistentFlags().GetBool("verbose")
 
-		// Get nrdot version information from persistent flags
-		var nrdotVersion, nrdotUsage string
-		if nrdotVersionFlag := cmd.Root().PersistentFlags().Lookup("nrdot-version"); nrdotVersionFlag != nil {
-			nrdotVersion = nrdotVersionFlag.Value.String()
-			nrdotUsage = nrdotVersionFlag.Usage
-		}
+		// Get version overrides from persistent flags.
+		nrdotVersion := persistentFlag(cmd, "nrdot-version")
+		coreStable := persistentFlag(cmd, "core-stable")
+		coreBeta := persistentFlag(cmd, "core-beta")
+		contribBeta := persistentFlag(cmd, "contrib-beta")
 
-		var coreStable, coreStableUsage string
-		if coreStableFlag := cmd.Root().PersistentFlags().Lookup("core-stable"); coreStableFlag != nil {
-			coreStable = coreStableFlag.Value.String()
-			coreStableUsage = coreStableFlag.Usage
-		}
-
-		var contribBeta, contribBetaUsage string
-		if contribBetaFlag := cmd.Root().PersistentFlags().Lookup("contrib-beta"); contribBetaFlag != nil {
-			contribBeta = contribBetaFlag.Value.String()
-			contribBetaUsage = contribBetaFlag.Usage
-		}
-
-		// Create a map with module path (usage) as key and version array as value for updates
-		nrdotUpdates := make(map[string][]string)
+		// Build module prefix -> VersionUpdate map used by CopyAndUpdateConfigModules.
+		nrdotUpdates := make(map[string]manifest.VersionUpdate)
 		if nrdotVersion != "" {
-			nrdotUpdates[nrdotUsage] = []string{nrdotVersion}
+			nrdotUpdates[manifest.NrModule] = manifest.VersionUpdate{BetaVersion: nrdotVersion}
 		}
-		if coreStable != "" {
-			nrdotUpdates[coreStableUsage] = []string{coreStable}
+		if coreStable != "" || coreBeta != "" {
+			nrdotUpdates[manifest.CoreModule] = manifest.VersionUpdate{StableVersion: coreStable, BetaVersion: coreBeta}
 		}
 		if contribBeta != "" {
-			nrdotUpdates[contribBetaUsage] = []string{contribBeta}
+			nrdotUpdates[manifest.ContribModule] = manifest.VersionUpdate{BetaVersion: contribBeta}
 		}
 
 		matches, _ := filepath.Glob(configPath)
@@ -73,26 +60,9 @@ var UpdateCmd = &cobra.Command{
 		var nextVersions manifest.Versions
 
 		for _, match := range matches {
-			cfg, _, err := initConfig(match, verbose)
-
+			cfg, err := loadConfig(match, verbose)
 			if err != nil {
 				return err
-			}
-
-			if err = cfg.Validate(); err != nil {
-				return fmt.Errorf("invalid configuration: %w", err)
-			}
-
-			if err = cfg.SetGoPath(); err != nil {
-				return fmt.Errorf("go not found: %w", err)
-			}
-
-			if err = cfg.SetVersions(); err != nil {
-				return fmt.Errorf("versions not found: %w", err)
-			}
-
-			if err = cfg.ParseModules(); err != nil {
-				return fmt.Errorf("invalid module configuration: %w", err)
 			}
 
 			if (currentVersions.BetaCoreVersion == "") || semver.Compare(cfg.Versions.BetaCoreVersion, currentVersions.BetaCoreVersion) > 0 {
@@ -143,36 +113,51 @@ var UpdateCmd = &cobra.Command{
 	},
 }
 
-func initConfig(cfgFile string, verbose bool) (*manifest.Config, *koanf.Koanf, error) {
-	var err error
+// persistentFlag returns the string value of a persistent flag, or "" if not found.
+func persistentFlag(cmd *cobra.Command, name string) string {
+	if f := cmd.Root().PersistentFlags().Lookup(name); f != nil {
+		return f.Value.String()
+	}
+	return ""
+}
+
+// loadConfig reads a manifest YAML file and runs all required validation and
+// initialisation steps, returning a ready-to-use Config.
+func loadConfig(cfgFile string, verbose bool) (*manifest.Config, error) {
 	log, err := zap.NewDevelopment()
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to create logger: %w", err)
+		return nil, fmt.Errorf("failed to create logger: %w", err)
 	}
 
-	cfg := &manifest.Config{
-		Logger:  log,
-		Verbose: verbose,
-	}
+	cfg := &manifest.Config{Logger: log, Verbose: verbose}
 
-	if cfg.Verbose {
-		cfg.Logger.Info("Using config file", zap.String("path", cfgFile))
+	if verbose {
+		log.Info("Using config file", zap.String("path", cfgFile))
 	}
-	// load the config file
-	provider := file.Provider(cfgFile)
 
 	k := koanf.New(".")
-
-	if err = k.Load(provider, yaml.Parser()); err != nil {
-		return nil, nil, fmt.Errorf("failed to load configuration file: %w", err)
+	if err = k.Load(file.Provider(cfgFile), yaml.Parser()); err != nil {
+		return nil, fmt.Errorf("failed to load configuration file: %w", err)
 	}
-
 	if err = k.UnmarshalWithConf("", cfg, koanf.UnmarshalConf{Tag: "mapstructure"}); err != nil {
-		return nil, nil, fmt.Errorf("failed to unmarshal configuration: %w", err)
+		return nil, fmt.Errorf("failed to unmarshal configuration: %w", err)
 	}
 
 	cfg.Path = cfgFile
 	cfg.Dir = filepath.Dir(cfgFile)
 
-	return cfg, k, nil
+	if err = cfg.Validate(); err != nil {
+		return nil, fmt.Errorf("invalid configuration: %w", err)
+	}
+	if err = cfg.SetGoPath(); err != nil {
+		return nil, fmt.Errorf("go not found: %w", err)
+	}
+	if err = cfg.SetVersions(); err != nil {
+		return nil, fmt.Errorf("versions not found: %w", err)
+	}
+	if err = cfg.ParseModules(); err != nil {
+		return nil, fmt.Errorf("invalid module configuration: %w", err)
+	}
+
+	return cfg, nil
 }

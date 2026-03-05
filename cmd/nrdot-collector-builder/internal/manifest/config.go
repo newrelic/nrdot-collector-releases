@@ -21,15 +21,17 @@ import (
 // errMissingGoMod indicates an empty gomod field
 var errMissingGoMod = errors.New("missing gomod specification for module")
 
-const coreModule = "go.opentelemetry.io/collector"
-const contribModule = "github.com/open-telemetry/opentelemetry-collector-contrib"
-const nrModule = "github.com/newrelic/nrdot-collector-components"
+const (
+	CoreModule    = "go.opentelemetry.io/collector"
+	ContribModule = "github.com/open-telemetry/opentelemetry-collector-contrib"
+	NrModule      = "github.com/newrelic/nrdot-collector-components"
+)
 
 type Versions struct {
 	BetaCoreVersion    string `json:"betaCoreVersion"`
 	BetaContribVersion string `json:"betaContribVersion"`
 	StableCoreVersion  string `json:"stableCoreVersion"`
-	NrdotVersion 		   string `json:"nrdotVersion"`
+	NrdotVersion       string `json:"nrdotVersion"`
 }
 
 // Config holds the builder's configuration
@@ -82,50 +84,27 @@ type Module struct {
 }
 
 func isOtelCoreComponent(mod string) bool {
-	// Check if the component is part of the OpenTelemetry Collector core
-	if strings.HasPrefix(mod, coreModule) {
-		return true
-	}
-	return false
+	return strings.HasPrefix(mod, CoreModule)
 }
 
 func isOtelContribComponent(mod string) bool {
-	// Check if the component is part of the OpenTelemetry Collector contrib
-	if strings.HasPrefix(mod, contribModule) {
-		return true
-	}
-	return false
+	return strings.HasPrefix(mod, ContribModule)
 }
 
 func isNrdotComponent(component Module) bool {
-	// Check if the component is part of the NRDOT Collector
-	if strings.HasPrefix(component.GoMod, nrModule) {
-		return true
-	}
-	return false
+	return strings.HasPrefix(component.GoMod, NrModule)
 }
 
 func isOtelComponent(component Module) bool {
-	// Check if the component is part of the OpenTelemetry Collector
-	if isOtelCoreComponent(component.GoMod) || isOtelContribComponent(component.GoMod) {
-		return true
-	}
-	return false
+	return isOtelCoreComponent(component.GoMod) || isOtelContribComponent(component.GoMod)
 }
 
 func isStableVersion(version string) bool {
-	// Check if the version is a stable version (not a pre-release)
-	if semver.Compare(version, "v1.0.0") >= 0 {
-		return true
-	}
-	return false
+	return semver.Compare(version, "v1.0.0") >= 0
 }
 
-func isCompatibleWithNrdotComponent(nrdotVersion string, betaVersion string) bool {
-	if semver.Compare(nrdotVersion, betaVersion) >= 0 {
-		return true
-	}
-	return false
+func isCompatibleWithNrdotComponent(nrdotVersion, betaVersion string) bool {
+	return semver.Compare(nrdotVersion, betaVersion) >= 0
 }
 
 func (c *Config) SetVersions() error {

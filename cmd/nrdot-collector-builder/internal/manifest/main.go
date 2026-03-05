@@ -25,7 +25,7 @@ var (
 	ErrVersionMismatch = errors.New("mismatch in go.mod and builder configuration versions")
 )
 
-// runGoCommand replicates behavoir of the OCB, effectively running `go list` to fetch module versions
+// runGoCommand replicates behavior of the OCB, effectively running `go list` to fetch module versions
 func runGoCommand(cfg *Config, args ...string) ([]byte, error) {
 	if cfg.Verbose {
 		cfg.Logger.Info("Running go subcommand.", zap.Any("arguments", args))
@@ -127,46 +127,90 @@ func fetchLatestModuleVersions(cfg *Config) (map[string][]string, error) {
 	return updates, nil
 }
 
-func CopyAndUpdateConfigModules(cfg *Config, updates map[string][]string) (*Config, error) {
-	// Create a deep copy of the cfg struct
+// VersionUpdate holds the target versions for a module path prefix.
+// StableVersion applies to modules currently at v1.x; BetaVersion to v0.x.
+type VersionUpdate struct {
+	StableVersion string
+	BetaVersion   string
+}
+
+// CopyAndUpdateConfigModules returns a shallow copy of cfg with module versions
+// replaced according to the updates map. Each key in updates is a module path
+// prefix; modules matching that prefix get either the StableVersion (v1.x) or
+// BetaVersion (v0.x) depending on their current stability level.
+func CopyAndUpdateConfigModules(cfg *Config, updates map[string]VersionUpdate) (*Config, error) {
 	cfgCopy := *cfg
-	update := func(components []Module) []Module {
-		updatedComponents := make([]Module, len(components))
-		for i, component := range components {
-			module, _, _ := strings.Cut(component.GoMod, " ")
-			latestVersions, exists := updates[module]
-			if exists {
-				// Update the GoMod field with the latest version
-				component.GoMod = fmt.Sprintf("%s %s", module, latestVersions[len(latestVersions)-1])
-			} else {
-				if cfg.Verbose {
-					// log the module name and version
-					cfg.Logger.Info("No updates available for module", zap.String("module", module))
-				}
-			}
 
-			updatedComponents[i] = component
-		}
+	cfgCopy.Exporters = applyVersionUpdates(cfg, cfg.Exporters, updates)
+	cfgCopy.Receivers = applyVersionUpdates(cfg, cfg.Receivers, updates)
+	cfgCopy.Processors = applyVersionUpdates(cfg, cfg.Processors, updates)
+	cfgCopy.Extensions = applyVersionUpdates(cfg, cfg.Extensions, updates)
+	cfgCopy.Connectors = applyVersionUpdates(cfg, cfg.Connectors, updates)
+	cfgCopy.ConfmapProviders = applyVersionUpdates(cfg, cfg.ConfmapProviders, updates)
+	cfgCopy.ConfmapConverters = applyVersionUpdates(cfg, cfg.ConfmapConverters, updates)
 
-		return updatedComponents
+	if err := cfgCopy.SetVersions(); err != nil {
+		return nil, fmt.Errorf("failed to derive versions from updated modules: %w", err)
 	}
-
-	cfgCopy.Exporters = update(cfg.Exporters)
-	cfgCopy.Receivers = update(cfg.Receivers)
-	cfgCopy.Processors = update(cfg.Processors)
-	cfgCopy.Extensions = update(cfg.Extensions)
-	cfgCopy.Connectors = update(cfg.Connectors)
-	cfgCopy.ConfmapProviders = update(cfg.ConfmapProviders)
-	cfgCopy.ConfmapConverters = update(cfg.ConfmapConverters)
-
-	cfgCopy.SetVersions()
 
 	return &cfgCopy, nil
 }
 
-// GetModules retrieves the go modules, updating go.mod and go.sum in the process
+// applyVersionUpdates returns a new slice with each module's version replaced
+// if its path matches a prefix in updates.
+func applyVersionUpdates(cfg *Config, components []Module, updates map[string]VersionUpdate) []Module {
+	result := make([]Module, len(components))
+	for i, component := range components {
+		module, currentVersion, _ := strings.Cut(component.GoMod, " ")
+
+		var newVersion string
+		for prefix, u := range updates {
+			if !strings.HasPrefix(module, prefix) {
+				continue
+			}
+			if isStableVersion(currentVersion) {
+				newVersion = u.StableVersion
+			} else {
+				newVersion = u.BetaVersion
+			}
+			break
+		}
+
+		if newVersion != "" {
+			component.GoMod = fmt.Sprintf("%s %s", module, newVersion)
+		} else if cfg.Verbose {
+			cfg.Logger.Info("No updates available for module", zap.String("module", module))
+		}
+
+		result[i] = component
+	}
+	return result
+}
+
+// toVersionUpdates converts the map from fetchLatestModuleVersions (exact module
+// path to sorted available versions) into the VersionUpdate map expected by
+// CopyAndUpdateConfigModules. Each module gets its latest version placed in the
+// appropriate stability field.
+func toVersionUpdates(latestVersions map[string][]string) map[string]VersionUpdate {
+	updates := make(map[string]VersionUpdate, len(latestVersions))
+	for module, versions := range latestVersions {
+		if len(versions) == 0 {
+			continue
+		}
+		latest := versions[len(versions)-1]
+		if isStableVersion(latest) {
+			updates[module] = VersionUpdate{StableVersion: latest}
+		} else {
+			updates[module] = VersionUpdate{BetaVersion: latest}
+		}
+	}
+	return updates
+}
+
+// UpdateConfigModules fetches the latest available versions for all modules and
+// returns a copy of cfg with each module updated to the newest compatible version.
 func UpdateConfigModules(cfg *Config) (*Config, error) {
-	updates, err := fetchLatestModuleVersions(cfg)
+	rawUpdates, err := fetchLatestModuleVersions(cfg)
 	if err != nil {
 		cfg.Logger.Error("Failed to fetch latest module versions", zap.Error(err))
 		return nil, err
@@ -174,7 +218,7 @@ func UpdateConfigModules(cfg *Config) (*Config, error) {
 
 	// Iterate over all components and check for updates
 	// Create a copy of cfg with updated modules
-	updatedCfg, err := CopyAndUpdateConfigModules(cfg, updates)
+	updatedCfg, err := CopyAndUpdateConfigModules(cfg, toVersionUpdates(rawUpdates))
 	if err != nil {
 		cfg.Logger.Error("Failed to update config modules", zap.Error(err))
 		return nil, err
