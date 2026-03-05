@@ -50,31 +50,42 @@ fetch_nrdot_versions() {
     $GO mod init temp 2>/dev/null
     $GO get ${nrdot_module}@${latest_version} 2>/dev/null
 
-    # Extract collector core version (stable v1.x.x)
+    # Extract collector core stable version (v1.x.x)
     local core_stable
     core_stable=$(${GO} list -m all 2>/dev/null | \
         grep "^go.opentelemetry.io/collector/" | \
         awk '{print $2}' | \
         grep "^v1\." | \
-        head -1)
+        sort -V | tail -1)
 
-    # Extract collector contrib version (beta v0.x.x)
-    local contrib_beta
-    contrib_beta=$(${GO} list -m all 2>/dev/null | \
-        grep "^github.com/open-telemetry/opentelemetry-collector-contrib/" | \
+    # Extract collector core beta version (v0.x.x)
+    local core_beta
+    core_beta=$(${GO} list -m all 2>/dev/null | \
+        grep "^go.opentelemetry.io/collector/" | \
         awk '{print $2}' | \
         grep "^v0\." | \
-        head -1)
+        sort -V | tail -1)
 
     # Clean up temp directory and return to original directory
     cd "$ORIGINAL_DIR" || exit 1
     rm -rf "$TEMP_DIR"
 
+    # Find highest contrib patch at the same minor version as core_beta
+    local contrib_beta=""
+    if [[ -n "$core_beta" ]]; then
+        local core_minor
+        core_minor=$(echo "$core_beta" | awk -F'.' '{print $1"."$2}')
+        contrib_beta=$(${GO} list -m -versions \
+            "github.com/open-telemetry/opentelemetry-collector-contrib/receiver/filelogreceiver" \
+            2>/dev/null | tr ' ' '\n' | grep "^${core_minor}\." | sort -V | tail -1)
+    fi
+
     # Output as JSON
-    if [[ -n "$core_stable" ]] || [[ -n "$contrib_beta" ]]; then
+    if [[ -n "$core_stable" ]] || [[ -n "$core_beta" ]]; then
         echo "{"
         echo "  \"nrdotVersion\": \"$latest_version\","
         echo "  \"coreStable\": \"${core_stable:-none}\","
+        echo "  \"coreBeta\": \"${core_beta:-none}\","
         echo "  \"contribBeta\": \"${contrib_beta:-none}\""
         echo "}"
     else
@@ -94,11 +105,13 @@ NRDOT_FLAGS=""
 if [[ $NRDOT_STATUS -eq 0 ]]; then
     NRDOT_VERSION=$(echo "$NRDOT_VERSIONS" | jq -r '.nrdotVersion // ""')
     CORE_STABLE=$(echo "$NRDOT_VERSIONS" | jq -r '.coreStable // ""')
+    CORE_BETA=$(echo "$NRDOT_VERSIONS" | jq -r '.coreBeta // ""')
     CONTRIB_BETA=$(echo "$NRDOT_VERSIONS" | jq -r '.contribBeta // ""')
 
     # Build flags string
     [[ -n "$NRDOT_VERSION" ]] && NRDOT_FLAGS="$NRDOT_FLAGS --nrdot-version=\"$NRDOT_VERSION\""
     [[ -n "$CORE_STABLE" ]] && NRDOT_FLAGS="$NRDOT_FLAGS --core-stable=\"$CORE_STABLE\""
+    [[ -n "$CORE_BETA" ]] && NRDOT_FLAGS="$NRDOT_FLAGS --core-beta=\"$CORE_BETA\""
     [[ -n "$CONTRIB_BETA" ]] && NRDOT_FLAGS="$NRDOT_FLAGS --contrib-beta=\"$CONTRIB_BETA\""
 fi
 

@@ -32,34 +32,40 @@ var UpdateCmd = &cobra.Command{
 		verbose, _ := cmd.Root().PersistentFlags().GetBool("verbose")
 
 		// Get nrdot version information from persistent flags
-		var nrdotVersion, nrdotUsage string
-		if nrdotVersionFlag := cmd.Root().PersistentFlags().Lookup("nrdot-version"); nrdotVersionFlag != nil {
-			nrdotVersion = nrdotVersionFlag.Value.String()
-			nrdotUsage = nrdotVersionFlag.Usage
+		var nrdotVersion string
+		if f := cmd.Root().PersistentFlags().Lookup("nrdot-version"); f != nil {
+			nrdotVersion = f.Value.String()
 		}
 
-		var coreStable, coreStableUsage string
-		if coreStableFlag := cmd.Root().PersistentFlags().Lookup("core-stable"); coreStableFlag != nil {
-			coreStable = coreStableFlag.Value.String()
-			coreStableUsage = coreStableFlag.Usage
+		var coreStable string
+		if f := cmd.Root().PersistentFlags().Lookup("core-stable"); f != nil {
+			coreStable = f.Value.String()
 		}
 
-		var contribBeta, contribBetaUsage string
-		if contribBetaFlag := cmd.Root().PersistentFlags().Lookup("contrib-beta"); contribBetaFlag != nil {
-			contribBeta = contribBetaFlag.Value.String()
-			contribBetaUsage = contribBetaFlag.Usage
+		var coreBeta string
+		if f := cmd.Root().PersistentFlags().Lookup("core-beta"); f != nil {
+			coreBeta = f.Value.String()
 		}
 
-		// Create a map with module path (usage) as key and version array as value for updates
+		var contribBeta string
+		if f := cmd.Root().PersistentFlags().Lookup("contrib-beta"); f != nil {
+			contribBeta = f.Value.String()
+		}
+
+		// Build module prefix → version map. Keys use "prefix:stability" so that
+		// CopyAndUpdateConfigModules can match stable vs beta core modules separately.
 		nrdotUpdates := make(map[string][]string)
 		if nrdotVersion != "" {
-			nrdotUpdates[nrdotUsage] = []string{nrdotVersion}
+			nrdotUpdates["github.com/newrelic/nrdot-collector-components"] = []string{nrdotVersion}
 		}
 		if coreStable != "" {
-			nrdotUpdates[coreStableUsage] = []string{coreStable}
+			nrdotUpdates["go.opentelemetry.io/collector:stable"] = []string{coreStable}
+		}
+		if coreBeta != "" {
+			nrdotUpdates["go.opentelemetry.io/collector:beta"] = []string{coreBeta}
 		}
 		if contribBeta != "" {
-			nrdotUpdates[contribBetaUsage] = []string{contribBeta}
+			nrdotUpdates["github.com/open-telemetry/opentelemetry-collector-contrib"] = []string{contribBeta}
 		}
 
 		matches, _ := filepath.Glob(configPath)

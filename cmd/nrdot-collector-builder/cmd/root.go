@@ -13,6 +13,7 @@ var jsonOutput bool
 var verbose bool
 var nrdotVersion string
 var coreStableVersion string
+var coreBetaVersion string
 var contribBetaVersion string
 
 // rootCmd represents the base command when called without any subcommands
@@ -38,6 +39,12 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(
 		&coreStableVersion,
 		"core-stable",
+		"",
+		"go.opentelemetry.io/collector",
+	)
+	rootCmd.PersistentFlags().StringVar(
+		&coreBetaVersion,
+		"core-beta",
 		"",
 		"go.opentelemetry.io/collector",
 	)
