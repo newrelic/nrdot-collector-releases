@@ -1,0 +1,177 @@
+name: Upload Agent Metadata
+
+on:
+  release:
+    types: [released]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to upload (e.g., 1.11.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate Release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.extract-version.outputs.version }}
+    steps:
+      - name: Extract version from release or input
+        id: extract-version
+        run: |
+          echo "${{ github.event_name }} ${{ inputs.version }}"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ inputs.version }}"
+          else
+            VERSION="${{ github.event.release.tag_name }}"
+          fi
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Extracted version: ${VERSION}"
+
+  upload-metadata:
+    name: Upload
+    runs-on: ubuntu-latest
+    needs: validate
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+    steps:
+      - name: Download release artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.validate.outputs.version }}
+        run: |
+          echo "Downloading artifacts for ${DISTRIBUTION} version ${VERSION}"
+
+          gh release download ${VERSION} --repo newrelic/nrdot-collector-releases --pattern "nrdot-collector_${VERSION}_linux_amd64.tar.gz*"
+          gh release download ${VERSION} --repo newrelic/nrdot-collector-releases --pattern "nrdot-collector_${VERSION}_linux_arm64.tar.gz*"
+          gh release download ${VERSION} --repo newrelic/nrdot-collector-releases --pattern "nrdot-collector_${VERSION}_windows_amd64.zip*"
+          echo "Downloaded files:"
+          ls -lh
+
+      - name: Validate checksums
+        env:
+          VERSION: ${{ needs.validate.outputs.version }}
+        run: |
+          echo "Validating checksums for nrdot-collector"
+
+          # Function to validate checksum (sum files contain only the hash)
+          validate_checksum() {
+            local file="$1"
+            local sum_file="${file}.sum"
+
+            echo "Validating ${file}..."
+            expected_hash=$(cat "${sum_file}" | tr -d '[:space:]')
+            actual_hash=$(sha256sum "${file}" | awk '{print $1}')
+
+            if [ "${expected_hash}" = "${actual_hash}" ]; then
+              echo "✓ ${file}: OK"
+            else
+              echo "✗ ${file}: FAILED"
+              echo "  Expected: ${expected_hash}"
+              echo "  Actual:   ${actual_hash}"
+              exit 1
+            fi
+          }
+
+          validate_checksum "nrdot-collector_${VERSION}_linux_amd64.tar.gz"
+          validate_checksum "nrdot-collector_${VERSION}_linux_arm64.tar.gz"
+          validate_checksum "nrdot-collector_${VERSION}_windows_amd64.zip"
+
+          echo "All checksums validated successfully"
+
+      - name: Repackage archives (remove config.yaml)
+        env:
+          VERSION: ${{ needs.validate.outputs.version }}
+        run: |
+          echo "Repackaging archives to contain only executables"
+          mkdir -p /tmp/repackaged
+
+          # Process Linux amd64
+          echo "Processing nrdot-collector_${VERSION}_linux_amd64.tar.gz"
+          mkdir -p /tmp/extract_amd64
+          tar -xzf "nrdot-collector_${VERSION}_linux_amd64.tar.gz" -C /tmp/extract_amd64
+          rm -f /tmp/extract_amd64/config.yaml
+          tar -czf "/tmp/repackaged/nrdot-collector_${VERSION}_linux_amd64.tar.gz" -C /tmp/extract_amd64 nrdot-collector
+          rm -rf /tmp/extract_amd64
+
+          # Process Linux arm64
+          echo "Processing nrdot-collector_${VERSION}_linux_arm64.tar.gz"
+          mkdir -p /tmp/extract_arm64
+          tar -xzf "nrdot-collector_${VERSION}_linux_arm64.tar.gz" -C /tmp/extract_arm64
+          rm -f /tmp/extract_arm64/config.yaml
+          tar -czf "/tmp/repackaged/nrdot-collector_${VERSION}_linux_arm64.tar.gz" -C /tmp/extract_arm64 nrdot-collector
+          rm -rf /tmp/extract_arm64
+
+          # Process Windows amd64
+          echo "Processing nrdot-collector_${VERSION}_windows_amd64.zip"
+          mkdir -p /tmp/extract_windows
+          unzip -q "nrdot-collector_${VERSION}_windows_amd64.zip" -d /tmp/extract_windows
+          rm -f /tmp/extract_windows/config.yaml
+          cd /tmp/extract_windows && zip -q "/tmp/repackaged/nrdot-collector_${VERSION}_windows_amd64.zip" nrdot-collector.exe
+          rm -rf /tmp/extract_windows
+
+          echo "Repackaged files:"
+          ls -lh /tmp/repackaged/
+
+          # Verify contents of repackaged archives
+          echo "Verifying Linux amd64 archive contains only nrdot-collector:"
+          tar -tzf "/tmp/repackaged/nrdot-collector_${VERSION}_linux_amd64.tar.gz"
+
+          echo "Verifying Linux arm64 archive contains only nrdot-collector:"
+          tar -tzf "/tmp/repackaged/nrdot-collector_${VERSION}_linux_arm64.tar.gz"
+
+          echo "Verifying Windows amd64 archive contains only nrdot-collector.exe:"
+          unzip -l "/tmp/repackaged/nrdot-collector_${VERSION}_windows_amd64.zip"
+
+      - name: Preserve artifacts before checkout
+        env:
+          VERSION: ${{ needs.validate.outputs.version }}
+        run: |
+          mkdir -p /tmp/artifacts
+          mv "/tmp/repackaged/nrdot-collector_${VERSION}_linux_amd64.tar.gz" /tmp/artifacts/linux_amd64.tar.gz
+          mv "/tmp/repackaged/nrdot-collector_${VERSION}_linux_arm64.tar.gz" /tmp/artifacts/linux_arm64.tar.gz
+          mv "/tmp/repackaged/nrdot-collector_${VERSION}_windows_amd64.zip" /tmp/artifacts/windows_amd64.zip
+          echo "Artifacts preserved in /tmp/artifacts"
+          ls -lh /tmp/artifacts
+
+      - name: Upload to Agent Metadata Service
+        uses: newrelic/agent-metadata-action@main
+        with:
+          newrelic-client-id: ${{ secrets.NEWRELIC_CLIENT_ID }}
+          newrelic-private-key: ${{ secrets.NEWRELIC_PRIVATE_KEY }}
+          agent-type: 'NRDOT'
+          version: ${{ needs.validate.outputs.version }}
+          oci-registry: ${{ secrets.OCI_REGISTRY }}
+          oci-username: ${{ secrets.OCI_USERNAME }}
+          oci-password: ${{ secrets.OCI_PASSWORD }}
+          apm-control-nr-license-key: ${{ secrets.APM_CONTROL_NR_LICENSE_KEY_STAGING }}
+          git-ref: ${{ steps.validate.outputs.version }}
+          binaries: |
+            [
+              {
+                "name": "nrdot-collector-linux-amd64",
+                "path": "/tmp/artifacts/linux_amd64.tar.gz",
+                "os": "linux",
+                "arch": "amd64",
+                "format": "tar+gzip"
+              },
+              {
+                "name": "nrdot-collector-linux-arm64",
+                "path": "/tmp/artifacts/linux_arm64.tar.gz",
+                "os": "linux",
+                "arch": "arm64",
+                "format": "tar+gzip"
+              },
+              {
+                "name": "nrdot-collector-windows-amd64",
+                "path": "/tmp/artifacts/windows_amd64.zip",
+                "os": "windows",
+                "arch": "amd64",
+                "format": "zip"
+              }
+            ]
