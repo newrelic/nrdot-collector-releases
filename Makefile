@@ -28,7 +28,10 @@ build: go ocb
 build-fips: go ocb
 	@./scripts/build.sh -d "${DISTRIBUTIONS}" -b ${OTELCOL_BUILDER} -f true
 
-generate: generate-sources generate-goreleaser
+generate: generate-sources generate-msi generate-goreleaser
+
+generate-msi: go
+	@./scripts/generate-msi.sh -d "${DISTRIBUTIONS}"
 
 generate-goreleaser: go
 	@./scripts/generate-goreleaser.sh -d "${DISTRIBUTIONS}" -g ${GO}
