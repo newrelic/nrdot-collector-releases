@@ -64,9 +64,9 @@ jobs:
           fetch-depth: 0 # required for tag metadata
 
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
         with:
-          go-version: "~1.24"
+          go-version: "~1.26"
           check-latest: true
 
       - name: Draft Release From Root Config
