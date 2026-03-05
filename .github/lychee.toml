@@ -10,8 +10,24 @@ exclude  = [
     "^https://www.github.com/newrelic/ohai",
     # exclude top-level README image links
     "https://github.com/newrelic/opensource-website/raw/main/src/images/",
+    # This URL redirects to docs.newrelic.com but repolinter requires the old URL
+    # (see https://raw.githubusercontent.com/newrelic/.github/main/repolinter-rulesets/community-project.yml)
+    "^https://opensource.newrelic.com/oss-category/#community-project",
 
 ]
 
 # better to be safe and avoid failures
-max-retries = 6
+max-retries = 10
+
+# Website timeout from connect to response finished (in seconds)
+timeout = 20
+
+# Minimum wait time in seconds between retries of failed requests
+retry_wait_time = 10
+
+# Customize hosts to avoid rate limiting
+[hosts."docs.newrelic.com"]
+# Process one request at a time for docs.newrelic.com
+concurrency = 1
+# Wait 1 second between requests
+request_interval = "1s"
