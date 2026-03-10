@@ -1,0 +1,10 @@
+{
+  "standard": {
+    "product_upgrade_code": "TEMP-PRODUCT-CODE-CORE",
+    "component_guid": "TEMP-COMPONENT-GUID-CORE"
+  },
+  "fips": {
+    "product_upgrade_code": "TEMP-PRODUCT-CODE-CORE-FIPS",
+    "component_guid": "TEMP-COMPONENT-GUID-CORE-FIPS"
+  }
+}
