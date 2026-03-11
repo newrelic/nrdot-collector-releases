@@ -19,6 +19,8 @@ on:
         type: string
         default: "ci-${{ github.run_id }}-${{ github.run_attempt }}"
     secrets:
+      goreleaser_key:
+        required: true
       gpg_private_key:
         required: true
       gpg_passphrase:
