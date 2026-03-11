@@ -116,7 +116,7 @@ go:
 goreleaser:
 	@{ \
 		if ! command -v '$(GORELEASER)' >/dev/null 2>/dev/null; then \
-			echo >&2 '$(GORELEASER) command not found. Please install goreleaser. https://goreleaser.com/install/'; \
+			echo >&2 '$(GORELEASER) command not found. Please install goreleaser pro. https://goreleaser.com/install/#pro'; \
 			exit 1; \
 		fi \
 	}
