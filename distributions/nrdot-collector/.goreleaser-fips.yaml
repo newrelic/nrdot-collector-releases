@@ -42,6 +42,8 @@ snapshot:
   version_template: '{{ incpatch .Version }}-SNAPSHOT-{{.ShortCommit}}'
 checksum:
   disable: true
+changelog:
+  disable: "true"
 dockers:
   - goos: linux
     goarch: amd64
@@ -84,5 +86,3 @@ docker_manifests:
     image_templates:
       - '{{ .Env.REGISTRY }}/nrdot-collector:{{ .Version }}-fips-amd64'
       - '{{ .Env.REGISTRY }}/nrdot-collector:{{ .Version }}-fips-arm64'
-changelog:
-  disable: "true"
