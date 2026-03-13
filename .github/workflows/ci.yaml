@@ -47,6 +47,7 @@ jobs:
       aws_access_key_id: ${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCESS_KEY_ID }}
       aws_secret_access_key: ${{ secrets.OTELCOMM_AWS_TEST_ACC_SECRET_ACCESS_KEY }}
       aws_account_id: ${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCOUNT_ID }}
+      goreleaser_key: ${{ secrets.GORELEASER_KEY }}
       gpg_private_key: ${{ secrets.OTELCOMM_GPG_PRIVATE_KEY_BASE64 }}
       gpg_passphrase: ${{ secrets.OTELCOMM_GPG_PASSPHRASE }}
       nr_backend_url: ${{ secrets.NR_STAGING_BACKEND_URL }}

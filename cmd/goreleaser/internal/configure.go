@@ -24,7 +24,7 @@ import (
 	"fmt"
 	"path"
 
-	"github.com/goreleaser/goreleaser/v2/pkg/config"
+	"github.com/goreleaser/goreleaser-pro/v2/pkg/config"
 )
 
 const (

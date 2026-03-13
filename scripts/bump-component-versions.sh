@@ -37,7 +37,6 @@ fetch_nrdot_versions() {
 
     # Download the specific version and get its dependencies
     echo "Downloading nrdot@${latest_version} and extracting dependencies..." >&2
-    ${GO} get "${nrdot_module}@${latest_version}" >/dev/null 2>&1
 
     # Build a temporary module to resolve the full dependency graph
     TEMP_DIR=$(mktemp -d)

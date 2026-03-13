@@ -19,6 +19,8 @@ on:
         type: string
         default: "ci-${{ github.run_id }}-${{ github.run_attempt }}"
     secrets:
+      goreleaser_key:
+        required: true
       gpg_private_key:
         required: true
       gpg_passphrase:
@@ -232,8 +234,9 @@ jobs:
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
           GPG_KEY_PATH: ${{ steps.write_gpg_to_path.outputs.gpg_key_path }}
           REGISTRY: "${{ env.registry }}"
+          GORELEASER_KEY: ${{ secrets.goreleaser_key }}
         with:
-          distribution: goreleaser
+          distribution: goreleaser-pro
           version: "2.11.2"
           args: ${{ env.goreleaser_args }}
           workdir: distributions/${{ inputs.distribution }}
