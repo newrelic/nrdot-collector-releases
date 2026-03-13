@@ -9,9 +9,9 @@
   "customManagers": [
     {
       "customType": "regex",
-      "fileMatch": [
-        "(^|/)spec-nightly-action.yaml$",
-        "(^|/)spec-local.yaml$",
+      "managerFilePatterns": [
+        "/(^|/)spec-nightly-action.yaml$/",
+        "/(^|/)spec-local.yaml$/",
       ],
       "matchStringsStrategy": "combination",
       "matchStrings": [
