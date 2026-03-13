@@ -5,13 +5,19 @@
   "semanticCommits": "enabled",
   "semanticCommitType": "chore",
   "semanticCommitScope": "deps",
-  "enabledManagers": ["custom.regex"],
+  "enabledManagers": ["custom.regex", "github-actions"],
+  "packageRules": [
+    {
+      "matchManagers": ["github-actions"],
+      "pinDigests": true
+    }
+  ],
   "customManagers": [
     {
       "customType": "regex",
-      "managerFilePatterns": [
-        "/(^|/)spec-nightly-action.yaml$/",
-        "/(^|/)spec-local.yaml$/",
+      "fileMatch": [
+        "(^|/)spec-nightly-action.yaml$",
+        "(^|/)spec-local.yaml$",
       ],
       "matchStringsStrategy": "combination",
       "matchStrings": [
