@@ -2,6 +2,9 @@
 
 Version based on resource attribute `newrelic.collector_telemetry.version`
 
+#### 0.5.0
+- Change default metrics level from 'detailed' to 'normal'
+
 #### 0.4.0
 - Disable tracing by default
 
