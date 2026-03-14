@@ -1,7 +1,8 @@
 include-fragments = true
 
-# Only accept successful status codes (don't mask 429 rate limit errors)
 accept = ["200..=299"]
+require_https = true
+include_fragments = true
 
 exclude  = [
     # disabled
@@ -17,16 +18,15 @@ exclude  = [
 
 ]
 
-# Maximum simultaneous requests to the same host (very conservative to avoid rate limits)
+
+#### Avoid rate limiting / timeouts 
 host_concurrency = 1
-
-# Minimum interval between requests to the same host (space out requests)
 host_request_interval = "3s"
-
+max_redirects = 0
 max_retries = 5
-# Minimum wait time in seconds between retries of failed requests.
 retry_wait_time = 10
-
-# Website timeout from connect to response finished (in seconds)
 timeout = 30
 
+#### Caching
+cache = true
+max_cache_age = "7d"
