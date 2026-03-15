@@ -67,7 +67,7 @@ jobs:
 
       - name: Send notification to Slack Workflow
         if: ${{ failure() && env.tag_to_scan == 'latest' }}
-        uses: slackapi/slack-github-action@v2.0.0
+        uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
         with:
           webhook: ${{ secrets.OTELCOMM_BOTS_SLACK_HOOK }}
           webhook-type: incoming-webhook
