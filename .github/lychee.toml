@@ -1,6 +1,8 @@
 include-fragments = true
 
-accept = ["200..=299", "429"]
+accept = ["200..=299"]
+require_https = true
+include_fragments = true
 
 exclude  = [
     # disabled
@@ -13,21 +15,22 @@ exclude  = [
     # This URL redirects to docs.newrelic.com but repolinter requires the old URL
     # (see https://raw.githubusercontent.com/newrelic/.github/main/repolinter-rulesets/community-project.yml)
     "^https://opensource.newrelic.com/oss-category/#community-project",
-
 ]
 
-# better to be safe and avoid failures
-max-retries = 10
+exclude_path = [
+    "lychee/out.md", # avoid picking up lychee report on reruns
+]
 
-# Website timeout from connect to response finished (in seconds)
-timeout = 20
 
-# Minimum wait time in seconds between retries of failed requests
+#### Avoid rate limiting / timeouts 
+host_concurrency = 1
+host_request_interval = "3s"
+max_redirects = 0
+max_retries = 3
 retry_wait_time = 10
+timeout = 30
 
-# Customize hosts to avoid rate limiting
-[hosts."docs.newrelic.com"]
-# Process one request at a time for docs.newrelic.com
-concurrency = 1
-# Wait 1 second between requests
-request_interval = "1s"
+#### Caching
+cache = true
+max_cache_age = "7d"
+
