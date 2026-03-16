@@ -5,7 +5,7 @@ For general NRDOT troubleshooting, see [this guide](../TROUBLESHOOTING.md). This
 ## Host Monitoring
 
 ### Missing host entity in New Relic UI due to missing `host.id`
-If you are [seeing telemetry getting ingested into New Relic](../TROUBLESHOOTING.md#user-content-stablelink-telemetry-not-reaching-new-relic) but the Host UI does not show host entities after a few minutes, you may be running into limitations of the [resourcedetectionprocessor](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/processor/resourcedetectionprocessor/README.md) NRDOT uses to determine the `host.id` attribute required to [synthesize a host entity](https://github.com/newrelic/entity-definitions/blob/main/entity-types/infra-host/definition.yml#L62-L63).
+If you are [seeing telemetry getting ingested into New Relic](../TROUBLESHOOTING.md#telemetry-not-reaching-new-relic) but the Host UI does not show host entities after a few minutes, you may be running into limitations of the [resourcedetectionprocessor](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/processor/resourcedetectionprocessor/README.md) NRDOT uses to determine the `host.id` attribute required to [synthesize a host entity](https://github.com/newrelic/entity-definitions/blob/main/entity-types/infra-host/definition.yml#L62-L63).
 
 Example log messages indicating this issue:
 ```
