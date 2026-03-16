@@ -46,6 +46,7 @@ type Distribution struct {
 	SkipUploadToBlobStorage bool
 	SkipChecksums           bool
 	SkipSigning             bool
+	SkipMSI                 bool
 }
 
 var (
@@ -64,6 +65,7 @@ func Generate(distFlag string, fips bool) config.Project {
 		Builds:          Builds(dist),
 		Archives:        Archives(dist),
 		NFPMs:           Packages(dist),
+		MSI:             MSI(dist),
 		Dockers:         DockerImages(dist),
 		DockerManifests: DockerManifests(dist),
 		Signs:           Signs(dist),
@@ -103,20 +105,27 @@ func NewDistribution(baseDist string, fips bool) Distribution {
 		SkipArchives:            false,
 		SkipSigning:             false,
 		SkipChecksums:           false,
+		SkipMSI:                 false,
 	}
 
 	if isNoConfigDistro(baseDist) {
 		dist.IncludeConfig = false
+		dist.SkipMSI = true
 	}
 
 	if isImageOnlyDistro(baseDist, fips) {
 		dist.Goos = []string{"linux"}
 		dist.IgnoredBuilds = nil
+		dist.SkipMSI = true
 		dist.SkipPackages = true
 		dist.SkipArchives = true
 		dist.SkipUploadToBlobStorage = true
 		dist.SkipSigning = true
 		dist.SkipChecksums = true
+	}
+
+	if baseDist == HostDistro {
+		dist.SkipMSI = true
 	}
 
 	if baseDist == ExperimentalDistro {
@@ -467,6 +476,23 @@ func SignAllArtifacts() config.Sign {
 			"--detach-sign",
 			"--armor",
 			"${artifact}",
+		},
+	}
+}
+
+func MSI(dist Distribution) []config.MSI {
+	if dist.SkipMSI {
+		return nil
+	}
+	return []config.MSI{
+		{
+			ID:   dist.FullName,
+			Name: fmt.Sprintf("%s", dist.FullName), // installer filename
+			WXS:  "./windows/installer.wxs",
+			Files: []string{
+				"config.yaml",
+			},
+			Replace: false,
 		},
 	}
 }
