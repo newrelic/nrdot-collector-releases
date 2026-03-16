@@ -33,7 +33,9 @@ jobs:
           # no redirects to avoid accepting redirects to login pages
           args: --verbose --no-progress '**/*.md' --config .github/lychee.toml
           failIfEmpty: false
-          
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
       - name: Save lychee cache
         uses: actions/cache/save@v3
         if: always()
