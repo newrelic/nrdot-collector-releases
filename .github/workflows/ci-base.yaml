@@ -225,6 +225,12 @@ jobs:
             git tag "$version"
           fi
 
+      - name: Setup wixl # Required to build MSI
+        if: inputs.publish || steps.cache-goreleaser.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wixl
+
       - name: Build binaries & packages with GoReleaser
         if: inputs.publish || steps.cache-goreleaser.outputs.cache-hit != 'true'
         id: goreleaser
