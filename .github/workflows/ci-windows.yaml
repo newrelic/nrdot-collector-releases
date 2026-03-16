@@ -1,0 +1,247 @@
+name: 🧩 CI Windows
+
+on:
+  workflow_call:
+    inputs:
+      distribution:
+        required: true
+        type: string
+    secrets:
+      goreleaser_key:
+        required: true
+      nr_account_id:
+        required: true
+      nr_api_key:
+        required: true
+      nr_ingest_key:
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      msi_artifact_name: ${{ steps.find-msi.outputs.msi_artifact_name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # required for tag metadata
+
+      - name: Setup Go
+        uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
+        with:
+          go-version: "~1.26"
+          check-latest: true
+
+      - name: Tidy go.mod files
+        run: go mod tidy
+
+      - name: Ensure goreleaser up to date
+        run: make check
+
+      - name: Generate sources
+        if: steps.cache-sources.outputs.cache-hit != 'true'
+        run: make ci DISTRIBUTIONS=${{ inputs.distribution }}
+
+      - name: Setup wixl # Required to build MSI
+        if: inputs.publish || steps.cache-goreleaser.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wixl
+
+      - name: Generate binary cache key
+        id: generate_binary_key
+        run: |
+          BINARY_HASH="${{ hashFiles(
+            format('distributions/{0}/.goreleaser*.yaml', inputs.distribution),
+            format('distributions/{0}/windows/*', inputs.distribution),
+            format('distributions/{0}/manifest.yaml/*', inputs.distribution)
+          ) }}"
+          echo binary_key=goreleaser-build-${{ inputs.distribution }}-${BINARY_HASH}-windows >> $GITHUB_OUTPUT
+
+      - name: Cache goreleaser build
+        id: cache-goreleaser
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+        with:
+          path: |
+            distributions/${{ inputs.distribution }}/dist
+          key: ${{ steps.generate_binary_key.outputs.binary_key }}
+
+      - name: Build binaries & packages with GoReleaser
+        if: steps.cache-goreleaser.outputs.cache-hit != 'true'
+        id: goreleaser
+        uses: goreleaser/goreleaser-action@v6
+        env:
+          GORELEASER_KEY: ${{ secrets.goreleaser_key }}
+          GOOS: windows
+          GOARCH: amd64
+        with:
+          distribution: goreleaser-pro
+          version: "2.11.2"
+          args: "--single-target --snapshot --clean --skip=publish,validate,sign,archive --timeout 2h --config .goreleaser.yaml"
+          workdir: distributions/${{ inputs.distribution }}
+
+      - name: Skip GoReleaser build (cached)
+        if: steps.cache-goreleaser.outputs.cache-hit == 'true'
+        run: echo "✅ GoReleaser build skipped - using cached binaries"
+
+      - name: Find MSI
+        id: find-msi
+        run: |
+          msi_artifact_name=${{ inputs.distribution }}_msi_${{ github.sha }}
+          msi_path="$(find distributions/${{ inputs.distribution }}/dist -name "*.msi" -type f)"
+          if [ ! -f "$msi_path" ]; then
+            echo "❌ Error: .msi not found at $msi_path"
+            exit 1
+          fi
+          echo "msi_path=$msi_path" >> $GITHUB_OUTPUT
+          echo "msi_artifact_name=$msi_artifact_name" >> $GITHUB_OUTPUT
+
+      - name: Upload MSI Artifact
+        id: upload-msi
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.find-msi.outputs.msi_artifact_name }}
+          path: ${{ steps.find-msi.outputs.msi_path }}
+          retention-days: 1
+
+  validate:
+    runs-on: windows-latest
+    needs: [build]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # required for tag metadata
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.build.outputs.msi_artifact_name }}
+          path: ./msi
+
+      - name: Generate e2e scenario tag
+        shell: bash
+        run: |
+          RANDOM_SUFFIX=$(echo $RANDOM$RANDOM | md5sum | cut -c1-7)
+          echo "SCENARIO_TAG=e2e-${GITHUB_SHA:0:7}-${RANDOM_SUFFIX}" >> $GITHUB_ENV
+
+      - name: Find MSI file
+        id: find-msi-file
+        run: |
+          $msi_path = Get-ChildItem -Path ./msi -Filter "*.msi" -Recurse | Select-Object -First 1 | Select-Object -ExpandProperty FullName
+          if (-not $msi_path) {
+            Write-Error "❌ No MSI file found from artifact"
+            exit 1
+          }
+          Write-Host "✅ Found MSI: $msi_path"
+          "msi_path=$msi_path" >> $env:GITHUB_ENV
+
+      - name: Install MSI
+        run: |
+          $log_path = Join-Path $env:TEMP "msi-install.log"
+          $msi_args = @(
+              '/i',
+              $env:msi_path,
+              '/qn',
+              '/l*',
+              $log_path
+          )
+
+          # Validate install fails when no license key provided
+          $process = Start-Process -Wait -PassThru msiexec.exe -ArgumentList $msi_args
+          if ($process.ExitCode -eq 0) {
+            Write-Host "❌ MSI installation allowed to proceed without ingest key"
+            exit 1
+          }
+          if (Test-Path $log_path) {
+            Remove-Item $log_path -Force
+          }
+
+          # Validate successful install on license key provided
+          $msi_args += @(
+            'NEW_RELIC_LICENSE_KEY="${{ secrets.nr_ingest_key }}"',
+            'OTEL_EXPORTER_OTLP_ENDPOINT="https://otlp.nr-data.net"',
+            "OTEL_RESOURCE_ATTRIBUTES=`"testKey=$env:SCENARIO_TAG`""
+          )
+          $process = Start-Process -Wait -PassThru msiexec.exe -ArgumentList $msi_args
+          Write-Host '`nInstallation Log (Last 200 lines):'
+          Get-Content $log_path | Select-Object -Last 200
+          if ($process.ExitCode -ne 0) {
+            Write-Host "❌ MSI installation failed with exit code $($process.ExitCode)"
+            if (Test-Path $log_path) {
+              Write-Host '`nInstallation Log - Errors and Warnings:'
+              Get-Content $log_path | Select-String -Pattern 'error|warning|failed|exception|fatal' -Context 2,2
+              Write-Host ''
+            }
+            exit $process.ExitCode
+          }
+
+          # Validate environment variables in registry
+          $env_vars = @('NEW_RELIC_LICENSE_KEY', 'OTEL_EXPORTER_OTLP_ENDPOINT', 'OTEL_RESOURCE_ATTRIBUTES')
+          foreach ($var in $env_vars) {
+            Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name $var | Out-Null
+            Write-Host "✅ $var found in environment registry"
+          }
+
+          Write-Host "⏳ Waiting 30 seconds for collector to spool up"
+          Start-Sleep -Seconds 30
+          
+          # Dump collector logs
+          Write-Host "`nCollector logs from Windows Event Log:"
+          Get-WinEvent -LogName Application -MaxEvents 100 -ErrorAction SilentlyContinue | Where-Object { $_.ProviderName -eq "${{ inputs.distribution }}" } | Select-Object -ExpandProperty Message
+
+          # Check if service is running
+          $service = Get-Service -Name "${{ inputs.distribution }}"
+          if ($service -and $service.Status -eq 'Running') {
+            Write-Host "✅ Service nrdot-collector is running"
+          } else {
+            Write-Error "❌ Service is not running"
+          }
+
+      - name: Run local e2e tests
+        uses: newrelic/newrelic-integration-e2e-action@d0c7c2b8f9af227365d71c6b7fddbc024c9e331a
+        with:
+          retry_seconds: 15
+          retry_attempts: 20
+          agent_enabled: false
+          spec_path: distributions/${{ inputs.distribution}}/test/spec-windows.yaml
+          account_id: ${{ secrets.nr_account_id }}
+          api_key: ${{ secrets.nr_api_key }}
+          license_key: ${{ secrets.nr_ingest_key }}
+          region: ${{ vars.NR_REGION }}
+          scenario_tag: ${{ env.SCENARIO_TAG }}
+
+      - name: Validate uninstall
+        run: |
+          # Uninstall using msiexec
+          Write-Host "Uninstalling NRDOT Collector..."
+          $process = Start-Process -Wait -PassThru msiexec.exe -ArgumentList @('/x', "$env:msi_path", '/qn', '/norestart')
+          if ($process.ExitCode -ne 0) {
+            Write-Host "❌ Uninstallation failed with exit code $($process.ExitCode)"
+            exit $process.ExitCode
+          }
+          Write-Host "✅ Uninstallation completed successfully"
+
+          # Verify service was removed
+          $service = Get-Service -Name "${{ inputs.distribution }}" -ErrorAction SilentlyContinue
+          if ($service) {
+            Write-Host "❌ Service still exists after uninstall"
+            exit 1
+          }
+          Write-Host "✅ Service removed successfully"
+
+          # Verify environment variables were removed
+          $env_vars = @('NEW_RELIC_LICENSE_KEY', 'OTEL_EXPORTER_OTLP_ENDPOINT', 'OTEL_RESOURCE_ATTRIBUTES')
+          foreach ($var in $env_vars) {
+            try {
+              Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name $var -ErrorAction Stop | Out-Null
+              Write-Host "❌ $var still in environment registry after uninstall"
+              exit 1
+            } catch {
+              Write-Host "✅ $var no longer in environment registry after uninstall"
+            }
+          }
