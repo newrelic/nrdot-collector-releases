@@ -28,6 +28,14 @@ Distributed under the following license(s):
 
 
 
+## [github.com/open-telemetry/opentelemetry-collector-contrib/connector/spanmetricsconnector](https://github.com/open-telemetry/opentelemetry-collector-contrib)
+
+Distributed under the following license(s):
+
+* Apache-2.0
+
+
+
 ## [github.com/open-telemetry/opentelemetry-collector-contrib/exporter/loadbalancingexporter](https://github.com/open-telemetry/opentelemetry-collector-contrib)
 
 Distributed under the following license(s):
