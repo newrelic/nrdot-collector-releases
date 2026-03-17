@@ -96,7 +96,8 @@ extraContainers:
     args:
       - logs
       - --otlp-insecure
-      - "--otlp-endpoint=localhost:4317"
+      - --otlp-http
+      - "--otlp-endpoint=localhost:4318"
       - "--otlp-attributes=service.name=\"telemetrygen-logs\""
       - --rate=10
       - --duration=5m
