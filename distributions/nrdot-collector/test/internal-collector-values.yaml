@@ -41,13 +41,11 @@ command:
     - '"--config=yaml:extensions::health_check::endpoint: ${env:MY_POD_IP}:13133"'
     ### Modified OTLP pipelines to force production of missing metrics
     # otelcol_processor_%: memory_limiter
-    - '"--config=yaml:service::pipelines::metrics: { receivers: [otlp], processors: [memory_limiter, batch/size_trigger], exporters: [otlp, otlp/enqueue_failure] }"'
-    - '"--config=yaml:service::pipelines::logs: { receivers: [otlp], processors: [memory_limiter, batch/size_trigger], exporters: [otlp, otlp/enqueue_failure] }"'
-    - '"--config=yaml:service::pipelines::traces: { receivers: [otlp], processors: [memory_limiter], exporters: [otlp, otlp/enqueue_failure] }"'
+    - '"--config=yaml:service::pipelines::metrics: { receivers: [otlp], processors: [memory_limiter, batch/size_trigger], exporters: [otlphttp, otlp/enqueue_failure] }"'
+    - '"--config=yaml:service::pipelines::logs: { receivers: [otlp], processors: [memory_limiter, batch/size_trigger], exporters: [otlphttp, otlp/enqueue_failure] }"'
+    - '"--config=yaml:service::pipelines::traces: { receivers: [otlp], processors: [memory_limiter], exporters: [otlphttp, otlp/enqueue_failure] }"'
     # otelcol_exporter_enqueue_failed_%
     - '"--config=yaml:exporters::otlp/enqueue_failure: { endpoint: \"${env:INTERNAL_TELEMETRY_OTLP_ENDPOINT}:443\", headers: { api-key: \"${env:INTERNAL_TELEMETRY_NEW_RELIC_LICENSE_KEY}\" }, sending_queue: { queue_size: 1, num_consumers: 1, sizer: items } }"'
-    # rpc.client.%
-    - '"--config=yaml:exporters::otlp: { endpoint: \"${env:INTERNAL_TELEMETRY_OTLP_ENDPOINT}:443\", headers: { api-key: \"${env:INTERNAL_TELEMETRY_NEW_RELIC_LICENSE_KEY}\" } }"'
     # otelcol_processor_batch_batch_size_trigger_send
     - '"--config=yaml:processors::batch/size_trigger: {send_batch_size: 1, send_batch_max_size: 1}"'
 extraEnvs:
