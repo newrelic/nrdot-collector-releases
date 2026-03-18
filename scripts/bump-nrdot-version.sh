@@ -7,7 +7,7 @@ set -e
 
 REPO_DIR="$( cd "$(dirname "$( dirname "${BASH_SOURCE[0]}" )")" &> /dev/null && pwd )"
 old_version=$(yq ".dist.version" "${REPO_DIR}/distributions/nrdot-collector/manifest.yaml")
-new_version=1.11.1
+new_version=1.12.0
 
 
 # Determine the OS and set the sed -i command accordingly
