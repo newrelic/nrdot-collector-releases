@@ -111,4 +111,4 @@ jobs:
 
       - name: Install MSI
         run: |
-          msiexec /i ${{ steps.find-msi-file.outputs.msi_path }}
+          Start-Processes -Wait msiexec.exe -ArgumentList '/i', 'package.msi', '/qn'
