@@ -46,7 +46,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y wixl
 
-                
       - name: Build binaries & packages with GoReleaser
         id: goreleaser
         uses: goreleaser/goreleaser-action@v6
@@ -103,7 +102,7 @@ jobs:
         run: |
           $msiFile = Get-ChildItem -Path ./msi -Filter "*.msi" -Recurse | Select-Object -First 1
           if (-not $msiFile) {
-            Write-Error "❌ No MSI file found in ./msi"
+            Write-Error "❌ No MSI file found from artifact"
             exit 1
           }
           $msiPath = $msiFile.FullName
@@ -115,6 +114,11 @@ jobs:
           # Install
           $process = Start-Process -Wait msiexec.exe -ArgumentList '/i', $env:msiFile, '/qn'
           if ($process.exitCode -ne 0) {
-            Write-Error "MSI installation failed with exit code $($process.exitCode)"
+            Write-Error "❌ MSI installation failed with exit code $($process.exitCode)"
+            $log = Join-Path $env.TEMP "msi-install.log"
+            if (Test-Path $log) {
+              Write-Host 'Installation Log (Last 50 lines):'
+              Get-Content $log | Select-Object -Last 50
+            }
             exit 1
           }
