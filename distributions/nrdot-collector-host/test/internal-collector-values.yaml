@@ -42,11 +42,19 @@ command:
     - '"--config=yaml:extensions::health_check::endpoint: ${env:MY_POD_IP}:13133"'
     ### Modified OTLP pipelines to force production of missing metrics
     # otelcol_processor_%: memory_limiter
-    - '"--config=yaml:service::pipelines::metrics: { receivers: [otlp], processors: [memory_limiter, batch/size_trigger], exporters: [otlphttp, otlp/enqueue_failure] }"'
-    - '"--config=yaml:service::pipelines::logs: { receivers: [otlp], processors: [memory_limiter, batch/size_trigger], exporters: [otlphttp, otlp/enqueue_failure] }"'
-    - '"--config=yaml:service::pipelines::traces: { receivers: [otlp], processors: [memory_limiter], exporters: [otlphttp, otlp/enqueue_failure] }"'
-    # otelcol_exporter_enqueue_failed_%
-    - '"--config=yaml:exporters::otlp/enqueue_failure: { endpoint: \"${env:INTERNAL_TELEMETRY_OTLP_ENDPOINT}:443\", headers: { api-key: \"${env:INTERNAL_TELEMETRY_NEW_RELIC_LICENSE_KEY}\" }, sending_queue: { queue_size: 1, num_consumers: 1, sizer: items } }"'
+    - '"--config=yaml:service::pipelines::metrics: { receivers: [otlp], processors: [memory_limiter, batch/size_trigger], exporters: [otlphttp] }"'
+    - '"--config=yaml:service::pipelines::logs: { receivers: [otlp], processors: [memory_limiter, batch/size_trigger], exporters: [otlphttp] }"'
+    - '"--config=yaml:service::pipelines::traces: { receivers: [otlp], processors: [memory_limiter], exporters: [otlphttp] }"'
+    # otelcol_exporter_enqueue_failed_%: unreachable endpoint with slow retry keeps queue permanently full
+    - '"--config=yaml:exporters::otlp/enqueue_failure: { endpoint: \"localhost:19999\", tls: { insecure: true }, sending_queue: { queue_size: 1 }, retry_on_failure: { enabled: true, initial_interval: 300s, max_interval: 300s, max_elapsed_time: 0s } }"'
+    - '"--config=yaml:service::pipelines::metrics/enqueue_failure: { receivers: [otlp], processors: [memory_limiter], exporters: [otlp/enqueue_failure] }"'
+    - '"--config=yaml:service::pipelines::logs/enqueue_failure: { receivers: [otlp], processors: [memory_limiter], exporters: [otlp/enqueue_failure] }"'
+    - '"--config=yaml:service::pipelines::traces/enqueue_failure: { receivers: [otlp], processors: [memory_limiter], exporters: [otlp/enqueue_failure] }"'
+    # otelcol_exporter_send_failed_%: dedicated pipelines so failures don't affect batch/size_trigger telemetry
+    - '"--config=yaml:exporters::otlphttp/send_failure: { endpoint: \"http://localhost:19999\", sending_queue: { enabled: false }, retry_on_failure: { enabled: false } }"'
+    - '"--config=yaml:service::pipelines::metrics/send_failure: { receivers: [otlp], processors: [memory_limiter], exporters: [otlphttp/send_failure] }"'
+    - '"--config=yaml:service::pipelines::logs/send_failure: { receivers: [otlp], processors: [memory_limiter], exporters: [otlphttp/send_failure] }"'
+    - '"--config=yaml:service::pipelines::traces/send_failure: { receivers: [otlp], processors: [memory_limiter], exporters: [otlphttp/send_failure] }"'
     # otelcol_processor_batch_batch_size_trigger_send
     - '"--config=yaml:processors::batch/size_trigger: {send_batch_size: 1, send_batch_max_size: 1}"'
 extraEnvs:
