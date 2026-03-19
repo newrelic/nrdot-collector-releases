@@ -78,6 +78,7 @@ jobs:
         with:
           name: ${{ steps.find-msi.outputs.msi_artifact_name }}
           path: ${{ steps.find-msi.outputs.msi_path }}
+          retention-days: 1
 
   validate:
     runs-on: windows-latest
@@ -111,4 +112,4 @@ jobs:
 
       - name: Install MSI
         run: |
-          Start-Processes -Wait msiexec.exe -ArgumentList '/i', 'package.msi', '/qn'
+          Start-Process -Wait msiexec.exe -ArgumentList '/i', 'package.msi', '/qn'
