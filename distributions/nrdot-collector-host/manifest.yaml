@@ -40,3 +40,5 @@ replaces:
   # Why: Fixes CVE-2026-24051
   # to be removed with collector core 0.147.0 which fixes this
   - go.opentelemetry.io/otel/sdk v1.39.0 => go.opentelemetry.io/otel/sdk v1.40.0
+  # Why: Fixes CVE-2026-33186 (authorization bypass via missing leading slash in :path)
+  - google.golang.org/grpc v1.77.0 => google.golang.org/grpc v1.79.3
