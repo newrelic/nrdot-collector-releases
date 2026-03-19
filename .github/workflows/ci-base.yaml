@@ -33,11 +33,9 @@ on:
         required: false
       nr_api_key:
         required: false
-      aws_access_key_id:
-        required: false
-      aws_secret_access_key:
-        required: false
       aws_account_id:
+        required: false
+      aws_oidc_role_arn:
         required: false
     outputs:
       artifact_name:
@@ -49,6 +47,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 env:
   caching_enabled: ${{ !inputs.publish }}
@@ -118,11 +117,8 @@ jobs:
         if: ${{ inputs.publish }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.aws_access_key_id }}
-          aws-secret-access-key: ${{ secrets.aws_secret_access_key }}
+          role-to-assume: ${{ secrets.aws_oidc_role_arn }}
           aws-region: us-east-1
-          role-to-assume: arn:aws:iam::${{ secrets.aws_account_id }}:role/resource-provisioner
-          role-skip-session-tagging: true
       
       - name: Login to ECR
         if: ${{ inputs.publish }}
@@ -168,11 +164,8 @@ jobs:
         if: ${{ inputs.publish }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.aws_access_key_id }}
-          aws-secret-access-key: ${{ secrets.aws_secret_access_key }}
+          role-to-assume: ${{ secrets.aws_oidc_role_arn }}
           aws-region: us-east-1
-          role-to-assume: arn:aws:iam::${{ secrets.aws_account_id }}:role/resource-provisioner
-          role-skip-session-tagging: true
 
       - name: Build Args
         run: |

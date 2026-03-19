@@ -46,30 +46,33 @@ on:
         required: false
         default: "nrdot-collector-host"
     secrets:
-      aws_access_key_id:
-        description: "AWS credentials for tf with permission to assume resource-provider"
-        required: true
-      aws_secret_access_key:
-        description: "AWS credentials for tf with permission to assume resource-provider"
-        required: true
       aws_account_id:
         description: "AWS account for test purposes with existing role resource-provider"
+        required: true
+      aws_oidc_role_arn:
+        description: "ARN of the IAM role to assume via GitHub Actions OIDC"
         required: true
 jobs:
   terraform:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     env:
       TF_IN_AUTOMATION: true
       TF_CLI_ARGS: "-no-color -input=false"
       TF_LOG: ${{ inputs.tf_log }}
-      AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
       TF_VAR_aws_account_id: ${{ secrets.aws_account_id }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           ref: ${{ inputs.branch }}
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.aws_oidc_role_arn }}
+          aws-region: us-east-1
       - name: Terraform Setup & Workspace
         uses: ./.github/actions/terraform-setup
         with:

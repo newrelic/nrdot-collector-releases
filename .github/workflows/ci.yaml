@@ -44,9 +44,8 @@ jobs:
       # namespace by distro to avoid issues with cleanup (distro 1 still running tests while distro 2 cleans up cluster)
       test_cluster_name: "${{ matrix.distribution }}-${{ github.run_id }}-${{ github.run_attempt }}"
     secrets:
-      aws_access_key_id: ${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCESS_KEY_ID }}
-      aws_secret_access_key: ${{ secrets.OTELCOMM_AWS_TEST_ACC_SECRET_ACCESS_KEY }}
       aws_account_id: ${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCOUNT_ID }}
+      aws_oidc_role_arn: ${{ secrets.OTELCOMM_AWS_OIDC_ROLE_ARN }}
       goreleaser_key: ${{ secrets.GORELEASER_KEY }}
       gpg_private_key: ${{ secrets.OTELCOMM_GPG_PRIVATE_KEY_BASE64 }}
       gpg_passphrase: ${{ secrets.OTELCOMM_GPG_PASSPHRASE }}
@@ -65,6 +64,5 @@ jobs:
       # apply only after merge to main
       execute_apply: ${{ github.ref_name == 'main' && github.event_name == 'push' }}
     secrets:
-      aws_access_key_id: ${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCESS_KEY_ID }}
-      aws_secret_access_key: ${{secrets.OTELCOMM_AWS_TEST_ACC_SECRET_ACCESS_KEY}}
       aws_account_id: ${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCOUNT_ID }}
+      aws_oidc_role_arn: ${{ secrets.OTELCOMM_AWS_OIDC_ROLE_ARN }}

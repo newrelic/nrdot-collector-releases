@@ -32,12 +32,6 @@ on:
         type: string
         required: false
     secrets:
-      aws_access_key_id:
-        required: true
-        description: AWS access key id for terraform
-      aws_secret_access_key:
-        required: true
-        description: AWS secret access key for terraform
       aws_account_id:
         required: true
         description: AWS account id for terraform
@@ -56,9 +50,13 @@ on:
       nr_api_base_url:
         required: true
         description: New Relic API base URL for e2e tests
+      aws_oidc_role_arn:
+        required: true
+        description: ARN of the IAM role to assume via GitHub Actions OIDC
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
   setup:
@@ -174,11 +172,8 @@ jobs:
         id: configure-aws-credentials-for-eks
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.aws_access_key_id }}
-          aws-secret-access-key: ${{ secrets.aws_secret_access_key }}
+          role-to-assume: ${{ secrets.aws_oidc_role_arn }}
           aws-region: us-east-1
-          role-to-assume: arn:aws:iam::${{ secrets.aws_account_id }}:role/resource-provisioner
-          role-skip-session-tagging: true
       
       - name: Configure kubectl
         run: |

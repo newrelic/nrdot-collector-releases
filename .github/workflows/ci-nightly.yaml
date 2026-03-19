@@ -78,9 +78,8 @@ jobs:
       execute_destroy: false
       workflow_run_id: ${{ needs.setup.outputs.workflow-run-id }}
     secrets:
-      aws_access_key_id: ${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCESS_KEY_ID }}
-      aws_secret_access_key: ${{ secrets.OTELCOMM_AWS_TEST_ACC_SECRET_ACCESS_KEY }}
       aws_account_id: ${{ secrets.OTELCOMM_AWS_TEST_ACC_ACCOUNT_ID }}
+      aws_oidc_role_arn: ${{ secrets.OTELCOMM_AWS_OIDC_ROLE_ARN }}
       nr_backend_url: ${{ secrets.NR_STAGING_BACKEND_URL }}
       nr_ingest_key: ${{ secrets.OTELCOMM_NR_INGEST_KEY }}
       nr_api_key: ${{ secrets.OTELCOMM_NR_API_KEY }}
