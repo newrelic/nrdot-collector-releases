@@ -100,19 +100,18 @@ jobs:
       - name: Find MSI file
         id: find-msi-file
         run: |
-          $msiFile = Get-ChildItem -Path ./msi -Filter "*.msi" -Recurse | Select-Object -First 1
-          if (-not $msiFile) {
+          $msi_path = Get-ChildItem -Path ./msi -Filter "*.msi" -Recurse | Select-Object -First 1 | Select-Object -ExpandProperty FullName
+          if (-not $msi_path) {
             Write-Error "❌ No MSI file found from artifact"
             exit 1
           }
-          $msiPath = $msiFile.FullName
-          Write-Host "✅ Found MSI: $msiPath"
-          "msi_path=$msiPath" >> $env:GITHUB_ENV
+          Write-Host "✅ Found MSI: $msi_path"
+          "msi_path=$msi_path" >> $env:GITHUB_ENV
 
       - name: Install MSI
         run: |
           # Install
-          $process = Start-Process -Wait msiexec.exe -ArgumentList '/i', $env:msiFile, '/qn'
+          $process = Start-Process -Wait msiexec.exe -ArgumentList '/i', $env:msi_path, '/qn'
           if ($process.exitCode -ne 0) {
             Write-Error "❌ MSI installation failed with exit code $($process.exitCode)"
             $log = Join-Path $env.TEMP "msi-install.log"
