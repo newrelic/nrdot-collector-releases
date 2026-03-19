@@ -37,7 +37,8 @@
          Message="A New Relic ingest key is required for NRDOT. Please provide NEW_RELIC_LICENSE_KEY during installation.">
          Installed OR NEW_RELIC_LICENSE_KEY
       </Condition>
-      <Property Id="NEW_RELIC_LICENSE_KEY"/>
+      <Property Id="NEW_RELIC_LICENSE_KEY" Hidden="yes" Secure="yes"/>
+      <Property Id="Foo" Value="Bar" Hidden="yes" Secure="yes"/>
 
       <!-- Set to bundled collector config unless one is provided-->
       <Property Id="COLLECTOR_SVC_ARGS"/>

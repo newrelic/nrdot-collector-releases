@@ -9,6 +9,8 @@ on:
     secrets:
       goreleaser_key:
         required: true
+      nr_ingest_key:
+        required: true
 
 permissions:
   contents: read
@@ -109,14 +111,16 @@ jobs:
           "msi_path=$msi_path" >> $env:GITHUB_ENV
 
       - name: Install MSI
+        env:
+          NR_INGEST_KEY: ${{ secrets.nr_ingest_key }}
         run: |
           $logPath = Join-Path $env:TEMP "msi-install.log"
-          $process = Start-Process -Wait -PassThru msiexec.exe -ArgumentList '/i', $env:msi_path, '/qn', '/l*v', $logPath
+          $process = Start-Process -Wait -PassThru msiexec.exe -ArgumentList '/i', $env:msi_path, '/qn', '/liwep', $logPath, "NEW_RELIC_LICENSE_KEY=test-key"
+          Write-Host '`nInstallation Log (Last 200 lines):'
+          Get-Content $logPath | Select-Object -Last 200
           if ($process.ExitCode -ne 0) {
             Write-Host "❌ MSI installation failed with exit code $($process.ExitCode)"
             if (Test-Path $logPath) {
-              Write-Host '`nInstallation Log (Last 100 lines):'
-              Get-Content $logPath | Select-Object -Last 100
               Write-Host '`nInstallation Log - Errors and Warnings:'
               Get-Content $logPath | Select-String -Pattern 'error|warning|failed|exception|fatal' -Context 2,2
               Write-Host ''

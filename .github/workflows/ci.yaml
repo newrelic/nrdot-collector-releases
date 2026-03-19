@@ -66,6 +66,7 @@ jobs:
       distribution: ${{ matrix.distribution }}
     secrets:
       goreleaser_key: ${{ secrets.GORELEASER_KEY }}
+      nr_ingest_key: ${{ secrets.OTELCOMM_NR_INGEST_KEY }}
 
   terraform:
     uses: ./.github/workflows/terraform.yaml
