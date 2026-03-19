@@ -108,8 +108,13 @@ jobs:
           }
           $msiPath = $msiFile.FullName
           Write-Host "✅ Found MSI: $msiPath"
-          "msi_path=$msiPath" >> $env:GITHUB_OUTPUT
+          "msi_path=$msiPath" >> $env:GITHUB_ENV
 
       - name: Install MSI
         run: |
-          Start-Process -Wait msiexec.exe -ArgumentList '/i', 'package.msi', '/qn'
+          # Install
+          $process = Start-Process -Wait msiexec.exe -ArgumentList '/i', $env:msiFile, '/qn'
+          if ($process.exitCode -ne 0) {
+            Write-Error "MSI installation failed with exit code $($process.exitCode)"
+            exit 1
+          }
