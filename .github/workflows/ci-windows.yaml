@@ -113,10 +113,10 @@ jobs:
           $logPath = Join-Path $env:TEMP "msi-install.log"
           $process = Start-Process -Wait -PassThru msiexec.exe -ArgumentList '/i', $env:msi_path, '/qn', '/l*v', $logPath
           if ($process.ExitCode -ne 0) {
-            Write-Error "❌ MSI installation failed with exit code $($process.ExitCode)"
+            Write-Host "❌ MSI installation failed with exit code $($process.ExitCode)"
             if (Test-Path $logPath) {
               Write-Host 'Installation Log (Last 50 lines):'
               Get-Content $logPath | Select-Object -Last 50
             }
-            exit 1
+            exit $process.ExitCode
           }
