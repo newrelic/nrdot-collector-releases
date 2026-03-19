@@ -97,9 +97,18 @@ jobs:
           name: ${{ needs.build.outputs.msi_artifact_name }}
           path: ./msi
 
-      - name: List artifact contents
-        run: Get-ChildItem -Path ./msi -Force
+      - name: Find MSI file
+        id: find-msi-file
+        run: |
+          $msiFile = Get-ChildItem -Path ./msi -Filter "*.msi" -Recurse | Select-Object -First 1
+          if (-not $msiFile) {
+            Write-Error "❌ No MSI file found in ./msi"
+            exit 1
+          }
+          $msiPath = $msiFile.FullName
+          Write-Host "✅ Found MSI: $msiPath"
+          "msi_path=$msiPath" >> $env:GITHUB_OUTPUT
 
-      # - name: Install MSI
-      #   run: |
-      #     msiexec /i artifacts/installer.msi
+      - name: Install MSI
+        run: |
+          msiexec /i ${{ steps.find-msi-file.outputs.msi_path }}
