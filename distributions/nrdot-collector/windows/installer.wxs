@@ -4,7 +4,7 @@
       Id="*"
       UpgradeCode="BC8657F8-5174-43F3-A319-88D97945291B"
       Version="{{ .Version }}"
-      Manufacturer="OpenTelemetry"
+      Manufacturer="New Relic"
       Language="1033">
       
       <Package
