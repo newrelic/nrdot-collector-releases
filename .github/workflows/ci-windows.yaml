@@ -115,7 +115,9 @@ jobs:
           NR_INGEST_KEY: ${{ secrets.nr_ingest_key }}
         run: |
           $logPath = Join-Path $env:TEMP "msi-install.log"
-          $process = Start-Process -Wait -PassThru msiexec.exe -ArgumentList '/i', $env:msi_path, '/qn', '/lwe', $logPath, "NEW_RELIC_LICENSE_KEY=$env:NR_INGEST_KEY"
+          $process = Start-Process -Wait -PassThru msiexec.exe -ArgumentList '/i', $env:msi_path, '/qn', '/l*v', $logPath, "NEW_RELIC_LICENSE_KEY=test-key"
+          Write-Host '`nInstallation Log (Last 200 lines):'
+          Get-Content $logPath | Select-Object -Last 200
           if ($process.ExitCode -ne 0) {
             Write-Host "❌ MSI installation failed with exit code $($process.ExitCode)"
             if (Test-Path $logPath) {
