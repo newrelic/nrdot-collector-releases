@@ -32,7 +32,7 @@ jobs:
           tar -xzf javadb.tar.gz -C $GITHUB_WORKSPACE/.cache/trivy/java-db
           rm javadb.tar.gz
       - name: Cache DBs
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
         with:
           path: ${{ github.workspace }}/.cache/trivy
           key: cache-trivy-${{ steps.date.outputs.date }}
