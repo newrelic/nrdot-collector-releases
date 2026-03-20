@@ -38,7 +38,6 @@
          Installed OR NEW_RELIC_LICENSE_KEY
       </Condition>
       <Property Id="NEW_RELIC_LICENSE_KEY" Secure="yes"/>
-      <Property Id="FOO" Value="Bar" Secure="yes"/>
       <Property Id="MsiHiddenProperties" Value="NEW_RELIC_LICENSE_KEY;FOO" />
 
       <!-- Set to bundled collector config unless one is provided-->
