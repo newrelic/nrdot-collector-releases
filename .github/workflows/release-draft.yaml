@@ -20,7 +20,7 @@ jobs:
       distributions: ${{ steps.discover.outputs.distributions }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           sparse-checkout: |
             .github/actions
@@ -39,7 +39,7 @@ jobs:
         fips: [false, true]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           sparse-checkout: |
             .github/actions/verify-artifacts
@@ -59,7 +59,7 @@ jobs:
       release-tag: ${{ steps.get-release.outputs.release-tag }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2
         with:
           fetch-depth: 0 # required for tag metadata
 
@@ -71,7 +71,7 @@ jobs:
 
       - name: Draft Release From Root Config
         id: goreleaser
-        uses: goreleaser/goreleaser-action@v6
+        uses: goreleaser/goreleaser-action@e435ccd777264be153ace6237001ef4d979d3a7a # v6
         with:
           distribution: goreleaser-pro
           version: "2.11.2"
@@ -147,7 +147,7 @@ jobs:
         fips: [false, true]
     steps:
       - name: Checkout (sparse)
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           sparse-checkout: |
             .github/actions
@@ -159,7 +159,7 @@ jobs:
           sha: ${{ github.sha }}
 
       - name: Download CI Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: goreleaser_output_${{ matrix.distribution }}${{ matrix.fips && '-fips' || '' }}_${{ github.sha }}
           path: artifacts/
