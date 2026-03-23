@@ -9,8 +9,6 @@ on:
     secrets:
       goreleaser_key:
         required: true
-      nr_ingest_key:
-        required: true
 
 permissions:
   contents: read
@@ -111,11 +109,29 @@ jobs:
           "msi_path=$msi_path" >> $env:GITHUB_ENV
 
       - name: Install MSI
-        env:
-          NR_INGEST_KEY: ${{ secrets.nr_ingest_key }}
         run: |
           $logPath = Join-Path $env:TEMP "msi-install.log"
-          $process = Start-Process -Wait -PassThru msiexec.exe -ArgumentList '/i', $env:msi_path, '/qn', '/l*v', $logPath, "NEW_RELIC_LICENSE_KEY=test-key"
+          $msiArgs = @(
+              '/i',
+              $env:msi_path,
+              '/qn',
+              '/l*v',
+              $logPath
+          )
+          # Install must fail when NR ingest key not provided
+          
+          $process = Start-Process -Wait -PassThru msiexec.exe -ArgumentList $msiArgs
+          if ($process.ExitCode -eq 0) {
+            Write-Host "❌ MSI installation allowed to proceed without ingest key"
+            exit 1
+          }
+          if (Test-Path $logPath) {
+            Remove-Item $logPath -Force
+          }
+
+          # Install must succeed when NR ingest key is provided
+          $msiArgs += @('NEW_RELIC_LICENSE_KEY="test-key"')
+          $process = Start-Process -Wait -PassThru msiexec.exe -ArgumentList $msiArgs
           Write-Host '`nInstallation Log (Last 200 lines):'
           Get-Content $logPath | Select-Object -Last 200
           if ($process.ExitCode -ne 0) {
@@ -123,7 +139,8 @@ jobs:
             if (Test-Path $logPath) {
               Write-Host '`nInstallation Log - Errors and Warnings:'
               Get-Content $logPath | Select-String -Pattern 'error|warning|failed|exception|fatal' -Context 2,2
-              Write-Host ''
+              Write-Host '' 
             }
             exit $process.ExitCode
           }
+          
