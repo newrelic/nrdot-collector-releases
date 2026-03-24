@@ -43,7 +43,7 @@ jobs:
         if: ${{ env.ACT }}
         with:
           registry: docker.io
-          username: ${{ secrets.OTELCOMM_DOCKER_HUB_USERNAME }}
+          username: ${{ vars.OTELCOMM_DOCKER_HUB_USERNAME }}
           password: ${{ secrets.OTELCOMM_DOCKER_HUB_PASSWORD }}
 
       - uses: docker/setup-qemu-action@v2
