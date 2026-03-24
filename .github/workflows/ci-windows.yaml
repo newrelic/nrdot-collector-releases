@@ -115,7 +115,7 @@ jobs:
               '/i',
               $env:msi_path,
               '/qn',
-              '/l*v',
+              '/l*',
               $logPath
           )
           # Install must fail when NR ingest key not provided
