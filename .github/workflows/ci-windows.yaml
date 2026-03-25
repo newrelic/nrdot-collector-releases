@@ -88,9 +88,6 @@ jobs:
         with:
           fetch-depth: 0 # required for tag metadata
 
-      - name: Test
-        run: Write-Host "test"
-
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
@@ -145,10 +142,13 @@ jobs:
           }
 
           # Check license key in enviroment registry
-          $license_key_in_registry = Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name 'NEW_RELIC_LICENSE_KEY'
-          # Print fake key
-          Write-Host $license_key_in_registry
+          Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name 'NEW_RELIC_LICENSE_KEY'
 
           # Check service is running
-          # Start-Sleep -Seconds 5
-          
+          Start-Sleep -Seconds 5
+          $service = Get-Service -Name "nrdot-collector"
+          if ($service -and $service.Status -eq 'Running') {
+            Write-Host "✅ Service nrdot-collector is running"
+          } else {
+            Write-Error "❌ Service is not running"
+          }
