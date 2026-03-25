@@ -145,13 +145,9 @@ jobs:
           }
 
           # Check license key in enviroment registry
-          $license_key_in_registry = Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name VARIABLE_NAME
-          if (!$license_key_in_registry) {
-            Write-Error '❌ License key not found in registry'
-          } else {
-            Write-Host "temp: log fake key"
-            Write-Host $license_key_in_registry
-          }
+          $license_key_in_registry = Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name 'NEW_RELIC_LICENSE_KEY'
+          # Print fake key
+          Write-Host $license_key_in_registry
 
           # Check service is running
           # Start-Sleep -Seconds 5
