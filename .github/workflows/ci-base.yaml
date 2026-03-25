@@ -199,6 +199,7 @@ jobs:
         run: |
           BINARY_HASH="${{ hashFiles(
             format('distributions/{0}/.goreleaser*.yaml', inputs.distribution),
+            format('distributions/{0}/windows/*', inputs.distribution),
             format('distributions/{0}/_build*/*', inputs.distribution)
           ) }}"
           ARGS_HASH=$(echo "${{ env.goreleaser_args }}" | sha256sum | cut -d' ' -f1)
@@ -224,6 +225,12 @@ jobs:
             echo "Tagging locally with $version to force goreleaser to use correct version in artifact names"
             git tag "$version"
           fi
+
+      - name: Setup wixl # Required to build MSI
+        if: inputs.publish || steps.cache-goreleaser.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wixl
 
       - name: Build binaries & packages with GoReleaser
         if: inputs.publish || steps.cache-goreleaser.outputs.cache-hit != 'true'
@@ -262,6 +269,35 @@ jobs:
           else
             echo "image_tag=$VERSION-$ARCH" >> $GITHUB_ENV
           fi
+
+      # - name: Find MSI
+      #   id: find-msi
+      #   if: ${{ env.windows }}
+      #   run: |
+      #     cd distributions/${{ inputs.distribution }}
+      #     msi_artifact_name=${{ inputs.distribution }}_msi_${{ github.sha }}
+      #     msi_path="$(find dist/msi/${{inputs.distribution}}/*.msi)"
+      #     if [ ! -f $MSI_PATH ]; then
+      #       echo "❌ Error: .msi not found at $MSI_PATH"
+      #       exit 1
+      #     fi
+      #     echo "msi_path=$msi_path" >> $GITHUB_OUTPUT
+      #     echo "msi_artifact_name=$msi_artifact_name" >> $GITHUB_OUTPUT
+
+      # - name: Upload MSI Artifact
+      #   id: upload-msi
+      #   if: ${{ env.windows }}
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: ${{ steps.find-msi.outputs.msi_artifact_name }}
+      #     path: ${{ steps.find-msi.outputs.msi_path}}
+
+      # - name: Validate MSI
+      #   if: ${{ env.windows }}
+      #   uses: ./.github/workflows/ci-windows.yaml
+      #   with:
+      #     distribution: ${{ inputs.distribution }}
+      #     artifact: ${{ steps.find-msi.outputs.msi_artifact_name }}
 
       - name: Copy GoReleaser binary to Docker context
         id: copy-binary
@@ -352,7 +388,7 @@ jobs:
           api_key: ${{ secrets.nr_api_key }}
           license_key: ${{ secrets.nr_ingest_key }}
           region: "US"
-
+      
       - name: Trivy security check
         uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.35.0
         with:
@@ -396,7 +432,6 @@ jobs:
           echo "✅ Docker image SHA: ${docker_manifest_sha}"
           echo -n "${docker_manifest_sha}" > docker_manifest_sha
 
-
           # Set output names
           if [[ "${{ inputs.fips }}" == "true" ]]; then
             artifact_name="goreleaser_output_${{ inputs.distribution }}-fips_${{ github.sha }}"
@@ -413,7 +448,6 @@ jobs:
           echo "=== Artifact Structure [$artifact_name] ==="
           tree dist/ || find dist -type d | sort
 
-
       - name: Upload Artifacts
         if: ${{ !env.ACT && inputs.publish }}
         uses: actions/upload-artifact@v4
@@ -422,4 +456,3 @@ jobs:
           path: |
             docker_manifest_sha
             dist
-
