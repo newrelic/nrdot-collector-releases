@@ -57,7 +57,7 @@ jobs:
       execute_destroy: true
     secrets:
       aws_account_id: ${{ vars.OTELCOMM_AWS_TEST_ACC_ACCOUNT_ID }}
-      aws_oidc_role_arn: ${{ secrets.OTELCOMM_AWS_OIDC_ROLE_ARN }}
+      aws_oidc_role_arn: ${{ secrets.OTELCOMM_AWS_TEST_OIDC_ROLE_ARN }}
       nr_backend_url: ${{ vars.NR_STAGING_BACKEND_URL }}
       nr_ingest_key: ${{ secrets.OTELCOMM_NR_INGEST_KEY }}
       nr_api_key: ${{ secrets.OTELCOMM_NR_API_KEY }}

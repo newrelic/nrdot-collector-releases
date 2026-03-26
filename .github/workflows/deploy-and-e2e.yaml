@@ -170,7 +170,7 @@ jobs:
 
       - name: Configure AWS Credentials
         id: configure-aws-credentials-for-eks
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: ./.github/actions/configure-aws-credentials
         with:
           role-to-assume: ${{ secrets.aws_oidc_role_arn }}
           aws-region: us-east-1

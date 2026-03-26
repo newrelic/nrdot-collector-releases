@@ -12,6 +12,7 @@ permissions:
   contents: read
   actions: read
   statuses: read
+  id-token: write
 
 env:
   REGISTRY: "${{ vars.OTELCOMM_AWS_TEST_ACC_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com"
@@ -79,7 +80,7 @@ jobs:
       workflow_run_id: ${{ needs.setup.outputs.workflow-run-id }}
     secrets:
       aws_account_id: ${{ vars.OTELCOMM_AWS_TEST_ACC_ACCOUNT_ID }}
-      aws_oidc_role_arn: ${{ secrets.OTELCOMM_AWS_OIDC_ROLE_ARN }}
+      aws_oidc_role_arn: ${{ secrets.OTELCOMM_AWS_TEST_OIDC_ROLE_ARN }}
       nr_backend_url: ${{ vars.NR_STAGING_BACKEND_URL }}
       nr_ingest_key: ${{ secrets.OTELCOMM_NR_INGEST_KEY }}
       nr_api_key: ${{ secrets.OTELCOMM_NR_API_KEY }}
