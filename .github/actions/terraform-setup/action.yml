@@ -40,4 +40,4 @@ inputs:
   assume_role:
     description: "Whether to assume role for AWS provider"
     required: false
-    default: "true"
+    default: "false"
