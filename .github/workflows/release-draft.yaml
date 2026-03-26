@@ -20,7 +20,7 @@ jobs:
       distributions: ${{ steps.discover.outputs.distributions }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           sparse-checkout: |
             .github/actions
@@ -39,7 +39,7 @@ jobs:
         fips: [false, true]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           sparse-checkout: |
             .github/actions/verify-artifacts
@@ -59,7 +59,7 @@ jobs:
       release-tag: ${{ steps.get-release.outputs.release-tag }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: 0 # required for tag metadata
 
@@ -147,7 +147,7 @@ jobs:
         fips: [false, true]
     steps:
       - name: Checkout (sparse)
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           sparse-checkout: |
             .github/actions
