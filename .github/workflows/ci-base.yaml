@@ -145,7 +145,7 @@ jobs:
       - name: Import GPG key
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@v6
+        uses: crazy-max/ghaction-import-gpg@v7
         with:
           gpg_private_key: ${{ secrets.gpg_private_key }}
           passphrase: ${{ secrets.gpg_passphrase }}

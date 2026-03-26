@@ -22,7 +22,7 @@ jobs:
             token: ${{ secrets.RELEASE_TOKEN }}
 
         - name: Import GPG key
-          uses: crazy-max/ghaction-import-gpg@v6
+          uses: crazy-max/ghaction-import-gpg@v7
           with:
             gpg_private_key: ${{ secrets.OTELCOMM_BOT_GPG_PRIVATE_KEY_BASE64 }}
             passphrase: ${{ secrets.OTELCOMM_BOT_GPG_PASSPHRASE }}
