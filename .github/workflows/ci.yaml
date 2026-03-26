@@ -49,7 +49,7 @@ jobs:
       goreleaser_key: ${{ secrets.GORELEASER_KEY }}
       gpg_private_key: ${{ secrets.OTELCOMM_GPG_PRIVATE_KEY_BASE64 }}
       gpg_passphrase: ${{ secrets.OTELCOMM_GPG_PASSPHRASE }}
-      nr_backend_url: ${{ vars.NR_STAGING_BACKEND_URL }}
+      nr_backend_url: ${{ vars.NR_BACKEND_URL }}
       nr_ingest_key: ${{ secrets.OTELCOMM_NR_INGEST_KEY }}
       nr_account_id: ${{ vars.OTELCOMM_NR_TEST_ACCOUNT_ID }}
       nr_api_key: ${{ secrets.OTELCOMM_NR_API_KEY }}
