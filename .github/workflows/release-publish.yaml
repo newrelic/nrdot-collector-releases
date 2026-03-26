@@ -42,7 +42,7 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: Configure AWS Credentials
-        uses: ./.github/actions/configure-aws-credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.OTELCOMM_AWS_TEST_OIDC_ROLE_ARN }}
           aws-region: us-east-1

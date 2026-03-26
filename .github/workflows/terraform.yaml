@@ -69,7 +69,7 @@ jobs:
         with:
           ref: ${{ inputs.branch }}
       - name: Configure AWS credentials via OIDC
-        uses: ./.github/actions/configure-aws-credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.aws_oidc_role_arn }}
           aws-region: us-east-1
