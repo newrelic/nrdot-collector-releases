@@ -25,19 +25,15 @@ on:
         required: true
       gpg_passphrase:
         required: true
-      nr_backend_url:
-        required: false
       nr_ingest_key:
         required: false
       nr_account_id:
         required: false
       nr_api_key:
         required: false
-      aws_access_key_id:
-        required: false
-      aws_secret_access_key:
-        required: false
       aws_account_id:
+        required: false
+      aws_oidc_role_arn:
         required: false
     outputs:
       artifact_name:
@@ -49,6 +45,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 env:
   caching_enabled: ${{ !inputs.publish }}
@@ -118,11 +115,8 @@ jobs:
         if: ${{ inputs.publish }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.aws_access_key_id }}
-          aws-secret-access-key: ${{ secrets.aws_secret_access_key }}
+          role-to-assume: ${{ secrets.aws_oidc_role_arn }}
           aws-region: us-east-1
-          role-to-assume: arn:aws:iam::${{ secrets.aws_account_id }}:role/resource-provisioner
-          role-skip-session-tagging: true
       
       - name: Login to ECR
         if: ${{ inputs.publish }}
@@ -149,7 +143,7 @@ jobs:
       - name: Import GPG key
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@v6
+        uses: crazy-max/ghaction-import-gpg@2dc316deee8e90f13e1a351ab510b4d5bc0c82cd # v7
         with:
           gpg_private_key: ${{ secrets.gpg_private_key }}
           passphrase: ${{ secrets.gpg_passphrase }}
@@ -168,11 +162,8 @@ jobs:
         if: ${{ inputs.publish }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.aws_access_key_id }}
-          aws-secret-access-key: ${{ secrets.aws_secret_access_key }}
+          role-to-assume: ${{ secrets.aws_oidc_role_arn }}
           aws-region: us-east-1
-          role-to-assume: arn:aws:iam::${{ secrets.aws_account_id }}:role/resource-provisioner
-          role-skip-session-tagging: true
 
       - name: Build Args
         run: |
@@ -336,11 +327,19 @@ jobs:
 
       - uses: azure/setup-helm@v4.2.0
 
+      - name: Derive NR backend URL from region
+        run: |
+          case "${{ vars.NR_REGION }}" in
+            Staging) echo "NR_BACKEND_URL=https://staging-otlp.nr-data.net" >> $GITHUB_ENV ;;
+            EU)      echo "NR_BACKEND_URL=https://otlp.eu01.nr-data.net" >> $GITHUB_ENV ;;
+            *)       echo "NR_BACKEND_URL=https://otlp.nr-data.net" >> $GITHUB_ENV ;;
+          esac
+
       - name: Run local e2e tests
         if: ${{ hashFiles(format('distributions/{0}/test/spec-local.yaml', inputs.distribution)) != '' }}
         uses: newrelic/newrelic-integration-e2e-action@v1
         env:
-          NR_BACKEND_URL: ${{ secrets.nr_backend_url }}
+          NR_BACKEND_URL: ${{ env.NR_BACKEND_URL }}
           IMAGE_TAG: ${{ env.image_tag }}
           IMAGE_REPO: ${{ env.registry }}/${{ inputs.distribution }}
         with:
@@ -351,7 +350,7 @@ jobs:
           account_id: ${{ secrets.nr_account_id }}
           api_key: ${{ secrets.nr_api_key }}
           license_key: ${{ secrets.nr_ingest_key }}
-          region: "US"
+          region: ${{ vars.NR_REGION }}
 
       - name: Trivy security check
         uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.35.0

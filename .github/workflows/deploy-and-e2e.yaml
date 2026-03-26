@@ -32,18 +32,9 @@ on:
         type: string
         required: false
     secrets:
-      aws_access_key_id:
-        required: true
-        description: AWS access key id for terraform
-      aws_secret_access_key:
-        required: true
-        description: AWS secret access key for terraform
       aws_account_id:
         required: true
         description: AWS account id for terraform
-      nr_backend_url:
-        required: false
-        description: New Relic backend URL (terraform variable)
       nr_ingest_key:
         required: false
         description: New Relic ingest key (terraform variable)
@@ -53,12 +44,13 @@ on:
       nr_account_id:
         required: true
         description: New Relic account id for e2e tests
-      nr_api_base_url:
+      aws_oidc_role_arn:
         required: true
-        description: New Relic API base URL for e2e tests
+        description: ARN of the IAM role to assume via GitHub Actions OIDC
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
   setup:
@@ -158,7 +150,6 @@ jobs:
     env:
       TF_INPUT: "false"
       TF_VAR_aws_account_id: ${{ secrets.aws_account_id }}
-      TF_VAR_nr_backend_url: ${{ secrets.nr_backend_url }}
       TF_VAR_nr_ingest_key: ${{ secrets.nr_ingest_key }}
       TF_VAR_distro: ${{ inputs.distro }}
       TF_VAR_fips: ${{ inputs.fips }}
@@ -174,15 +165,22 @@ jobs:
         id: configure-aws-credentials-for-eks
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.aws_access_key_id }}
-          aws-secret-access-key: ${{ secrets.aws_secret_access_key }}
+          role-to-assume: ${{ secrets.aws_oidc_role_arn }}
           aws-region: us-east-1
-          role-to-assume: arn:aws:iam::${{ secrets.aws_account_id }}:role/resource-provisioner
-          role-skip-session-tagging: true
       
       - name: Configure kubectl
         run: |
           aws eks update-kubeconfig --name aws-ci-e2etest --region us-east-1
+
+      - name: Derive NR backend URL from region
+        run: |
+          case "${{ vars.NR_REGION }}" in
+            Staging) NR_BACKEND_URL="https://staging-otlp.nr-data.net" ;;
+            EU)      NR_BACKEND_URL="https://otlp.eu01.nr-data.net" ;;
+            *)       NR_BACKEND_URL="https://otlp.nr-data.net" ;;
+          esac
+          echo "NR_BACKEND_URL=${NR_BACKEND_URL}" >> $GITHUB_ENV
+          echo "TF_VAR_nr_backend_url=${NR_BACKEND_URL}" >> $GITHUB_ENV
 
       - name: Terraform Setup & Workspace
         uses: ./.github/actions/terraform-setup
@@ -196,7 +194,7 @@ jobs:
       - name: Run Action-based E2E Tests
         uses: newrelic/newrelic-integration-e2e-action@v1
         env:
-          NR_BACKEND_URL: ${{ secrets.nr_backend_url }}
+          NR_BACKEND_URL: ${{ env.NR_BACKEND_URL }}
           LICENSE_KEY: ${{ secrets.nr_ingest_key }}
           IMAGE_TAG: ${{ needs.setup.outputs.image-tag }}
           IMAGE_REPO: ${{ secrets.aws_account_id }}.dkr.ecr.us-east-1.amazonaws.com/${{ inputs.distro }}
@@ -209,4 +207,4 @@ jobs:
           account_id: ${{ secrets.nr_account_id }}
           api_key: ${{ secrets.nr_api_key }}
           license_key: ${{ secrets.nr_ingest_key }}
-          region: "US"
+          region: ${{ vars.NR_REGION }}
