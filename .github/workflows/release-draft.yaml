@@ -73,7 +73,7 @@ jobs:
         id: goreleaser
         uses: goreleaser/goreleaser-action@v6
         with:
-          distribution: goreleaser-pro
+          distribution: goreleaser
           version: "2.11.2"
           args: --clean --timeout 2h
         env:
