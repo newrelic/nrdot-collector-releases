@@ -45,6 +45,11 @@ data "aws_subnets" "private_subnets" {
   }
 }
 
+# Shared IAM resources pre-created by bootstrap script — not managed by Terraform.
+data "aws_iam_instance_profile" "s3_read_access" {
+  name = "nrdot-ec2-s3-nr-releases-read-access"
+}
+
 resource "aws_security_group" "ec2_allow_all_egress" {
   name        = "${var.test_environment}-${var.collector_distro}-ec2-all-egress"
   description = "Allow all outbound traffic"
@@ -58,66 +63,18 @@ resource "aws_security_group" "ec2_allow_all_egress" {
   }
 }
 
-resource "aws_iam_role" "ec2_role" {
-  name = "${var.test_environment}-${var.collector_distro}-ec2-s3-read-access-role"
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Principal = {
-          Service = "ec2.amazonaws.com"
-        }
-        Action = "sts:AssumeRole"
-      }
-    ]
-  })
-  permissions_boundary = var.permission_boundary
-}
-
-
-resource "aws_iam_policy" "s3_nr_releases_read_policy" {
-  name = "${var.test_environment}-${var.collector_distro}-s3-read-policy"
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "s3:GetObject",
-          "s3:ListBucket"
-        ]
-        Resource = [
-          "arn:aws:s3:::${var.releases_bucket_name}",
-          "arn:aws:s3:::${var.releases_bucket_name}/*",
-        ]
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "s3_read_policy" {
-  role       = aws_iam_role.ec2_role.name
-  policy_arn = aws_iam_policy.s3_nr_releases_read_policy.arn
-}
-
-resource "aws_iam_instance_profile" "s3_read_access" {
-  name = "${var.test_environment}-${var.collector_distro}-ec2-s3-nr-releases-read-access"
-  role = aws_iam_role.ec2_role.name
-}
-
 resource "aws_instance" "ubuntu" {
   count                  = length(local.instance_config)
   ami                    = data.aws_ami.ubuntu_ami[count.index].id
   instance_type          = "t2.micro"
   subnet_id              = data.aws_subnets.private_subnets.ids[0]
   vpc_security_group_ids = [aws_security_group.ec2_allow_all_egress.id]
-  iam_instance_profile   = aws_iam_instance_profile.s3_read_access.name
+  iam_instance_profile   = data.aws_iam_instance_profile.s3_read_access.name
 
   tags = {
       Name = "${var.test_environment}-${var.collector_distro}-${local.instance_config[count.index].test_key_prefix}"
   }
-  
+
   user_data_replace_on_change = true
   user_data                   = <<-EOF
               #!/bin/bash
