@@ -54,7 +54,7 @@ jobs:
           cat .lycheecache
 
       - name: Save lychee cache
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
         if: always()
         with:
           path: .lycheecache
