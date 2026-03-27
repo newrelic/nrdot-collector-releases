@@ -227,7 +227,7 @@ jobs:
           REGISTRY: "${{ env.registry }}"
           GORELEASER_KEY: ${{ secrets.goreleaser_key }}
         with:
-          distribution: goreleaser-pro
+          distribution: goreleaser
           version: "2.11.2"
           args: ${{ env.goreleaser_args }}
           workdir: distributions/${{ inputs.distribution }}

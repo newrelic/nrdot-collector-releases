@@ -54,7 +54,7 @@ jobs:
         id: goreleaser
         uses: goreleaser/goreleaser-action@v6
         with:
-          distribution: goreleaser-pro
+          distribution: goreleaser
           version: "~> v2"
           args: --snapshot --clean
           workdir: cmd/nrdot-collector-builder
