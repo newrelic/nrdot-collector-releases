@@ -57,7 +57,7 @@ jobs:
             echo "No sarif file found"
           fi
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@5c8a8a642e79153f5d047b10ec1cba1d1cc65699 # v3
         # Upload sarif only for latest
         if: ${{ (success() || failure()) && env.tag_to_scan == 'latest' }}
         with:
@@ -67,7 +67,7 @@ jobs:
 
       - name: Send notification to Slack Workflow
         if: ${{ failure() && env.tag_to_scan == 'latest' }}
-        uses: slackapi/slack-github-action@v2.0.0
+        uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
         with:
           webhook: ${{ secrets.OTELCOMM_BOTS_SLACK_HOOK }}
           webhook-type: incoming-webhook

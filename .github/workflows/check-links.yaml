@@ -22,14 +22,14 @@ jobs:
       
       - name: Restore lychee cache
         id: restore-cache
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
         with:
           path: .lycheecache
           key: cache-lychee
 
       - name: Link Checker
         id: lychee
-        uses: lycheeverse/lychee-action@a8c4c7cb88f0c7386610c35eb25108e448569cb0 # v2.7.0
+        uses: lycheeverse/lychee-action@8646ba30535128ac92d33dfc9133794bfdd9b411 # v2.8.0
         with:
           # no redirects to avoid accepting redirects to login pages
           args: --verbose --no-progress '**/*.md' --config .github/lychee.toml
@@ -54,7 +54,7 @@ jobs:
           cat .lycheecache
 
       - name: Save lychee cache
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@6f8efc29b200d32929f49075959781ed54ec270c # v3
         if: always()
         with:
           path: .lycheecache
@@ -62,7 +62,7 @@ jobs:
 
       - name: Send notification to Slack
         if: failure()
-        uses: slackapi/slack-github-action@v2.0.0
+        uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
         with:
           webhook: ${{ secrets.OTELCOMM_BOTS_SLACK_HOOK }}
           webhook-type: incoming-webhook

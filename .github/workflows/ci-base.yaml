@@ -66,7 +66,7 @@ jobs:
       - run: ./scripts/free-disk-space.sh
 
       - name: Setup Go
-        uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
+        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
         with:
           go-version: "~1.26"
           cache: ${{ env.caching_enabled }}
@@ -92,7 +92,7 @@ jobs:
 
       - name: Cache sources
         id: cache-sources
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         if: ${{ env.caching_enabled }}
         with:
           path: |
@@ -113,20 +113,20 @@ jobs:
       
       - name: Configure AWS Credentials
         if: ${{ inputs.publish }}
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4
         with:
           role-to-assume: ${{ secrets.aws_oidc_role_arn }}
           aws-region: us-east-1
       
       - name: Login to ECR
         if: ${{ inputs.publish }}
-        uses: docker/login-action@v3
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         with:
           registry: ${{ env.registry }}/${{ inputs.distribution }}
 
-      - uses: docker/setup-qemu-action@v2
+      - uses: docker/setup-qemu-action@2b82ce82d56a2a04d2637cd93a637ae1b359c0a7 # v2
 
-      - uses: docker/setup-buildx-action@v2
+      - uses: docker/setup-buildx-action@885d1462b80bc1c1c7f0b00334ad271f09369c55 # v2
 
       - name: Install cross-compilation toolchain
         if: inputs.fips
@@ -160,7 +160,7 @@ jobs:
 
       - name: Configure AWS Credentials
         if: ${{ inputs.publish }}
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4
         with:
           role-to-assume: ${{ secrets.aws_oidc_role_arn }}
           aws-region: us-east-1
@@ -198,7 +198,7 @@ jobs:
       - name: Cache goreleaser build
         id: cache-goreleaser
         if: ${{ env.caching_enabled }}
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: |
             distributions/${{ inputs.distribution }}/dist
@@ -219,7 +219,7 @@ jobs:
       - name: Build binaries & packages with GoReleaser
         if: inputs.publish || steps.cache-goreleaser.outputs.cache-hit != 'true'
         id: goreleaser
-        uses: goreleaser/goreleaser-action@v6
+        uses: goreleaser/goreleaser-action@e435ccd777264be153ace6237001ef4d979d3a7a # v6
         env:
           NFPM_PASSPHRASE: ${{ secrets.gpg_passphrase }}
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
@@ -283,7 +283,7 @@ jobs:
           echo "binary_tmp=${BINARY_TMP}" >> $GITHUB_OUTPUT
 
       - name: Build and load Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5
         if: steps.cache-goreleaser.outputs.cache-hit == 'true'
         with:
           context: ${{ steps.copy-binary.outputs.binary_tmp }}
@@ -315,7 +315,7 @@ jobs:
           ./fips/validation/validate.sh "${{ env.registry }}/${{ inputs.distribution }}:${{ env.image_tag }}"
 
       - name: Setup local kind cluster
-        uses: helm/kind-action@v1.13.0
+        uses: helm/kind-action@ef37e7f390d99f746eb8b610417061a60e82a6cc # v1.14.0
         with:
           version: v0.21.0
           cluster_name: ${{ inputs.test_cluster_name }}
@@ -337,7 +337,7 @@ jobs:
 
       - name: Run local e2e tests
         if: ${{ hashFiles(format('distributions/{0}/test/spec-local.yaml', inputs.distribution)) != '' }}
-        uses: newrelic/newrelic-integration-e2e-action@v1
+        uses: newrelic/newrelic-integration-e2e-action@c548a33a0c2941a4db4899ded766923eb3178e0e # v1
         env:
           NR_BACKEND_URL: ${{ env.NR_BACKEND_URL }}
           IMAGE_TAG: ${{ env.image_tag }}
@@ -415,7 +415,7 @@ jobs:
 
       - name: Upload Artifacts
         if: ${{ !env.ACT && inputs.publish }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: ${{ steps.set-outputs.outputs.artifact_name }}
           path: |
