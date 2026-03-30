@@ -45,7 +45,7 @@ echo "Verifying release: $RELEASE"
 curl -s "https://raw.githubusercontent.com/newrelic/nrdot-collector-releases/refs/tags/${RELEASE}/nrdot.gpg" | gpg --import
 
 # (optional) To remove the trust signature warning you'll need to manually trust the key
-# gpg --edit-key 8ECAA86AB2C1904FAAC12E34B0EE4ACC08A81CD2
+# gpg --edit-key 87768BAEA82E2B136FB75CD61F2D1176E50959B0
 
 # Store artifacts in temp folder
 ARTIFACTS_DIR=$(mktemp -d -t artifacts.XXXXXXXX)
