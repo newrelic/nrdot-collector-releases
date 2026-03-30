@@ -80,7 +80,7 @@ jobs:
           echo "sha=$sha" >> $GITHUB_OUTPUT
           
       - name: Download artifact from successful build
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: ${{ format('goreleaser_output_{0}{1}_{2}', inputs.distro, inputs.fips && '-fips' || '', steps.get-sha.outputs.sha) }}
           path: ./artifacts/
