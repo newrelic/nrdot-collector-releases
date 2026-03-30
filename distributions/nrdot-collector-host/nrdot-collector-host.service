@@ -10,6 +10,8 @@ Restart=on-failure
 Type=simple
 User=nrdot-collector-host
 Group=nrdot-collector-host
+StateDirectory=nrdot-collector
+StateDirectoryMode=0700
 
 [Install]
 WantedBy=multi-user.target
