@@ -80,7 +80,7 @@ jobs:
           echo "sha=$sha" >> $GITHUB_OUTPUT
           
       - name: Download artifact from successful build
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: ${{ format('goreleaser_output_{0}{1}_{2}', inputs.distro, inputs.fips && '-fips' || '', steps.get-sha.outputs.sha) }}
           path: ./artifacts/
@@ -163,7 +163,7 @@ jobs:
 
       - name: Configure AWS Credentials
         id: configure-aws-credentials-for-eks
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4
         with:
           role-to-assume: ${{ secrets.aws_oidc_role_arn }}
           aws-region: us-east-1
@@ -192,7 +192,7 @@ jobs:
           assume_role: "false"
       
       - name: Run Action-based E2E Tests
-        uses: newrelic/newrelic-integration-e2e-action@v1
+        uses: newrelic/newrelic-integration-e2e-action@c548a33a0c2941a4db4899ded766923eb3178e0e # v1
         env:
           NR_BACKEND_URL: ${{ env.NR_BACKEND_URL }}
           LICENSE_KEY: ${{ secrets.nr_ingest_key }}
