@@ -235,7 +235,7 @@ description: nrdot-collector E2E Test
     expected_results:
     - key: http_port
       lowerBoundedValue: 1
-  - query: FROM Metric SELECT filter(count(*), rpc.grpc.status_code is not null) as rpc_code WHERE metricName like 'rpc.%.duration'
+  - query: FROM Metric SELECT filter(count(*), rpc.response.status_code is not null) as rpc_code WHERE metricName like 'rpc.%.duration'
     expected_results:
       - key: rpc_code
         lowerBoundedValue: 1
