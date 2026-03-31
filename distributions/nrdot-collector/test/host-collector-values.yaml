@@ -29,6 +29,9 @@ command:
     - --config=/etc/nrdot-collector/config.yaml
     # configure liveliness probe according to chart's expectations
     - '"--config=yaml:extensions::health_check::endpoint: ${env:MY_POD_IP}:13133"'
+    # enable virtual filesystems for e2e tests running in containers (kind/Docker)
+    # where overlay is the only available filesystem
+    - '"--config=yaml:receivers::hostmetrics::scrapers::filesystem::include_virtual_filesystems: true"'
 
 extraEnvs:
   - name: OTEL_EXPORTER_OTLP_ENDPOINT
