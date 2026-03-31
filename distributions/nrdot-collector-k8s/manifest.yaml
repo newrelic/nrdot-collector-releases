@@ -47,3 +47,5 @@ replaces:
   # Why: Fixes CVE-2026-24051
   # Why: Fixes CVE-2026-33186 (authorization bypass via missing leading slash in :path)
   - google.golang.org/grpc v1.79.2 => google.golang.org/grpc v1.79.3
+  # Why: Fixes CVE-2026-32285 (DoS via malformed JSON negative slice panic)
+  - github.com/buger/jsonparser v1.1.1 => github.com/buger/jsonparser v1.1.2
