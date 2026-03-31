@@ -1,0 +1,9 @@
+# CVE-2026-34040 (GHSA-x744-4wpc-v9h2)
+# Docker AuthZ plugin bypass via oversized request bodies.
+# Only exploitable in Docker daemon deployments using AuthZ plugins.
+# We use github.com/docker/docker as a client library (dockerstatsreceiver),
+# not as a daemon, so this does not apply.
+# Fix (docker-v29.3.1) is not yet published to the Go module proxy.
+# Re-evaluate when https://github.com/moby/moby/releases/tag/docker-v29.3.1
+# is available as a Go module.
+CVE-2026-34040
