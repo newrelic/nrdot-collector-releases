@@ -92,7 +92,7 @@ jobs:
 
       - name: Cache sources
         id: cache-sources
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
         if: ${{ env.caching_enabled }}
         with:
           path: |
@@ -113,20 +113,20 @@ jobs:
       
       - name: Configure AWS Credentials
         if: ${{ inputs.publish }}
-        uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4
+        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6
         with:
           role-to-assume: ${{ secrets.aws_oidc_role_arn }}
           aws-region: us-east-1
       
       - name: Login to ECR
         if: ${{ inputs.publish }}
-        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4
         with:
           registry: ${{ env.registry }}/${{ inputs.distribution }}
 
-      - uses: docker/setup-qemu-action@2b82ce82d56a2a04d2637cd93a637ae1b359c0a7 # v2
+      - uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a # v4
 
-      - uses: docker/setup-buildx-action@885d1462b80bc1c1c7f0b00334ad271f09369c55 # v2
+      - uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4
 
       - name: Install cross-compilation toolchain
         if: inputs.fips
@@ -160,7 +160,7 @@ jobs:
 
       - name: Configure AWS Credentials
         if: ${{ inputs.publish }}
-        uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4
+        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6
         with:
           role-to-assume: ${{ secrets.aws_oidc_role_arn }}
           aws-region: us-east-1
@@ -198,7 +198,7 @@ jobs:
       - name: Cache goreleaser build
         id: cache-goreleaser
         if: ${{ env.caching_enabled }}
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
         with:
           path: |
             distributions/${{ inputs.distribution }}/dist
@@ -219,7 +219,7 @@ jobs:
       - name: Build binaries & packages with GoReleaser
         if: inputs.publish || steps.cache-goreleaser.outputs.cache-hit != 'true'
         id: goreleaser
-        uses: goreleaser/goreleaser-action@e435ccd777264be153ace6237001ef4d979d3a7a # v6
+        uses: goreleaser/goreleaser-action@ec59f474b9834571250b370d4735c50f8e2d1e29 # v7
         env:
           NFPM_PASSPHRASE: ${{ secrets.gpg_passphrase }}
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
@@ -283,7 +283,7 @@ jobs:
           echo "binary_tmp=${BINARY_TMP}" >> $GITHUB_OUTPUT
 
       - name: Build and load Docker image
-        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5
+        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7
         if: steps.cache-goreleaser.outputs.cache-hit == 'true'
         with:
           context: ${{ steps.copy-binary.outputs.binary_tmp }}
@@ -325,7 +325,7 @@ jobs:
         run: |
           kind load docker-image "${{ env.registry }}/${{ inputs.distribution }}:${{ env.image_tag }}" --name ${{ inputs.test_cluster_name }}
 
-      - uses: azure/setup-helm@1a275c3b69536ee54be43f2070a358922e12c8d4 # v4.3.1
+      - uses: azure/setup-helm@dda3372f752e03dde6b3237bc9431cdc2f7a02a2 # v5.0.0
 
       - name: Derive NR backend URL from region
         run: |
@@ -415,7 +415,7 @@ jobs:
 
       - name: Upload Artifacts
         if: ${{ !env.ACT && inputs.publish }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: ${{ steps.set-outputs.outputs.artifact_name }}
           path: |

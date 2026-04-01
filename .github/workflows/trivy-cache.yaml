@@ -7,7 +7,7 @@ on:
 
 jobs:
   update-trivy-db:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Setup oras
         uses: oras-project/setup-oras@22ce207df3b08e061f537244349aac6ae1d214f6 # v1
@@ -32,7 +32,7 @@ jobs:
           tar -xzf javadb.tar.gz -C $GITHUB_WORKSPACE/.cache/trivy/java-db
           rm javadb.tar.gz
       - name: Cache DBs
-        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
         with:
           path: ${{ github.workspace }}/.cache/trivy
           key: cache-trivy-${{ steps.date.outputs.date }}

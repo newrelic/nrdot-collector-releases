@@ -80,7 +80,7 @@ jobs:
           echo "sha=$sha" >> $GITHUB_OUTPUT
           
       - name: Download artifact from successful build
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: ${{ format('goreleaser_output_{0}{1}_{2}', inputs.distro, inputs.fips && '-fips' || '', steps.get-sha.outputs.sha) }}
           path: ./artifacts/
@@ -163,7 +163,7 @@ jobs:
 
       - name: Configure AWS Credentials
         id: configure-aws-credentials-for-eks
-        uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4
+        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6
         with:
           role-to-assume: ${{ secrets.aws_oidc_role_arn }}
           aws-region: us-east-1
