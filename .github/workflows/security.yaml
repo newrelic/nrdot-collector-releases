@@ -23,6 +23,12 @@ jobs:
           - nrdot-collector-host
           - nrdot-collector-k8s
     steps:
+      - name: Checkout .trivyignore
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          sparse-checkout: .trivyignore
+          sparse-checkout-cone-mode: false
+
       - name: Determine image tag to scan
         run: |
           if [ -z "${{ inputs.tag }}" ]; then
@@ -43,6 +49,7 @@ jobs:
           exit-code: 1
           ignore-unfixed: true
           limit-severities-for-sarif: true
+          trivyignores: .trivyignore
         env:
           # dbs are downloaded async in download_trivy_db.yml
           TRIVY_SKIP_DB_UPDATE: true
