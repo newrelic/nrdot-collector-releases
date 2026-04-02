@@ -39,7 +39,7 @@ jobs:
         working-directory: cmd/nrdot-collector-builder
 
       - name: Login to Docker
-        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4
         if: ${{ env.ACT }}
         with:
           registry: docker.io
@@ -63,7 +63,7 @@ jobs:
           GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
 
       - name: Login to GitHub Container Registry for manifests
-        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4
         if: ${{ !env.ACT }}
         with:
           registry: ghcr.io
