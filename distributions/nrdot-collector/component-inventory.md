@@ -5,6 +5,7 @@ This document maps each component in the `nrdot-collector` distribution to the u
 **Legend:**
 - **Core**: Core (not use-case specific)
 - **Host**: Host Monitoring
+- **k8s**: Kubernetes Monitoring
 - **ATP**: Host Minitoring with process metrics
 - **Gateway**: Gateway Mode
 - **OHI**: On-Host Integrations
@@ -15,15 +16,15 @@ This document maps each component in the `nrdot-collector` distribution to the u
 |-----------|-----------|
 | `dockerstatsreceiver` | OHI |
 | `elasticsearchreceiver` | OHI |
-| `filelogreceiver` | Host |
-| `hostmetricsreceiver` | Host, OHI |
+| `filelogreceiver` | Host, k8s |
+| `hostmetricsreceiver` | Host, k8s, OHI |
 | `jmxreceiver` | OHI |
-| `k8seventsreceiver` | OHI |
+| `k8seventsreceiver` | OHI, k8s |
 | `kafkametricsreceiver` | OHI |
-| `kubeletstatsreceiver` | OHI |
+| `kubeletstatsreceiver` | OHI, k8s |
 | `nginxreceiver` | OHI |
 | `otlpreceiver` | Core |
-| `prometheusreceiver` | Gateway |
+| `prometheusreceiver` | Gateway, k8s |
 | `rabbitmqreceiver` | OHI |
 | `receivercreator` | OHI |
 
@@ -36,13 +37,13 @@ This document maps each component in the `nrdot-collector` distribution to the u
 | `batchprocessor` | Core |
 | `cumulativetodeltaprocessor` | Core |
 | `filterprocessor` | Core |
-| `groupbyattrsprocessor` | Gateway |
-| `k8sattributesprocessor` | ATP, OHI |
+| `groupbyattrsprocessor` | k8s, Gateway |
+| `k8sattributesprocessor` | k8s, ATP, OHI |
 | `memorylimiterprocessor` | Core |
-| `metricsgenerationprocessor` | ATP, OHI |
+| `metricsgenerationprocessor` | k8s, ATP, OHI |
 | `metricstransformprocessor` | Core |
 | `resourcedetectionprocessor` | Core |
-| `resourceprocessor` | Gateway |
+| `resourceprocessor` | k8s, Gateway |
 | `spanprocessor` | Gateway |
 | `tailsamplingprocessor` | Gateway |
 | `transformprocessor` | Core |

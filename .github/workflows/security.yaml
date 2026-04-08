@@ -21,7 +21,6 @@ jobs:
           - nrdot-collector
           - nrdot-collector-experimental
           - nrdot-collector-host
-          - nrdot-collector-k8s
     steps:
       - name: Checkout .trivyignore
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
