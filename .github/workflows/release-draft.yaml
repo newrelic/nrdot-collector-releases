@@ -142,7 +142,6 @@ jobs:
         distribution:
           - nrdot-collector
           - nrdot-collector-experimental
-          - nrdot-collector-host
         fips: [false, true]
     steps:
       - name: Checkout (sparse)
