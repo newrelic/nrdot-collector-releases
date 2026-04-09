@@ -2,7 +2,6 @@
 
 This README covers topics that apply to all distributions. For distribution-specific information please refer to:
 - [nrdot-collector-host](./nrdot-collector-host/README.md)
-- [nrdot-collector-k8s](./nrdot-collector-k8s/README.md)
 - [nrdot-collector](./nrdot-collector/README.md)
 - [nrdot-collector-experimental](./nrdot-collector-experimental/README.md)
 
@@ -106,7 +105,7 @@ sudo systemctl reload-or-restart "${collector_distro}.service"
 ```
 
 ### Archives
-Archives contain the binary and the default configuration which is usually `config.yaml` unless the distro packages multiple defaults, e.g. `nrdot-collector-k8s`.
+Archives contain the binary and the default configuration.
 ```bash
 export collector_distro="nrdot-collector-host"
 export collector_version="1.12.0"

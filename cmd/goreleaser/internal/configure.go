@@ -29,7 +29,6 @@ import (
 
 const (
 	HostDistro         = "nrdot-collector-host"
-	K8sDistro          = "nrdot-collector-k8s"
 	CoreDistro         = "nrdot-collector"
 	ExperimentalDistro = "nrdot-collector-experimental"
 
@@ -132,11 +131,11 @@ func NewDistribution(baseDist string, fips bool) Distribution {
 }
 
 func isNoConfigDistro(dist string) bool {
-	return dist == K8sDistro || dist == ExperimentalDistro
+	return dist == ExperimentalDistro
 }
 
 func isImageOnlyDistro(dist string, fips bool) bool {
-	return dist == K8sDistro || fips
+	return fips
 }
 
 func Blobs(dist Distribution) []config.Blob {

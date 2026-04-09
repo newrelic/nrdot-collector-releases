@@ -17,7 +17,7 @@ GO_LICENCE_DETECTOR        := $(TOOLS_BIN_DIR)/go-licence-detector
 GO_LICENCE_DETECTOR_CONFIG   := $(SRC_ROOT)/internal/assets/license/rules.json
 NRLICENSE := $(TOOLS_BIN_DIR)/nrlicense
 
-DISTRIBUTIONS ?= "nrdot-collector-host,nrdot-collector-k8s,nrdot-collector,nrdot-collector-experimental"
+DISTRIBUTIONS ?= "nrdot-collector-host,nrdot-collector,nrdot-collector-experimental"
 
 ci: check manifests-check build build-fips version-check licenses-check
 check: ensure-goreleaser-up-to-date

@@ -2,18 +2,23 @@
 
 # New Relic Distribution of OpenTelemetry (NRDOT) Releases 
 
-This repository assembles various [custom distributions](https://opentelemetry.io/docs/collector/distributions/#custom-distributions) of the [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/) focused on specific use cases and pre-configured to work with NewRelic out-of-the-box.
+This repository assembles [custom distributions](https://opentelemetry.io/docs/collector/distributions/#custom-distributions) of the [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/) focused on specific use cases to work with NewRelic out-of-the-box.
 
 Generated assets are available in the corresponding Github [release page](https://github.com/newrelic/nrdot-collector-releases/releases) and as docker images published within the [newrelic organization on Docker Hub](https://hub.docker.com/u/newrelic).
 
-### Current list of distributions:
+## Current list of distributions:
 
 - [nrdot-collector-host](./distributions/nrdot-collector-host/README.md): distribution focused on monitoring host metrics and logs (deprecated in favor of `nrdot-collector`)
-- [nrdot-collector-k8s](./distributions/nrdot-collector-k8s/README.md): distribution focused on monitoring a Kubernetes cluster
 - [nrdot-collector](./distributions/nrdot-collector/README.md): comprehensive core distribution with full OTLP gateway capabilities and host monitoring
 - [nrdot-collector-experimental](./distributions/nrdot-collector-experimental/README.md): Experimental integrations
 
 Please refer to [this README](./distributions/README.md) for documentation on our distributions.
+
+### Deprecation Notice
+
+- `nrdot-collector-k8s`: deprecated in favor of `nrdot-collector`
+
+
 
 ## Support
 

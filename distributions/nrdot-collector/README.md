@@ -15,6 +15,7 @@ Note: See [general README](../README.md) for information that applies to all dis
 | Use Case              | Stability | Replaces                  | Documentation |
 |-----------------------|-----------|---------------------------|---------------|
 | Host Monitoring (default)      | `public`  | `nrdot-collector-host`    | [See 'Host Monitoring' below](#host-monitoring) |
+| Kubernetes Monitoring  | `public`  | `nrdot-collector-k8s`    | [See 'Kubernetes Monitoring' below](#kubernetes-monitoring) |
 | ATP (Host Monitoring w/ process metrics)   | `alpha`  |  N/A (new)   | [Docs](https://docs.newrelic.com/docs/opentelemetry/nrdot/atp/overview/) |
 | Gateway Mode          | `alpha`   | N/A (new)                 | [See 'Gateway Mode' below](#gateway-mode) |
 | On-Host Integrations (OHI) | `alpha` | N/A (new)                 | [Kafka](https://docs.newrelic.com/docs/opentelemetry/integrations/kafka/overview/), [NGINX](https://docs.newrelic.com/docs/opentelemetry/integrations/nginx/nginx-otel-overview/), [ElasticSearch](https://docs.newrelic.com/docs/opentelemetry/integrations/elasticsearch/elasticsearch-otel-integration-overview/), [RabbitMQ](https://docs.newrelic.com/docs/opentelemetry/integrations/rabbitmq/overview/) |
@@ -60,6 +61,12 @@ newrelic/nrdot-collector --config /etc/nrdot-collector/config.yaml \
 --config='yaml:receivers::hostmetrics::scrapers::processes: ' \
 --config='yaml:receivers::hostmetrics::scrapers::process: { metrics: { process.cpu.utilization: { enabled: true }, process.cpu.time: { enabled: false } } }'
 ```
+
+---
+
+## Kubernetes Monitoring
+
+Monitor your kubernetes cluster and resources with our [OpenTelemetry for Kubernetes](https://docs.newrelic.com/docs/kubernetes-pixie/k8s-otel/intro/) solution build on top of the `nrdot-collector` in the form of a helm chart. While you can use the `nrdot-collector` image directly for this purpose, we do not provide support for it.
 
 ---
 

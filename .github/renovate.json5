@@ -14,19 +14,5 @@
     }
   ],
   "customManagers": [
-    {
-      "customType": "regex",
-      "fileMatch": [
-        "(^|/)spec-nightly-action.yaml$",
-        "(^|/)spec-local.yaml$",
-      ],
-      "matchStringsStrategy": "combination",
-      "matchStrings": [
-        ".*# renovatebot.*\\s+(?:name:\\s+)?newrelic\/(?<depName>nr-k8s-otel-collector)(?:.*\\s+version)?:\\s+(?<currentValue>[\\d\\.]+)",
-      ],
-      "registryUrlTemplate": "https://helm-charts.newrelic.com",
-      "datasourceTemplate": "helm",
-      "versioningTemplate": "semver"
-    },
   ]
 }
