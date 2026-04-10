@@ -1,4 +1,4 @@
-description: nrdot-collector-host E2E Test
+description: nrdot-collector-experimental E2E Test
 
 # scoping is achieved via an implicit attribute `testKey=${SCENARIO_TAG}` expected on all tested telemetry
 

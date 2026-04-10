@@ -28,7 +28,6 @@ import (
 )
 
 const (
-	HostDistro         = "nrdot-collector-host"
 	CoreDistro         = "nrdot-collector"
 	ExperimentalDistro = "nrdot-collector-experimental"
 

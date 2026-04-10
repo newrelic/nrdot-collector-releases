@@ -8,17 +8,20 @@ Generated assets are available in the corresponding Github [release page](https:
 
 ## Current list of distributions:
 
-- [nrdot-collector-host](./distributions/nrdot-collector-host/README.md): distribution focused on monitoring host metrics and logs (deprecated in favor of `nrdot-collector`)
-- [nrdot-collector](./distributions/nrdot-collector/README.md): comprehensive core distribution with full OTLP gateway capabilities and host monitoring
+- [nrdot-collector](./distributions/nrdot-collector/README.md): Comprehensive distribution supporting all [use cases](./distributions/nrdot-collector/README.md#use-cases) offered by New Relic. 
 - [nrdot-collector-experimental](./distributions/nrdot-collector-experimental/README.md): Experimental integrations
 
 Please refer to [this README](./distributions/README.md) for documentation on our distributions.
 
-### Deprecation Notice
+### Deprecation Notices
 
-- `nrdot-collector-k8s`: deprecated in favor of `nrdot-collector`
+Former distributions that were deprecated.
 
+- `nrdot-collector-host`: deprecated in favor of the 'Host Monitoring' use case of `nrdot-collector` since `1.13.0`
+- `nrdot-collector-k8s`: deprecated in favor of the 'Kubernetes Monitoring' use case of `nrdot-collector` since `1.13.0` 
+- `nr-otel-collector`: deprecated in favor of `nrdot-collector-host` since [0.8.11](https://github.com/newrelic/nrdot-collector-releases/releases/tag/0.8.11) which is now itself deprecated, see above.
 
+There are no plans for further deprecations.
 
 ## Support
 

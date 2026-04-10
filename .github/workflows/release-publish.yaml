@@ -22,7 +22,6 @@ jobs:
         distribution:
           - nrdot-collector
           - nrdot-collector-experimental
-          - nrdot-collector-host
 
     steps:
       - name: Checkout repository

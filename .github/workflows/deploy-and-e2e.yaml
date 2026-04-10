@@ -14,7 +14,7 @@ on:
         required: false
         default: ""
       distro:
-        description: "Distribution under test (e.g. nrdot-collector-host)"
+        description: "Distribution under test (e.g. nrdot-collector)"
         type: string
         required: true
       fips:

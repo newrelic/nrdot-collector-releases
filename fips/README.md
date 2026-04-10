@@ -29,8 +29,8 @@ If you run the following command, you can verify that BoringCrypto functions are
 ```
 docker build --progress=plain -t fips-analyzer - << 'EOF'
 FROM golang:1.24-bullseye
-COPY --from=newrelic/nrdot-collector-host:latest-fips /nrdot-collector-host /nrdot-collector-host
-RUN go tool nm /nrdot-collector-host | grep goboringcrypto
+COPY --from=newrelic/nrdot-collector:latest-fips /nrdot-collector /nrdot-collector
+RUN go tool nm /nrdot-collector | grep goboringcrypto
 EOF
 ```
 
