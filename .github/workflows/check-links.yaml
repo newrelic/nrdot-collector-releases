@@ -40,22 +40,25 @@ jobs:
       - name: Filter cache to successful responses only
         if: always()
         run: |
+          if [ ! -f .lycheecache ]; then
+            echo "Cache file does not exist, skipping filtering"
+            exit 0
+          fi
+
           echo "Cache contents before filtering:"
           cat .lycheecache
 
           echo -e "\nFiltering cache to remove non-2xx status codes..."
           # Keep only lines with 2xx status codes
-          if [ -f .lycheecache ]; then
-            grep ',2[0-9][0-9],' .lycheecache > .lycheecache.tmp || true
-            mv .lycheecache.tmp .lycheecache
-          fi
+          grep ',2[0-9][0-9],' .lycheecache > .lycheecache.tmp || true
+          mv .lycheecache.tmp .lycheecache
 
           echo -e "\nCache contents after filtering:"
           cat .lycheecache
 
       - name: Save lychee cache
         uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
-        if: always()
+        if: always() && hashFiles('.lycheecache') != ''
         with:
           path: .lycheecache
           key: ${{ steps.restore-cache.outputs.cache-primary-key }}
