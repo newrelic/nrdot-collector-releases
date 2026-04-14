@@ -4,13 +4,20 @@ Note: This feature is preview-only as the FIPS-compliance is still under interna
 
 ## What is FIPS?
 
-FIPS (Federal Information Processing Standards) are a set of computer security standards developed by [NIST (National Institute of Standards and Technology)](https://csrc.nist.gov/projects/cryptographic-module-validation-program/certificate/4953) and used by non-military government agencies and contractors.
+FIPS (Federal Information Processing Standards) are a set of computer security standards developed by NIST (National Institute of Standards and Technology) and used by non-military government agencies and contractors.
 
-We are currently targeting [FIPS version 140-2](https://csrc.nist.gov/pubs/fips/140-2/upd2/final).
+We are currently targeting [FIPS version 140-3](https://csrc.nist.gov/pubs/fips/140-3/final).
 
 ## How does NRDOT achieve FIPS compliance?
 
-NRDOT achieves FIPS 140-2 compliance by instructing the golang compiler to replace the standard cryptographic library with the [FIPS 140-2-compliant library BoringCrypto](https://csrc.nist.gov/projects/cryptographic-module-validation-program/certificate/4407) and ensuring that TLS uses [approved ciphers](https://github.com/newrelic/nrdot-collector-releases/blob/main/fips/validation/validate.sh#L27), see also below.
+NRDOT achieves FIPS 140-3 compliance by instructing the golang compiler to replace the standard cryptographic library with BoringSSL and ensuring that TLS uses [approved ciphers](https://github.com/newrelic/nrdot-collector-releases/blob/main/fips/validation/validate.sh#L27).
+
+The following demonstrates the complete chain from NRDOT to the official NIST FIPS certificate:
+
+1. **NRDOT Collector**: The FIPS-compliant distributions (`-fips` suffix) are built from this repository
+2. **Go Compiler**: Built using [Go 1.26](https://github.com/newrelic/nrdot-collector-releases/blob/main/.github/workflows/ci-base.yaml#L71) with [`GOEXPERIMENT=boringcrypto`](https://github.com/newrelic/nrdot-collector-releases/blob/main/distributions/nrdot-collector/.goreleaser-fips.yaml#L26) flag enabled
+3. **BoringSSL Module**: The Go 1.26 runtime embeds BoringSSL commit [`0c6f40132b828e92ba365c6b7680e32820c63fa7`](https://github.com/golang/go/blob/go1.26.0/src/crypto/internal/boring/Dockerfile#L67), which corresponds to the [fips-20220613](https://boringssl.googlesource.com/boringssl/+/refs/tags/fips-20220613) tag
+4. **NIST Certificate**: This BoringSSL version is FIPS 140-3 validated under [NIST Certificate #4735](https://csrc.nist.gov/projects/cryptographic-module-validation-program/certificate/4735), which is valid until 2029
 
 Note: Once [golang is successfully FIPS 140-3 certified](https://go.dev/doc/security/fips140#in-process-module-versions), we will transition to using golang's native implementation.
 
