@@ -29,18 +29,18 @@ print_status() {
 
 is_cipher_fips_compliant() {
     local cipher="$1"
-    
+
+    # Based on CMVP Certificate #4735 Security Policy Table 4 (Approved) and Table 6 (Non-Approved)
+
     # TLS 1.3 FIPS-approved ciphers (only specific ones, not all)
-    # NIST SP 800-52 Rev. 2 and FIPS 140-2 IG specify these TLS 1.3 ciphers:
-    if [[ "$cipher" =~ ^TLS_AES_(128|256)_GCM_SHA(256|384)$ ]] || 
+    if [[ "$cipher" =~ ^TLS_AES_(128|256)_GCM_SHA(256|384)$ ]] ||
        [[ "$cipher" =~ ^TLS_AES_(128|256)_CCM(_8)?_SHA256$ ]]; then
-        return 0  # FIPS compliant TLS 1.3
+        return 0 
     fi
-    
+
     # TLS 1.2 FIPS-approved patterns
-    [[ "$cipher" =~ ECDHE_(ECDSA|RSA).*AES_(128|256)_GCM_SHA(256|384) ]] ||
-    [[ "$cipher" =~ DHE_RSA.*AES_(128|256)_GCM_SHA(256|384) ]] ||
-    [[ "$cipher" =~ TLS_RSA_WITH_AES_(128|256)_GCM_SHA(256|384) ]] ||
+    [[ "$cipher" =~ ECDHE_(ECDSA|RSA).*AES_(128|256)_GCM_SHA(256|384|512) ]] ||
+    [[ "$cipher" =~ TLS_RSA_WITH_AES_(128|256)_GCM_SHA(256|384|512) ]] ||
     [[ "$cipher" =~ ^(AES_(128|256)_GCM|RSA.*AES_(128|256)_GCM) ]]
 }
 

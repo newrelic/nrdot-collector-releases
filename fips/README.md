@@ -1,7 +1,5 @@
 # NRDOT FIPS Compliance
 
-Note: This feature is preview-only as the FIPS-compliance is still under internal compliance review.
-
 ## What is FIPS?
 
 FIPS (Federal Information Processing Standards) are a set of computer security standards developed by NIST (National Institute of Standards and Technology) and used by non-military government agencies and contractors.
@@ -19,7 +17,7 @@ The following demonstrates the complete chain from NRDOT to the official NIST FI
 3. **BoringSSL Module**: The Go 1.26 runtime embeds BoringSSL commit [`0c6f40132b828e92ba365c6b7680e32820c63fa7`](https://github.com/golang/go/blob/go1.26.0/src/crypto/internal/boring/Dockerfile#L67), which corresponds to the [fips-20220613](https://boringssl.googlesource.com/boringssl/+/refs/tags/fips-20220613) tag
 4. **NIST Certificate**: This BoringSSL version is FIPS 140-3 validated under [NIST Certificate #4735](https://csrc.nist.gov/projects/cryptographic-module-validation-program/certificate/4735), which is valid until 2029
 
-Note: Once [golang is successfully FIPS 140-3 certified](https://go.dev/doc/security/fips140#in-process-module-versions), we will transition to using golang's native implementation.
+Note: Once [golang itself is successfully FIPS 140-3 certified](https://go.dev/doc/security/fips140#in-process-module-versions), we will transition to using golang's native implementation.
 
 ## Which distributions are FIPS compliant?
 
@@ -129,7 +127,9 @@ Configure nmap to scan NRDOT's server (port 4318) to verify which ciphers it acc
 nmap -sV --script ssl-enum-ciphers -p 4318 localhost
 ```
 
-You should get an output similar to the following (showing only FIPS-compliant ciphers):
+You should get an output similar to the following (showing only FIPS-compliant ciphers).
+
+For the authoritative list of FIPS-compliant cipher suites, refer to the [`is_cipher_fips_compliant`](https://github.com/newrelic/nrdot-collector-releases/blob/main/fips/validation/validate.sh#L30) function in the automated validation script.
 
 ```
 Starting Nmap 7.99 ( https://nmap.org ) at 2026-04-15 17:52 -0700
@@ -170,7 +170,9 @@ grep -q "ClientHello" openssl-server.log && echo "✓ Client connection captured
 grep -A 50 "ClientHello" openssl-server.log | grep -E "TLS_|cipher" | head -20
 ```
 
-The output should show only FIPS-compliant cipher suites (AES-GCM based, no CHACHA20).
+The output should show only FIPS-compliant cipher suites.
+
+For the authoritative list of FIPS-compliant cipher suites, refer to the [`is_cipher_fips_compliant`](https://github.com/newrelic/nrdot-collector-releases/blob/main/fips/validation/validate.sh#L30) function in the automated validation script.
 
 ### Cleanup
 
