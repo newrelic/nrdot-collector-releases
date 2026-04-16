@@ -131,6 +131,8 @@ You should get an output similar to the following (showing only FIPS-compliant c
 
 For the authoritative list of FIPS-compliant cipher suites, refer to the [`is_cipher_fips_compliant`](https://github.com/newrelic/nrdot-collector-releases/blob/main/fips/validation/validate.sh#L30) function in the automated validation script.
 
+_Note: nmap displays TLS 1.3 cipher names as `TLS_AKE_WITH_...` even though the official cipher names would drop the `AKE_WITH`, see [this issue](https://github.com/nmap/nmap/issues/2883).
+
 ```
 Starting Nmap 7.99 ( https://nmap.org ) at 2026-04-15 17:52 -0700
 Nmap scan report for localhost (127.0.0.1)
@@ -155,6 +157,7 @@ PORT     STATE SERVICE  VERSION
 |_  least strength: A
 ```
 
+
 ### Client Cipher Verification
 
 To verify which ciphers NRDOT offers when acting as a client (making outbound connections), wait a few seconds for NRDOT to connect to the OpenSSL server, then check the captured log:
@@ -170,7 +173,17 @@ grep -q "ClientHello" openssl-server.log && echo "✓ Client connection captured
 grep -A 50 "ClientHello" openssl-server.log | grep -E "TLS_|cipher" | head -20
 ```
 
-The output should show only FIPS-compliant cipher suites.
+You should get an output similar to the following (showing only FIPS-compliant cipher suites):
+
+```
+      cipher_suites (len=12)
+        {0xC0, 0x2B} TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+        {0xC0, 0x2F} TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        {0xC0, 0x2C} TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+        {0xC0, 0x30} TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        {0x13, 0x01} TLS_AES_128_GCM_SHA256
+        {0x13, 0x02} TLS_AES_256_GCM_SHA384
+```
 
 For the authoritative list of FIPS-compliant cipher suites, refer to the [`is_cipher_fips_compliant`](https://github.com/newrelic/nrdot-collector-releases/blob/main/fips/validation/validate.sh#L30) function in the automated validation script.
 
