@@ -21,7 +21,7 @@ Note: Once [golang itself is successfully FIPS 140-3 certified](https://go.dev/d
 
 ## Which distributions are FIPS compliant?
 
-Compliant artifacts have a `-fips` suffix added to the version string, e.g. `1.5.0-fips`.
+Compliant artifacts have a `-fips` suffix added to the version string, e.g. `1.12.0-fips`.
 
 _Note: FIPS-compliant distributions are only available for linux_
 
