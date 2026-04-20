@@ -33,13 +33,13 @@
       </Feature>
 
       <!-- Terminate install if NR license key not provided -->
-      <Condition 
+      <Condition
          Message="A New Relic ingest key is required for NRDOT. Please provide NEW_RELIC_LICENSE_KEY during installation.">
          Installed OR NEW_RELIC_LICENSE_KEY
       </Condition>
       <Property Id="NEW_RELIC_LICENSE_KEY" Secure="yes" Hidden="yes"/>
-      <Property Id="FOO" Value="Bar" Secure="yes" Hidden="yes"/>
-      <Property Id="MsiHiddenProperties" Value="NEW_RELIC_LICENSE_KEY;FOO" />
+      <Property Id="OTEL_RESOURCE_ATTRIBUTES"/>
+      <Property Id="MsiHiddenProperties" Value="NEW_RELIC_LICENSE_KEY" />
 
       <!-- Set to bundled collector config unless one is provided-->
       <Property Id="COLLECTOR_SVC_ARGS"/>
@@ -87,7 +87,7 @@
                      Remove="uninstall"
                      Wait="yes"/>
 
-                  <!-- NR License key is a system environment variable -->
+                  <!-- System environment variables -->
                   <RegistryKey
                      Root="HKLM"
                      Key="SYSTEM\CurrentControlSet\Control\Session Manager\Environment">
@@ -95,6 +95,10 @@
                         Type="string"
                         Name="NEW_RELIC_LICENSE_KEY"
                         Value="[NEW_RELIC_LICENSE_KEY]"/>
+                     <RegistryValue
+                        Type="string"
+                        Name="OTEL_RESOURCE_ATTRIBUTES"
+                        Value="[OTEL_RESOURCE_ATTRIBUTES]"/>
                   </RegistryKey>
 
                   <RegistryKey

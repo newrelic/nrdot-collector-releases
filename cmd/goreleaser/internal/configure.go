@@ -124,10 +124,6 @@ func NewDistribution(baseDist string, fips bool) Distribution {
 		dist.SkipChecksums = true
 	}
 
-	if baseDist == HostDistro {
-		dist.SkipMSI = true
-	}
-
 	if baseDist == ExperimentalDistro {
 		dist.Goos = []string{"linux"}
 		dist.IgnoredBuilds = nil
