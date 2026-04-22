@@ -169,15 +169,15 @@ jobs:
         run: |
           # Determine base skip flags and snapshot mode based on publish input
           if [ "${{ inputs.publish }}" = "true" ]; then
-            BASE_SKIP="--skip=announce,validate"
+            BASE_SKIP="--skip=announce,validate,msi"
             SNAPSHOT_FLAG=""  # No --snapshot for publishing builds to get proper versions
           else
-            BASE_SKIP="--skip=publish,validate"
+            BASE_SKIP="--skip=publish,validate,msi"
             SNAPSHOT_FLAG="--snapshot"  # Use --snapshot for dev builds to get SNAPSHOT versions
           fi
 
           if [ "${{ github.event.pull_request.user.login }}" = "dependabot[bot]" ]; then
-            BASE_SKIP="--skip=publish,validate,sign"
+            BASE_SKIP="--skip=publish,validate,sign,msi"
           fi
 
           GORELEASER_CONFIG="${{ format('.goreleaser{0}.yaml', inputs.fips && '-fips' || '') }}"
@@ -217,12 +217,6 @@ jobs:
             git tag "$version"
           fi
 
-      - name: Setup wixl # Required to build MSI
-        if: inputs.publish || steps.cache-goreleaser.outputs.cache-hit != 'true'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y wixl
-
       - name: Build binaries & packages with GoReleaser
         if: inputs.publish || steps.cache-goreleaser.outputs.cache-hit != 'true'
         id: goreleaser
@@ -260,35 +254,6 @@ jobs:
           else
             echo "image_tag=$VERSION-$ARCH" >> $GITHUB_ENV
           fi
-
-      # - name: Find MSI
-      #   id: find-msi
-      #   if: ${{ env.windows }}
-      #   run: |
-      #     cd distributions/${{ inputs.distribution }}
-      #     msi_artifact_name=${{ inputs.distribution }}_msi_${{ github.sha }}
-      #     msi_path="$(find dist/msi/${{inputs.distribution}}/*.msi)"
-      #     if [ ! -f $MSI_PATH ]; then
-      #       echo "❌ Error: .msi not found at $MSI_PATH"
-      #       exit 1
-      #     fi
-      #     echo "msi_path=$msi_path" >> $GITHUB_OUTPUT
-      #     echo "msi_artifact_name=$msi_artifact_name" >> $GITHUB_OUTPUT
-
-      # - name: Upload MSI Artifact
-      #   id: upload-msi
-      #   if: ${{ env.windows }}
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: ${{ steps.find-msi.outputs.msi_artifact_name }}
-      #     path: ${{ steps.find-msi.outputs.msi_path}}
-
-      # - name: Validate MSI
-      #   if: ${{ env.windows }}
-      #   uses: ./.github/workflows/ci-windows.yaml
-      #   with:
-      #     distribution: ${{ inputs.distribution }}
-      #     artifact: ${{ steps.find-msi.outputs.msi_artifact_name }}
 
       - name: Copy GoReleaser binary to Docker context
         id: copy-binary
