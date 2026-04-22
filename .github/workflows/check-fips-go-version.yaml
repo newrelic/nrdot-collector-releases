@@ -1,0 +1,145 @@
+name: check-fips-go-version
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/ci-base.yaml'
+      - 'fips/README.md'
+      - '.github/workflows/check-fips-go-version.yaml'
+  pull_request:
+    paths:
+      - '.github/workflows/ci-base.yaml'
+      - 'fips/README.md'
+      - '.github/workflows/check-fips-go-version.yaml'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+permissions: read-all
+
+jobs:
+  check-boringssl-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Extract Go setup config from CI
+        id: ci-go-config
+        run: |
+          # Extract go-version and check-latest from ci-base.yaml
+          GO_VERSION_SPEC=$(yq '.jobs.lint.steps[] | select(.name == "Setup Go") | .with.go-version' .github/workflows/ci-base.yaml)
+          CHECK_LATEST=$(yq '.jobs.lint.steps[] | select(.name == "Setup Go") | .with.check-latest' .github/workflows/ci-base.yaml)
+
+          echo "version-spec=${GO_VERSION_SPEC}" >> $GITHUB_OUTPUT
+          echo "check-latest=${CHECK_LATEST}" >> $GITHUB_OUTPUT
+          echo "CI Go version spec: ${GO_VERSION_SPEC} (check-latest: ${CHECK_LATEST})"
+
+      - name: Setup Go (matching ci-base.yaml)
+        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
+        with:
+          go-version: ${{ steps.ci-go-config.outputs.version-spec }}
+          check-latest: ${{ steps.ci-go-config.outputs.check-latest }}
+
+      - name: Get actual Go version
+        id: go-version
+        run: |
+          # Get the full version string (e.g., "go1.26.0")
+          GO_FULL_VERSION=$(go version | awk '{print $3}')
+          # Strip the "go" prefix (e.g., "1.26.0")
+          GO_VERSION=${GO_FULL_VERSION#go}
+
+          echo "version=${GO_VERSION}" >> $GITHUB_OUTPUT
+          echo "Actual Go version installed: ${GO_VERSION}"
+
+      - name: Restore BoringSSL commit cache
+        id: cache-boringssl
+        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+        with:
+          path: .boringssl-cache
+          key: boringssl-commit-go${{ steps.go-version.outputs.version }}
+
+      - name: Fetch BoringSSL commit from Go runtime
+        id: go-boringssl
+        run: |
+          GO_VERSION="${{ steps.go-version.outputs.version }}"
+
+          # Check if we have a cached commit SHA
+          if [ -f .boringssl-cache ]; then
+            BORINGSSL_SHA=$(cat .boringssl-cache)
+            echo "Using cached BoringSSL commit: ${BORINGSSL_SHA}"
+          else
+            # Fetch the Dockerfile from golang/go for this version
+            # The Dockerfile contains the BoringSSL commit SHA in ENV BoringV=<SHA>
+            DOCKERFILE_URL="https://raw.githubusercontent.com/golang/go/go${GO_VERSION}/src/crypto/internal/boring/Dockerfile"
+
+            echo "Fetching Dockerfile from: ${DOCKERFILE_URL}"
+            DOCKERFILE_CONTENT=$(curl -sfL "${DOCKERFILE_URL}")
+
+            if [ $? -ne 0 ]; then
+              echo "ERROR: Failed to fetch Dockerfile from Go ${GO_VERSION}"
+              echo "URL: ${DOCKERFILE_URL}"
+              exit 1
+            fi
+
+            # Extract the BoringSSL commit SHA from ENV BoringV=<SHA>
+            BORINGSSL_SHA=$(echo "${DOCKERFILE_CONTENT}" | grep -oP 'ENV BoringV=\K[a-f0-9]{40}')
+
+            if [ -z "${BORINGSSL_SHA}" ]; then
+              echo "ERROR: Could not extract BoringSSL commit SHA from Dockerfile"
+              echo "Expected line format: ENV BoringV=<40-char-hex-sha>"
+              exit 1
+            fi
+
+            # Cache the commit SHA
+            echo "${BORINGSSL_SHA}" > .boringssl-cache
+            echo "Fetched and cached BoringSSL commit: ${BORINGSSL_SHA}"
+          fi
+
+          echo "sha=${BORINGSSL_SHA}" >> $GITHUB_OUTPUT
+
+      - name: Save BoringSSL commit cache
+        uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+        if: steps.cache-boringssl.outputs.cache-hit != 'true'
+        with:
+          path: .boringssl-cache
+          key: boringssl-commit-go${{ steps.go-version.outputs.version }}
+
+      - name: Extract documented BoringSSL commit from README
+        id: readme-boringssl
+        run: |
+          # Extract the BoringSSL commit SHA documented in fips/README.md
+          # Looking for: BoringSSL commit [`<SHA>`](...)
+          README_SHA=$(grep -oP 'BoringSSL commit \[`\K[a-f0-9]{40}' fips/README.md | head -1)
+
+          if [ -z "${README_SHA}" ]; then
+            echo "ERROR: Could not find BoringSSL commit SHA in fips/README.md"
+            exit 1
+          fi
+
+          echo "sha=${README_SHA}" >> $GITHUB_OUTPUT
+          echo "BoringSSL commit documented in README: ${README_SHA}"
+
+      - name: Compare BoringSSL commits
+        run: |
+          GO_SHA="${{ steps.go-boringssl.outputs.sha }}"
+          README_SHA="${{ steps.readme-boringssl.outputs.sha }}"
+
+          if [ "${GO_SHA}" != "${README_SHA}" ]; then
+            echo "❌ ERROR: BoringSSL commit SHA mismatch!"
+            echo ""
+            echo "  Go ${{ steps.go-version.outputs.version }} embeds: ${GO_SHA}"
+            echo "  README documents:                     ${README_SHA}"
+            echo ""
+            echo "The Go version has been updated with a different BoringSSL commit."
+            echo "This invalidates the FIPS chain of proof documented in fips/README.md"
+            echo ""
+            exit 1
+          fi
+
+          echo "✅ BoringSSL commit SHA matches between Go runtime and documentation"
+          echo "   Go version: ${{ steps.go-version.outputs.version }}"
+          echo "   BoringSSL commit: ${GO_SHA}"
