@@ -165,6 +165,7 @@ jobs:
           # Validate successful install on license key provided
           $msi_args += @(
             'NEW_RELIC_LICENSE_KEY="${{ secrets.nr_ingest_key }}"',
+            'OTEL_EXPORTER_OTLP_ENDPOINT="https://otlp.nr-data.net"',
             "OTEL_RESOURCE_ATTRIBUTES=`"testKey=$env:SCENARIO_TAG`""
           )
           $process = Start-Process -Wait -PassThru msiexec.exe -ArgumentList $msi_args
@@ -183,6 +184,8 @@ jobs:
           # Validate installer placed environment variables in registry
           Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name 'NEW_RELIC_LICENSE_KEY' | Out-Null
           Write-Host "✅ License key found in environment registry"
+          Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name 'OTEL_EXPORTER_OTLP_ENDPOINT' | Out-Null
+          Write-Host "✅ OTLP endpoint found in environment registry"
           Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name 'OTEL_RESOURCE_ATTRIBUTES' | Out-Null
           Write-Host "✅ Resource attributes found in environment registry"
 

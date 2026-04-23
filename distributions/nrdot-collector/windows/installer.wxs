@@ -38,6 +38,7 @@
          Installed OR NEW_RELIC_LICENSE_KEY
       </Condition>
       <Property Id="NEW_RELIC_LICENSE_KEY" Secure="yes" Hidden="yes"/>
+      <Property Id="OTEL_EXPORTER_OTLP_ENDPOINT"/>
       <Property Id="OTEL_RESOURCE_ATTRIBUTES"/>
       <Property Id="MsiHiddenProperties" Value="NEW_RELIC_LICENSE_KEY" />
 
@@ -97,9 +98,30 @@
                         Value="[NEW_RELIC_LICENSE_KEY]"/>
                      <RegistryValue
                         Type="string"
+                        Name="OTEL_EXPORTER_OTLP_ENDPOINT"
+                        Value="[OTEL_EXPORTER_OTLP_ENDPOINT]"/>
+                     <RegistryValue
+                        Type="string"
                         Name="OTEL_RESOURCE_ATTRIBUTES"
                         Value="[OTEL_RESOURCE_ATTRIBUTES]"/>
                   </RegistryKey>
+
+                  <!-- Ensure environment variables are removed on uninstall -->
+                  <RemoveRegistryValue
+                     Root="HKLM"
+                     Key="SYSTEM\CurrentControlSet\Control\Session Manager\Environment"
+                     Name="NEW_RELIC_LICENSE_KEY"
+                     Action="removeOnUninstall"/>
+                  <RemoveRegistryValue
+                     Root="HKLM"
+                     Key="SYSTEM\CurrentControlSet\Control\Session Manager\Environment"
+                     Name="OTEL_EXPORTER_OTLP_ENDPOINT"
+                     Action="removeOnUninstall"/>
+                  <RemoveRegistryValue
+                     Root="HKLM"
+                     Key="SYSTEM\CurrentControlSet\Control\Session Manager\Environment"
+                     Name="OTEL_RESOURCE_ATTRIBUTES"
+                     Action="removeOnUninstall"/>
 
                   <RegistryKey
                      Root="HKLM"
