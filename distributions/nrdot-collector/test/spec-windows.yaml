@@ -110,6 +110,6 @@ scenarios:
     tests:
       # Tests for existence of metrics
       metrics:
-        - source: "host-expected-metrics-windows.yaml"
+        - source: "host-expected-metrics-common.yaml"
       # Tests for existence of signal + specific attributes
       nrqls: *host_metrics_nrqls
