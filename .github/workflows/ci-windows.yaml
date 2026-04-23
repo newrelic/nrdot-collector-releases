@@ -181,13 +181,12 @@ jobs:
             exit $process.ExitCode
           }
 
-          # Validate installer placed environment variables in registry
-          Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name 'NEW_RELIC_LICENSE_KEY' | Out-Null
-          Write-Host "✅ License key found in environment registry"
-          Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name 'OTEL_EXPORTER_OTLP_ENDPOINT' | Out-Null
-          Write-Host "✅ OTLP endpoint found in environment registry"
-          Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name 'OTEL_RESOURCE_ATTRIBUTES' | Out-Null
-          Write-Host "✅ Resource attributes found in environment registry"
+          # Validate environment variables in registry
+          $env_vars = @('NEW_RELIC_LICENSE_KEY', 'OTEL_EXPORTER_OTLP_ENDPOINT', 'OTEL_RESOURCE_ATTRIBUTES')
+          foreach ($var in $env_vars) {
+            Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name $var | Out-Null
+            Write-Host "✅ $var found in environment registry"
+          }
 
           Write-Host "⏳ Waiting 30 seconds for collector to spool up"
           Start-Sleep -Seconds 30
@@ -216,3 +215,35 @@ jobs:
           license_key: ${{ secrets.nr_ingest_key }}
           region: ${{ vars.NR_REGION }}
           scenario_tag: ${{ env.SCENARIO_TAG }}
+
+      - name: Validate uninstall
+        run: |
+          # Uninstall using msiexec
+          Write-Host "🗑️ Uninstalling NRDOT Collector..."
+          $process = Start-Process -Wait -PassThru msiexec.exe -ArgumentList @('/x', "$env:msi_path", '/qn', '/norestart')
+          if ($process.ExitCode -ne 0) {
+            Write-Host "❌ Uninstallation failed with exit code $($process.ExitCode)"
+            exit $process.ExitCode
+          }
+          Write-Host "✅ Uninstallation completed successfully"
+
+          # Verify service was removed
+          $service = Get-Service -Name "${{ inputs.distribution }}" -ErrorAction SilentlyContinue
+          if ($service) {
+            Write-Host "❌ Service still exists after uninstall"
+            exit 1
+          }
+          Write-Host "✅ Service removed successfully"
+
+          # Verify environment variables were removed
+          Write-Host "🔍 Verifying environment variables were removed..."
+          $env_vars = @('NEW_RELIC_LICENSE_KEY', 'OTEL_EXPORTER_OTLP_ENDPOINT', 'OTEL_RESOURCE_ATTRIBUTES')
+          foreach ($var in $env_vars) {
+            try {
+              Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name $var -ErrorAction Stop | Out-Null
+              Write-Host "❌ $var still exists after uninstall"
+              exit 1
+            } catch {
+              Write-Host "✅ $var removed successfully"
+            }
+          }
