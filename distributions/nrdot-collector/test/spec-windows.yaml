@@ -12,14 +12,6 @@ description: nrdot-collector E2E Test (Windows)
     expected_results:
       - key: state_idle
         lowerBoundedValue: 1
-  # - query: FROM Metric SELECT filter(count(*), state='wait') as state_wait WHERE metricName = 'system.cpu.utilization'
-  #   expected_results:
-  #     - key: state_wait
-  #       lowerBoundedValue: 1
-  # - query: FROM Metric SELECT filter(count(*), state='steal') as state_steal WHERE metricName = 'system.cpu.utilization'
-  #   expected_results:
-  #     - key: state_steal
-  #       lowerBoundedValue: 1
   - query: FROM Metric SELECT filter(count(*), direction='read') as direction_read WHERE metricName = 'system.disk.io'
     expected_results:
       - key: direction_read
@@ -44,22 +36,10 @@ description: nrdot-collector E2E Test (Windows)
     expected_results:
       - key: direction_write
         lowerBoundedValue: 1
-  # - query: FROM Metric SELECT filter(count(*), state='cached') as state_cached WHERE metricName = 'system.memory.usage'
-  #   expected_results:
-  #     - key: state_cached
-  #       lowerBoundedValue: 1
   - query: FROM Metric SELECT filter(count(*), state='free') as state_free WHERE metricName = 'system.memory.usage'
     expected_results:
       - key: state_free
         lowerBoundedValue: 1
-  # - query: FROM Metric SELECT filter(count(*), state='slab_reclaimable') as state_slab_reclaimable WHERE metricName = 'system.memory.usage'
-  #   expected_results:
-  #     - key: state_slab_reclaimable
-  #       lowerBoundedValue: 1
-  # - query: FROM Metric SELECT filter(count(*), state='buffered') as state_buffered WHERE metricName = 'system.memory.usage'
-  #   expected_results:
-  #     - key: state_buffered
-  #       lowerBoundedValue: 1
   - query: FROM Metric SELECT filter(count(*), state='used') as state_used WHERE metricName = 'system.memory.usage'
     expected_results:
       - key: state_used
@@ -80,14 +60,6 @@ description: nrdot-collector E2E Test (Windows)
     expected_results:
       - key: direction_page_in
         lowerBoundedValue: 1
-  # - query: FROM Metric SELECT filter(count(*), state='free') as state_free WHERE metricName = 'system.filesystem.inodes.usage'
-  #   expected_results:
-  #     - key: state_free
-  #       lowerBoundedValue: 1
-  # - query: FROM Metric SELECT filter(count(*), state='used') as state_used WHERE metricName = 'system.filesystem.inodes.usage'
-  #   expected_results:
-  #     - key: state_used
-  #       lowerBoundedValue: 1
   - query: FROM Metric SELECT filter(count(*), state='used') as state_used WHERE metricName = 'system.filesystem.usage'
     expected_results:
       - key: state_used
