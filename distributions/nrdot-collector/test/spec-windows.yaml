@@ -48,10 +48,10 @@ description: nrdot-collector E2E Test (Windows)
   #   expected_results:
   #     - key: state_cached
   #       lowerBoundedValue: 1
-  # - query: FROM Metric SELECT filter(count(*), state='free') as state_free WHERE metricName = 'system.memory.usage'
-  #   expected_results:
-  #     - key: state_free
-  #       lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), state='free') as state_free WHERE metricName = 'system.memory.usage'
+    expected_results:
+      - key: state_free
+        lowerBoundedValue: 1
   # - query: FROM Metric SELECT filter(count(*), state='slab_reclaimable') as state_slab_reclaimable WHERE metricName = 'system.memory.usage'
   #   expected_results:
   #     - key: state_slab_reclaimable
@@ -60,10 +60,10 @@ description: nrdot-collector E2E Test (Windows)
   #   expected_results:
   #     - key: state_buffered
   #       lowerBoundedValue: 1
-  # - query: FROM Metric SELECT filter(count(*), state='used') as state_used WHERE metricName = 'system.memory.usage'
-  #   expected_results:
-  #     - key: state_used
-  #       lowerBoundedValue: 1
+  - query: FROM Metric SELECT filter(count(*), state='used') as state_used WHERE metricName = 'system.memory.usage'
+    expected_results:
+      - key: state_used
+        lowerBoundedValue: 1
   - query: FROM Metric SELECT filter(count(*), state='free') as state_free WHERE metricName = 'system.memory.utilization'
     expected_results:
       - key: state_free
