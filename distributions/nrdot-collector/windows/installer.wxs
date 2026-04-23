@@ -13,10 +13,8 @@
          Comments="Windows Installer Package"
          InstallScope="perMachine"/>
       <Media Id="1" Cabinet="product.cab" EmbedCab="yes"/>
-      <!-- TODO: Add NR Icon? -->
       <!-- <Icon Id="ProductIcon" SourceFile="opentelemetry.ico"/> -->
       <!-- <Property Id="ARPPRODUCTICON" Value="ProductIcon"/> -->
-      <!-- TODO: Validate these links are correct -->
       <Property Id="ARPHELPLINK" Value="https://support.newrelic.com/s/"/>
       <Property Id="ARPURLINFOABOUT" Value="https://docs.newrelic.com/docs/opentelemetry/nrdot/nrdot-collector/"/>
       <Property Id="ARPNOREPAIR" Value="1"/>

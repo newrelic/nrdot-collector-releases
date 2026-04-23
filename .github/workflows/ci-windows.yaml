@@ -123,10 +123,9 @@ jobs:
           name: ${{ needs.build.outputs.msi_artifact_name }}
           path: ./msi
 
-      - name: Generate scenario tag
+      - name: Generate e2e scenario tag
         shell: bash
         run: |
-          # Ideally, this step will be handled purely by e2e when we create a 'before' step
           RANDOM_SUFFIX=$(echo $RANDOM$RANDOM | md5sum | cut -c1-7)
           echo "SCENARIO_TAG=e2e-${GITHUB_SHA:0:7}-${RANDOM_SUFFIX}" >> $GITHUB_ENV
 
@@ -219,7 +218,7 @@ jobs:
       - name: Validate uninstall
         run: |
           # Uninstall using msiexec
-          Write-Host "🗑️ Uninstalling NRDOT Collector..."
+          Write-Host "Uninstalling NRDOT Collector..."
           $process = Start-Process -Wait -PassThru msiexec.exe -ArgumentList @('/x', "$env:msi_path", '/qn', '/norestart')
           if ($process.ExitCode -ne 0) {
             Write-Host "❌ Uninstallation failed with exit code $($process.ExitCode)"
@@ -236,14 +235,13 @@ jobs:
           Write-Host "✅ Service removed successfully"
 
           # Verify environment variables were removed
-          Write-Host "🔍 Verifying environment variables were removed..."
           $env_vars = @('NEW_RELIC_LICENSE_KEY', 'OTEL_EXPORTER_OTLP_ENDPOINT', 'OTEL_RESOURCE_ATTRIBUTES')
           foreach ($var in $env_vars) {
             try {
               Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name $var -ErrorAction Stop | Out-Null
-              Write-Host "❌ $var still exists after uninstall"
+              Write-Host "❌ $var still in environment registry after uninstall"
               exit 1
             } catch {
-              Write-Host "✅ $var removed successfully"
+              Write-Host "✅ $var no longer in environment registry after uninstall"
             }
           }
