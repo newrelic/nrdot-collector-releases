@@ -202,7 +202,7 @@ jobs:
           }
 
       - name: Run local e2e tests
-        uses: agarvin-nr/newrelic-integration-e2e-action@agarvin/pathFix # Temporary fork of newrelic-integration-action to see if it's quick to fix windows-style paths
+        uses: newrelic/newrelic-integration-e2e-action@d0c7c2b8f9af227365d71c6b7fddbc024c9e331a
         with:
           retry_seconds: 15
           retry_attempts: 20
