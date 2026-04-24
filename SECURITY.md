@@ -2,10 +2,9 @@
 
 ## Reporting Vulnerabilities
 
-As noted in our [security policy](https://github.com/newrelic/nrdot-collector-releases/security/policy),
 New Relic is committed to the privacy and security of our customers and their data. If you believe
 you have found a security vulnerability in this project, please report it through our
-[coordinated disclosure program](https://github.com/newrelic/nrdot-collector-releases/security/policy#coordinated-disclosure-program).
+[coordinated disclosure program](https://docs.newrelic.com/docs/security/security-privacy/information-security/report-security-vulnerabilities/#coordinated_disclosure_program).
 
 ## GPG Signing Key
 
