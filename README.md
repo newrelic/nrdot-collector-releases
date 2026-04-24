@@ -37,7 +37,7 @@ If you have any questions, or to execute our corporate CLA (which is required if
 
 As noted in our [security policy](https://github.com/newrelic/nrdot-collector-releases/security/policy), New Relic is committed to the privacy and security of our customers and their data. We believe that providing coordinated disclosure by security researchers and engaging with the security community are important means to achieve our security goals.
 
-If you believe you have found a security vulnerability in this project or any of New Relic's products or websites, we welcome and greatly appreciate you reporting it to New Relic through our [coordinated disclosure program](https://github.com/newrelic/nrdot-collector-releases/security/policy#coordinated-disclosure-program).
+If you believe you have found a security vulnerability in this project or any of New Relic's products or websites, we welcome and greatly appreciate you reporting it to New Relic through our [coordinated disclosure program](https://docs.newrelic.com/docs/security/security-privacy/information-security/report-security-vulnerabilities/#coordinated_disclosure_program).
 
 If you would like to contribute to this project, review [these guidelines](./CONTRIBUTING.md).
 
