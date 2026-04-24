@@ -309,6 +309,15 @@ jobs:
           fi
           go tool nm ${BINARY} | grep '_Cfunc__goboringcrypto_' || (echo 'fips distro should not use standard crypto' && exit 1)
 
+          EXPECTED_GO_MAJOR_MINOR=$(yq '.go_version' fips/spec.yaml)
+          BINARY_GO_VERSION=$(go version -m "${BINARY}" | head -1 | grep -oP 'go\K[\d.]+')
+          BINARY_GO_MAJOR_MINOR=$(echo "${BINARY_GO_VERSION}" | cut -d. -f1,2)
+          if [[ "${BINARY_GO_MAJOR_MINOR}" != "${EXPECTED_GO_MAJOR_MINOR}" ]]; then
+            echo "❌ Binary compiled with Go ${BINARY_GO_MAJOR_MINOR}, expected Go ${EXPECTED_GO_MAJOR_MINOR} (from fips/spec.yaml)"
+            exit 1
+          fi
+          echo "✅ Binary Go version matches fips/spec.yaml: go${BINARY_GO_VERSION}"
+
       - name: Validate FIPS ciphers
         if: inputs.fips
         run: |

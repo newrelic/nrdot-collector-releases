@@ -1,18 +1,18 @@
-name: check-fips-go-version
+name: check-fips-compliance-reqs
 
 on:
   push:
     branches:
       - main
     paths:
-      - '.github/workflows/ci-base.yaml'
+      - 'fips/spec.yaml'
       - 'fips/README.md'
-      - '.github/workflows/check-fips-go-version.yaml'
+      - '.github/workflows/check-fips-compliance-reqs.yaml'
   pull_request:
     paths:
-      - '.github/workflows/ci-base.yaml'
+      - 'fips/spec.yaml'
       - 'fips/README.md'
-      - '.github/workflows/check-fips-go-version.yaml'
+      - '.github/workflows/check-fips-compliance-reqs.yaml'
   workflow_dispatch:
 
 concurrency:
@@ -27,22 +27,21 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
-      - name: Extract Go setup config from CI
-        id: ci-go-config
+      - name: Read FIPS spec
+        id: fips-spec
         run: |
-          # Extract go-version and check-latest from ci-base.yaml
-          GO_VERSION_SPEC=$(yq '.jobs.lint.steps[] | select(.name == "Setup Go") | .with.go-version' .github/workflows/ci-base.yaml)
-          CHECK_LATEST=$(yq '.jobs.lint.steps[] | select(.name == "Setup Go") | .with.check-latest' .github/workflows/ci-base.yaml)
+          GO_VERSION=$(yq '.go_version' fips/spec.yaml)
+          BORINGSSL_COMMIT=$(yq '.boringssl_commit' fips/spec.yaml)
 
-          echo "version-spec=${GO_VERSION_SPEC}" >> $GITHUB_OUTPUT
-          echo "check-latest=${CHECK_LATEST}" >> $GITHUB_OUTPUT
-          echo "CI Go version spec: ${GO_VERSION_SPEC} (check-latest: ${CHECK_LATEST})"
+          echo "go_version=${GO_VERSION}" >> $GITHUB_OUTPUT
+          echo "boringssl_commit=${BORINGSSL_COMMIT}" >> $GITHUB_OUTPUT
+          echo "FIPS spec: Go ~${GO_VERSION}, BoringSSL ${BORINGSSL_COMMIT}"
 
-      - name: Setup Go (matching ci-base.yaml)
+      - name: Setup Go (matching fips/spec.yaml)
         uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
         with:
-          go-version: ${{ steps.ci-go-config.outputs.version-spec }}
-          check-latest: ${{ steps.ci-go-config.outputs.check-latest }}
+          go-version: "~${{ steps.fips-spec.outputs.go_version }}"
+          check-latest: true
 
       - name: Get actual Go version
         id: go-version
@@ -108,38 +107,45 @@ jobs:
           path: .boringssl-cache
           key: boringssl-commit-go${{ steps.go-version.outputs.version }}
 
-      - name: Extract documented BoringSSL commit from README
-        id: readme-boringssl
+      - name: Validate spec is still valid for current Go runtime
+        run: |
+          GO_SHA="${{ steps.go-boringssl.outputs.sha }}"
+          SPEC_SHA="${{ steps.fips-spec.outputs.boringssl_commit }}"
+
+          if [ "${GO_SHA}" != "${SPEC_SHA}" ]; then
+            echo "❌ ERROR: BoringSSL commit SHA mismatch between Go runtime and fips/spec.yaml!"
+            echo ""
+            echo "  Go ${{ steps.go-version.outputs.version }} embeds: ${GO_SHA}"
+            echo "  fips/spec.yaml documents:            ${SPEC_SHA}"
+            echo ""
+            echo "Update fips/spec.yaml and fips/README.md to reflect the new BoringSSL commit."
+            exit 1
+          fi
+
+          echo "✅ Go runtime BoringSSL commit matches fips/spec.yaml"
+          echo "   Go version: ${{ steps.go-version.outputs.version }}"
+          echo "   BoringSSL commit: ${GO_SHA}"
+
+      - name: Validate README BoringSSL matches spec
         run: |
           # Extract the BoringSSL commit SHA documented in fips/README.md
           # Looking for: BoringSSL commit [`<SHA>`](...)
           README_SHA=$(grep -oP 'BoringSSL commit \[`\K[a-f0-9]{40}' fips/README.md | head -1)
+          SPEC_SHA="${{ steps.fips-spec.outputs.boringssl_commit }}"
 
           if [ -z "${README_SHA}" ]; then
             echo "ERROR: Could not find BoringSSL commit SHA in fips/README.md"
             exit 1
           fi
 
-          echo "sha=${README_SHA}" >> $GITHUB_OUTPUT
-          echo "BoringSSL commit documented in README: ${README_SHA}"
-
-      - name: Compare BoringSSL commits
-        run: |
-          GO_SHA="${{ steps.go-boringssl.outputs.sha }}"
-          README_SHA="${{ steps.readme-boringssl.outputs.sha }}"
-
-          if [ "${GO_SHA}" != "${README_SHA}" ]; then
-            echo "❌ ERROR: BoringSSL commit SHA mismatch!"
+          if [ "${README_SHA}" != "${SPEC_SHA}" ]; then
+            echo "❌ ERROR: BoringSSL commit SHA mismatch between fips/README.md and fips/spec.yaml!"
             echo ""
-            echo "  Go ${{ steps.go-version.outputs.version }} embeds: ${GO_SHA}"
-            echo "  README documents:                     ${README_SHA}"
+            echo "  fips/README.md documents: ${README_SHA}"
+            echo "  fips/spec.yaml documents: ${SPEC_SHA}"
             echo ""
-            echo "The Go version has been updated with a different BoringSSL commit."
-            echo "This invalidates the FIPS chain of proof documented in fips/README.md"
-            echo ""
+            echo "Update fips/README.md to match fips/spec.yaml."
             exit 1
           fi
 
-          echo "✅ BoringSSL commit SHA matches between Go runtime and documentation"
-          echo "   Go version: ${{ steps.go-version.outputs.version }}"
-          echo "   BoringSSL commit: ${GO_SHA}"
+          echo "✅ README BoringSSL commit matches fips/spec.yaml: ${README_SHA}"
