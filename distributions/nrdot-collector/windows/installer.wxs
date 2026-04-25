@@ -1,0 +1,120 @@
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+   <Product
+      Name="NRDOT Collector ({{ .Version }})"
+      Id="*"
+      UpgradeCode="BC8657F8-5174-43F3-A319-88D97945291B"
+      Version="{{ .Version }}"
+      Manufacturer="New Relic"
+      Language="1033">
+      
+      <Package
+         InstallerVersion="200"
+         Compressed="yes"
+         Comments="Windows Installer Package"
+         InstallScope="perMachine"/>
+      <Media Id="1" Cabinet="product.cab" EmbedCab="yes"/>
+      <!-- <Icon Id="ProductIcon" SourceFile="opentelemetry.ico"/> -->
+      <!-- <Property Id="ARPPRODUCTICON" Value="ProductIcon"/> -->
+      <Property Id="ARPHELPLINK" Value="https://support.newrelic.com/s/"/>
+      <Property Id="ARPURLINFOABOUT" Value="https://docs.newrelic.com/docs/opentelemetry/nrdot/nrdot-collector/"/>
+      <Property Id="ARPNOREPAIR" Value="1"/>
+      <Property Id="ARPNOMODIFY" Value="1"/>
+
+      <!-- By default, sidegrades and downgrades are not allowed. -->
+      <MajorUpgrade
+         AllowDowngrades="no"
+         AllowSameVersionUpgrades="no"
+         DowngradeErrorMessage="A later version of NRDOT is already installed. Setup will now exit."/>
+
+      <Feature Id="Feature" Level="1">
+         <ComponentRef Id="ApplicationComponent"/>
+      </Feature>
+
+      <!-- Terminate install if NR license key not provided -->
+      <Condition
+         Message="A New Relic ingest key is required for NRDOT. Please provide NEW_RELIC_LICENSE_KEY during installation.">
+         Installed OR NEW_RELIC_LICENSE_KEY
+      </Condition>
+      <Property Id="NEW_RELIC_LICENSE_KEY" Secure="yes" Hidden="yes"/>
+      <Property Id="OTEL_EXPORTER_OTLP_ENDPOINT"/>
+      <Property Id="OTEL_RESOURCE_ATTRIBUTES"/>
+      <Property Id="MsiHiddenProperties" Value="NEW_RELIC_LICENSE_KEY" />
+
+      <!-- Set to bundled collector config unless one is provided-->
+      <Property Id="COLLECTOR_SVC_ARGS"/>
+      <CustomAction
+         Id="SetCollectorSvcArgs"
+         Property="COLLECTOR_SVC_ARGS"
+         Value="--config &quot;[INSTALLDIR]config.yaml&quot;"/>
+      <InstallExecuteSequence>
+         <Custom Action="SetCollectorSvcArgs" Before="InstallFiles">NOT COLLECTOR_SVC_ARGS</Custom>
+      </InstallExecuteSequence>
+
+      <Directory Id="TARGETDIR" Name="SourceDir">
+         <Directory Id="ProgramFiles64Folder">
+            <Directory Id="INSTALLDIR" Name="{{ .Binary }}">
+               <Component Id="ApplicationComponent" Guid="93B6D7EE-859A-4E0C-8196-4E66D7F77D60">
+                  <!-- Files to include -->
+                  <File
+                     Id="{{ replace .Binary "-" "_"}}.exe"
+                     Name="{{ .Binary }}.exe"
+                     Source="{{ .Binary }}.exe"
+                     KeyPath="yes"/>
+                  <File
+                     Id="config.yaml"
+                     Name="config.yaml"
+                     Source="config.yaml"/>
+
+                  <!-- Dist runs as a service on startup -->
+                  <ServiceInstall
+                     Id="Service"
+                     Name="{{ .Binary }}"
+                     DisplayName="NRDOT Collector Host"
+                     Description="NRDOT Host Distribution of the OpenTelemetry Collector"
+                     Type="ownProcess"
+                     Vital="yes"
+                     Start="auto"
+                     Account="LocalSystem"
+                     ErrorControl="normal"
+                     Arguments="[COLLECTOR_SVC_ARGS]"
+                     Interactive="no"/>
+                  <ServiceControl
+                     Id="StartStopRemoveService"
+                     Name="{{ .Binary }}"
+                     Start="install"
+                     Stop="both"
+                     Remove="uninstall"
+                     Wait="yes"/>
+
+                  <!-- System environment variables -->
+                  <RegistryKey
+                     Root="HKLM"
+                     Key="SYSTEM\CurrentControlSet\Control\Session Manager\Environment">
+                     <RegistryValue
+                        Type="string"
+                        Name="NEW_RELIC_LICENSE_KEY"
+                        Value="[NEW_RELIC_LICENSE_KEY]"/>
+                     <RegistryValue
+                        Type="string"
+                        Name="OTEL_EXPORTER_OTLP_ENDPOINT"
+                        Value="[OTEL_EXPORTER_OTLP_ENDPOINT]"/>
+                     <RegistryValue
+                        Type="string"
+                        Name="OTEL_RESOURCE_ATTRIBUTES"
+                        Value="[OTEL_RESOURCE_ATTRIBUTES]"/>
+                  </RegistryKey>
+
+                  <RegistryKey
+                     Root="HKLM"
+                     Key="SYSTEM\CurrentControlSet\Services\EventLog\Application\{{ .Binary }}">
+                     <RegistryValue
+                        Type="expandable"
+                        Name="EventMessageFile"
+                        Value="%SystemRoot%\System32\EventCreate.exe"/>
+                  </RegistryKey>
+               </Component>
+            </Directory>
+         </Directory>
+      </Directory>
+   </Product>
+</Wix>

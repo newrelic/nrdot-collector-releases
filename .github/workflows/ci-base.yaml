@@ -169,15 +169,15 @@ jobs:
         run: |
           # Determine base skip flags and snapshot mode based on publish input
           if [ "${{ inputs.publish }}" = "true" ]; then
-            BASE_SKIP="--skip=announce,validate"
+            BASE_SKIP="--skip=announce,validate,msi"
             SNAPSHOT_FLAG=""  # No --snapshot for publishing builds to get proper versions
           else
-            BASE_SKIP="--skip=publish,validate"
+            BASE_SKIP="--skip=publish,validate,msi"
             SNAPSHOT_FLAG="--snapshot"  # Use --snapshot for dev builds to get SNAPSHOT versions
           fi
 
           if [ "${{ github.event.pull_request.user.login }}" = "dependabot[bot]" ]; then
-            BASE_SKIP="--skip=publish,validate,sign"
+            BASE_SKIP="--skip=publish,validate,sign,msi"
           fi
 
           GORELEASER_CONFIG="${{ format('.goreleaser{0}.yaml', inputs.fips && '-fips' || '') }}"
@@ -190,6 +190,7 @@ jobs:
         run: |
           BINARY_HASH="${{ hashFiles(
             format('distributions/{0}/.goreleaser*.yaml', inputs.distribution),
+            format('distributions/{0}/windows/*', inputs.distribution),
             format('distributions/{0}/_build*/*', inputs.distribution)
           ) }}"
           ARGS_HASH=$(echo "${{ env.goreleaser_args }}" | sha256sum | cut -d' ' -f1)
@@ -227,7 +228,7 @@ jobs:
           REGISTRY: "${{ env.registry }}"
           GORELEASER_KEY: ${{ secrets.goreleaser_key }}
         with:
-          distribution: goreleaser
+          distribution: goreleaser-pro
           version: "2.11.2"
           args: ${{ env.goreleaser_args }}
           workdir: distributions/${{ inputs.distribution }}
@@ -395,7 +396,6 @@ jobs:
           echo "✅ Docker image SHA: ${docker_manifest_sha}"
           echo -n "${docker_manifest_sha}" > docker_manifest_sha
 
-
           # Set output names
           if [[ "${{ inputs.fips }}" == "true" ]]; then
             artifact_name="goreleaser_output_${{ inputs.distribution }}-fips_${{ github.sha }}"
@@ -412,7 +412,6 @@ jobs:
           echo "=== Artifact Structure [$artifact_name] ==="
           tree dist/ || find dist -type d | sort
 
-
       - name: Upload Artifacts
         if: ${{ !env.ACT && inputs.publish }}
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
@@ -421,4 +420,3 @@ jobs:
           path: |
             docker_manifest_sha
             dist
-
