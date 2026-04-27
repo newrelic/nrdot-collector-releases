@@ -65,3 +65,7 @@ replaces:
   - github.com/buger/jsonparser v1.1.1 => github.com/buger/jsonparser v1.1.2
   # Why: Fixes CVE-2026-39883
   - go.opentelemetry.io/otel/sdk v1.42.0 => go.opentelemetry.io/otel/sdk v1.43.0
+  # Why: Fixes CVE-2026-39882
+  - go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp v0.18.0 => go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp v0.19.0
+  - go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp v1.42.0 => go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp v1.43.0
+  - go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.42.0 => go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.43.0
