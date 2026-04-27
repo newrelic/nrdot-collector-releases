@@ -22,7 +22,7 @@ jobs:
       
       - name: Restore lychee cache
         id: restore-cache
-        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
           path: .lycheecache
           key: cache-lychee
@@ -57,7 +57,7 @@ jobs:
           cat .lycheecache
 
       - name: Save lychee cache
-        uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         if: always() && hashFiles('.lycheecache') != ''
         with:
           path: .lycheecache
@@ -65,7 +65,7 @@ jobs:
 
       - name: Send notification to Slack
         if: failure()
-        uses: slackapi/slack-github-action@af78098f536edbc4de71162a307590698245be95 # v3.0.1
+        uses: slackapi/slack-github-action@03ea5433c137af7c0495bc0cad1af10403fc800c # v3.0.2
         with:
           webhook: ${{ secrets.OTELCOMM_BOTS_SLACK_HOOK }}
           webhook-type: incoming-webhook
