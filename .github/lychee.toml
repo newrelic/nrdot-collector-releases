@@ -1,6 +1,5 @@
 accept = ["200..=299"]
 require_https = true
-include_fragments = true
 
 exclude  = [
     # disabled
