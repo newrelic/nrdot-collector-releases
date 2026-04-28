@@ -1,0 +1,7 @@
+# Source of truth for FIPS build requirements, used by ci-base.yaml and check-fips-compliance-reqs.yaml
+
+# The major and minor go version used by setup-go action for builds
+go_version: "1.26"
+# BoringSSL commit embedded in the Go runtime above which has a FIPS certificate associated with it, see ./README.md
+# Source: https://github.com/golang/go/blob/go1.26.0/src/crypto/internal/boring/Dockerfile#L67
+boringssl_commit: "0c6f40132b828e92ba365c6b7680e32820c63fa7"
