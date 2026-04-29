@@ -1,4 +1,5 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<!-- msitools only supports schema v3 -->
    <Product
       Name="NRDOT Collector ({{ .Version }})"
       Id="*"
@@ -29,16 +30,6 @@
       <Feature Id="Feature" Level="1">
          <ComponentRef Id="ApplicationComponent"/>
       </Feature>
-
-      <!-- Terminate install if NR license key not provided -->
-      <Condition
-         Message="A New Relic ingest key is required for NRDOT. Please provide NEW_RELIC_LICENSE_KEY during installation.">
-         Installed OR NEW_RELIC_LICENSE_KEY
-      </Condition>
-      <Property Id="NEW_RELIC_LICENSE_KEY" Secure="yes" Hidden="yes"/>
-      <Property Id="OTEL_EXPORTER_OTLP_ENDPOINT"/>
-      <Property Id="OTEL_RESOURCE_ATTRIBUTES"/>
-      <Property Id="MsiHiddenProperties" Value="NEW_RELIC_LICENSE_KEY" />
 
       <!-- Set to bundled collector config unless one is provided-->
       <Property Id="COLLECTOR_SVC_ARGS"/>
@@ -85,24 +76,6 @@
                      Stop="both"
                      Remove="uninstall"
                      Wait="yes"/>
-
-                  <!-- System environment variables -->
-                  <RegistryKey
-                     Root="HKLM"
-                     Key="SYSTEM\CurrentControlSet\Control\Session Manager\Environment">
-                     <RegistryValue
-                        Type="string"
-                        Name="NEW_RELIC_LICENSE_KEY"
-                        Value="[NEW_RELIC_LICENSE_KEY]"/>
-                     <RegistryValue
-                        Type="string"
-                        Name="OTEL_EXPORTER_OTLP_ENDPOINT"
-                        Value="[OTEL_EXPORTER_OTLP_ENDPOINT]"/>
-                     <RegistryValue
-                        Type="string"
-                        Name="OTEL_RESOURCE_ATTRIBUTES"
-                        Value="[OTEL_RESOURCE_ATTRIBUTES]"/>
-                  </RegistryKey>
 
                   <RegistryKey
                      Root="HKLM"

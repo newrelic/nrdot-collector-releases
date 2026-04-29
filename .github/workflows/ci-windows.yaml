@@ -142,6 +142,13 @@ jobs:
 
       - name: Install MSI
         run: |
+          # Set nrdot config environment variables.
+          # Do not need to broadcast WM_SETTINGCHANGE for local env
+          $env:NEW_RELIC_LICENSE_KEY = "${{ secrets.nr_ingest_key }}"
+          $env:OTEL_EXPORTER_OTLP_ENDPOINT = "https://otlp.nr-data.net"
+          $env:OTEL_RESOURCE_ATTRIBUTES = "testKey=$env:SCENARIO_TAG"
+
+          # Install MSI
           $log_path = Join-Path $env:TEMP "msi-install.log"
           $msi_args = @(
               '/i',
@@ -150,24 +157,9 @@ jobs:
               '/l*',
               $log_path
           )
-
-          # Validate install fails when no license key provided
           $process = Start-Process -Wait -PassThru msiexec.exe -ArgumentList $msi_args
-          if ($process.ExitCode -eq 0) {
-            Write-Host "❌ MSI installation allowed to proceed without ingest key"
-            exit 1
-          }
-          if (Test-Path $log_path) {
-            Remove-Item $log_path -Force
-          }
 
-          # Validate successful install on license key provided
-          $msi_args += @(
-            'NEW_RELIC_LICENSE_KEY="${{ secrets.nr_ingest_key }}"',
-            'OTEL_EXPORTER_OTLP_ENDPOINT="https://otlp.nr-data.net"',
-            "OTEL_RESOURCE_ATTRIBUTES=`"testKey=$env:SCENARIO_TAG`""
-          )
-          $process = Start-Process -Wait -PassThru msiexec.exe -ArgumentList $msi_args
+          # Validate install successful
           Write-Host '`nInstallation Log (Last 200 lines):'
           Get-Content $log_path | Select-Object -Last 200
           if ($process.ExitCode -ne 0) {
@@ -180,12 +172,13 @@ jobs:
             exit $process.ExitCode
           }
 
-          # Validate environment variables in registry
-          $env_vars = @('NEW_RELIC_LICENSE_KEY', 'OTEL_EXPORTER_OTLP_ENDPOINT', 'OTEL_RESOURCE_ATTRIBUTES')
-          foreach ($var in $env_vars) {
-            Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name $var | Out-Null
-            Write-Host "✅ $var found in environment registry"
-          }
+          # No registry right now
+          # # Validate environment variables in registry
+          # $env_vars = @('NEW_RELIC_LICENSE_KEY', 'OTEL_EXPORTER_OTLP_ENDPOINT', 'OTEL_RESOURCE_ATTRIBUTES')
+          # foreach ($var in $env_vars) {
+          #   Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name $var | Out-Null
+          #   Write-Host "✅ $var found in environment registry"
+          # }
 
           Write-Host "⏳ Waiting 30 seconds for collector to spool up"
           Start-Sleep -Seconds 30
