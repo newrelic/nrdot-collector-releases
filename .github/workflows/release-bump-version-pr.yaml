@@ -1,4 +1,4 @@
-name: Automation - Prepare Release
+name: 🏷️ Release | Bump Version PR
 
 on:
   workflow_dispatch:
@@ -13,15 +13,14 @@ permissions:
   pull-requests: write
 
 jobs:
-  bump:
-    name: Bump NRDOT Version
+  create-bump-pr:
+    name: Create Bump PR 
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: 0
-          token: ${{ secrets.RELEASE_TOKEN }}
 
       - name: Import GPG key
         uses: crazy-max/ghaction-import-gpg@2dc316deee8e90f13e1a351ab510b4d5bc0c82cd # v7
@@ -33,8 +32,8 @@ jobs:
 
       - name: Set up Git
         run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git config --global user.name 'kbauer'
+          git config --global user.email 'kbauer@newrelic.com'
 
       - name: Bump NRDOT version
         id: bump
