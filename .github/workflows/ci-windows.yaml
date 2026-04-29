@@ -143,10 +143,9 @@ jobs:
       - name: Install MSI
         run: |
           # Set nrdot config environment variables.
-          # Do not need to broadcast WM_SETTINGCHANGE for local env
-          $env:NEW_RELIC_LICENSE_KEY = "${{ secrets.nr_ingest_key }}"
-          $env:OTEL_EXPORTER_OTLP_ENDPOINT = "https://otlp.nr-data.net"
-          $env:OTEL_RESOURCE_ATTRIBUTES = "testKey=$env:SCENARIO_TAG"
+          Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name 'NEW_RELIC_LICENSE_KEY' -Value "${{ secrets.nr_ingest_key }}"
+          Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name 'OTEL_EXPORTER_OTLP_ENDPOINT' -Value "https://otlp.nr-data.net"
+          Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name 'OTEL_RESOURCE_ATTRIBUTES' -Value "testKey=$env:SCENARIO_TAG"
 
           # Install MSI
           $log_path = Join-Path $env:TEMP "msi-install.log"
