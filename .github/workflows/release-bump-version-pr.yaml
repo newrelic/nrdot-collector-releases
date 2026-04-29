@@ -1,0 +1,60 @@
+name: 🏷️ Release | Bump Version PR
+
+on:
+  workflow_dispatch:
+    inputs:
+      new_version:
+        description: "New NRDOT version (e.g. 1.14.0)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  create-bump-pr:
+    name: Create Bump PR 
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 0
+
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@2dc316deee8e90f13e1a351ab510b4d5bc0c82cd # v7
+        with:
+          gpg_private_key: ${{ secrets.OTELCOMM_BOT_GPG_PRIVATE_KEY_BASE64 }}
+          passphrase: ${{ secrets.OTELCOMM_BOT_GPG_PASSPHRASE }}
+          git_user_signingkey: true
+          git_commit_gpgsign: true
+          git_config_global: true
+
+      - name: Bump NRDOT version
+        id: bump
+        run: |
+          old_version=$(./scripts/get-version.sh)
+          ./scripts/bump-nrdot-version.sh "${{ inputs.new_version }}"
+          echo "old_version=${old_version}" >> $GITHUB_OUTPUT
+          echo "branch=nrdot-release/${{ inputs.new_version }}" >> $GITHUB_OUTPUT
+
+      - name: Commit and push
+        run: |
+          branch="${{ steps.bump.outputs.branch }}"
+          git switch -c "${branch}"
+          git add --all
+          git commit -S -m "chore: bump to ${{ inputs.new_version }}"
+          git push origin "${branch}"
+
+      - name: Issue PR
+        if: ${{ !env.ACT }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: |
+          gh pr create \
+            --title "chore: bump to ${{ inputs.new_version }}" \
+            --body "Bumps NRDOT version from ${{ steps.bump.outputs.old_version }} to ${{ inputs.new_version }}." \
+            --repo "${{ github.repository }}" \
+            --base main \
+            --head "${{ steps.bump.outputs.branch }}"
