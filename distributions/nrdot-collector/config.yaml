@@ -53,7 +53,7 @@ receivers:
       #    process.cpu.time:
       #      enabled: false
 
-  filelog:
+  file_log:
     include:
       - /var/log/alternatives.log
       - /var/log/cloud-init.log
@@ -219,7 +219,7 @@ service:
         - batch
       exporters: [otlphttp]
     logs/host:
-      receivers: [filelog]
+      receivers: [file_log]
       processors: [memory_limiter, transform, resourcedetection, resourcedetection/cloud, resourcedetection/env, batch]
       exporters: [otlphttp]
     traces:
