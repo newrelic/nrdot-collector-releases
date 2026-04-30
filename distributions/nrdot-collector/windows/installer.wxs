@@ -60,8 +60,8 @@
                   <ServiceInstall
                      Id="Service"
                      Name="{{ .Binary }}"
-                     DisplayName="NRDOT Collector Host"
-                     Description="NRDOT Host Distribution of the OpenTelemetry Collector"
+                     DisplayName="NRDOT Collector"
+                     Description="New Relic Distribution of OpenTelemetry Collector"
                      Type="ownProcess"
                      Vital="yes"
                      Start="auto"
