@@ -28,7 +28,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6
         with:
-          fetch-depth: 0
+          fetch-depth: 1
 
       - name: Setup Go
         uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
@@ -42,9 +42,8 @@ jobs:
       - name: Ensure goreleaser up to date
         run: make check
 
-      - name: Generate sources
-        if: steps.cache-sources.outputs.cache-hit != 'true'
-        run: make ci DISTRIBUTIONS=${{ inputs.distribution }}
+      - name: Build distributions
+        run: make manifests-check build DISTRIBUTIONS=${{ inputs.distribution }}
 
       - name: Setup wixl # Required to build MSI
         if: inputs.publish || steps.cache-goreleaser.outputs.cache-hit != 'true'
