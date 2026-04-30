@@ -1,5 +1,5 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-<!-- msitools only supports schema v3 -->
+<!-- ubuntu build machine only supports msitools which in turn only supports schema v3 -->
    <Product
       Name="NRDOT Collector ({{ .Version }})"
       Id="*"
