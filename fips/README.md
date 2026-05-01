@@ -2,28 +2,24 @@
 
 ## What is FIPS?
 
-FIPS (Federal Information Processing Standards) are a set of computer security standards developed by NIST (National Institute of Standards and Technology) and used by non-military government agencies and contractors.
-
-We are currently targeting [FIPS version 140-3](https://csrc.nist.gov/pubs/fips/140-3/final).
+FIPS (Federal Information Processing Standards) is a set of computer security standards developed by NIST (National Institute of Standards and Technology).
 
 ## How does NRDOT achieve FIPS compliance?
 
-NRDOT achieves FIPS 140-3 compliance by instructing the golang compiler to replace the standard cryptographic library with BoringSSL and ensuring that TLS uses [approved ciphers](https://github.com/newrelic/nrdot-collector-releases/blob/main/fips/validation/validate.sh#L27).
+NRDOT supports [FIPS 140-3](https://csrc.nist.gov/pubs/fips/140-3/final) compliance by instructing the golang compiler to replace the standard cryptographic library with BoringCrypto and providing tools to check the [ciphers](https://github.com/newrelic/nrdot-collector-releases/blob/main/fips/validation/validate.sh#L27) used by TLS.
 
 The following demonstrates the complete chain from NRDOT to the official NIST FIPS certificate:
 
 1. **NRDOT Collector**: The FIPS-compliant distributions (`-fips` suffix) are built from this repository
 2. **Go Compiler**: Built using [Go 1.26](https://github.com/newrelic/nrdot-collector-releases/blob/main/.github/workflows/ci-base.yaml#L71) with [`GOEXPERIMENT=boringcrypto`](https://github.com/newrelic/nrdot-collector-releases/blob/main/distributions/nrdot-collector/.goreleaser-fips.yaml#L26) flag enabled
-3. **BoringSSL Module**: The Go 1.26 runtime embeds BoringSSL commit [`0c6f40132b828e92ba365c6b7680e32820c63fa7`](https://github.com/golang/go/blob/go1.26.0/src/crypto/internal/boring/Dockerfile#L67), which corresponds to the [fips-20220613](https://boringssl.googlesource.com/boringssl/+/refs/tags/fips-20220613) tag
-4. **NIST Certificate**: This BoringSSL version is FIPS 140-3 validated under [NIST Certificate #4735](https://csrc.nist.gov/projects/cryptographic-module-validation-program/certificate/4735), which is valid until 2029
+3. **BoringCrypto Module**: The Go 1.26 runtime embeds BoringSSL commit [`0c6f40132b828e92ba365c6b7680e32820c63fa7`](https://github.com/golang/go/blob/go1.26.0/src/crypto/internal/boring/Dockerfile#L67), which corresponds to the [fips-20220613](https://boringssl.googlesource.com/boringssl/+/refs/tags/fips-20220613) tag. Note that BoringCrypto is a core library of BoringSSL [as mentioned in their documentation](https://boringssl.googlesource.com/boringssl/+/master/crypto/fipsmodule/FIPS.md).
+4. **NIST Certificate**: This BoringCrypto version is FIPS 140-3 validated under [NIST Certificate #4735](https://csrc.nist.gov/projects/cryptographic-module-validation-program/certificate/4735), which is valid until 2029
 
-Note: Once [golang itself is successfully FIPS 140-3 certified](https://go.dev/doc/security/fips140#in-process-module-versions), we will transition to using golang's native implementation.
-
-## Which distributions are FIPS compliant?
+## Which distributions support FIPS compliance?
 
 Compliant artifacts have a `-fips` suffix added to the version string, e.g. `1.12.0-fips`.
 
-_Note: FIPS-compliant distributions are only available for linux_
+_Note: FIPS-supporting distributions are only available for linux_
 
 ## Validation
 
@@ -127,9 +123,9 @@ Configure nmap to scan NRDOT's server (port 4318) to verify which ciphers it acc
 nmap -sV --script ssl-enum-ciphers -p 4318 localhost
 ```
 
-You should get an output similar to the following (showing only FIPS-compliant ciphers).
+You should get an output similar to the following (showing FIPS ciphers).
 
-For the authoritative list of FIPS-compliant cipher suites, refer to the [`is_cipher_fips_compliant`](https://github.com/newrelic/nrdot-collector-releases/blob/main/fips/validation/validate.sh#L30) function in the automated validation script.
+For the authoritative list of FIPS cipher suites, refer to the [`is_cipher_fips_compliant`](https://github.com/newrelic/nrdot-collector-releases/blob/main/fips/validation/validate.sh#L30) function in the automated validation script.
 
 _Note: nmap displays TLS 1.3 cipher names as `TLS_AKE_WITH_...` even though the official cipher names would drop the `AKE_WITH`, see [this issue](https://github.com/nmap/nmap/issues/2883).
 
@@ -173,7 +169,7 @@ grep -q "ClientHello" openssl-server.log && echo "✓ Client connection captured
 grep -A 50 "ClientHello" openssl-server.log | grep -E "TLS_|cipher" | head -20
 ```
 
-You should get an output similar to the following (showing only FIPS-compliant cipher suites):
+You should get an output similar to the following (showing FIPS cipher suites):
 
 ```
       cipher_suites (len=12)
@@ -185,7 +181,7 @@ You should get an output similar to the following (showing only FIPS-compliant c
         {0x13, 0x02} TLS_AES_256_GCM_SHA384
 ```
 
-For the authoritative list of FIPS-compliant cipher suites, refer to the [`is_cipher_fips_compliant`](https://github.com/newrelic/nrdot-collector-releases/blob/main/fips/validation/validate.sh#L30) function in the automated validation script.
+For the authoritative list of FIPS cipher suites, refer to the [`is_cipher_fips_compliant`](https://github.com/newrelic/nrdot-collector-releases/blob/main/fips/validation/validate.sh#L30) function in the automated validation script.
 
 ### Cleanup
 
