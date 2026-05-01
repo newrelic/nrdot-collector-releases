@@ -4,6 +4,12 @@ release:
   draft: true
   use_existing_draft: true
   disable: "true"
+msi:
+  - id: nrdot-collector
+    name: nrdot-collector
+    wxs: ./windows/installer.wxs
+    extra_files:
+      - config.yaml
 builds:
   - id: nrdot-collector
     goos:

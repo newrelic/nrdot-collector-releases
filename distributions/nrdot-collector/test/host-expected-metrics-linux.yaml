@@ -1,0 +1,4 @@
+entities:
+  - entityType: EXT-SERVICE
+    metrics:
+      - name: system.filesystem.inodes.usage
