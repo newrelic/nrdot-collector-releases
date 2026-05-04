@@ -79,7 +79,7 @@ jobs:
           GOARCH: amd64
         with:
           distribution: goreleaser-pro
-          version: "2.11.2"
+          version: "2.15.4"
           args: "--single-target --snapshot --clean --skip=publish,validate,sign,archive --timeout 2h --config .goreleaser.yaml"
           workdir: distributions/${{ inputs.distribution }}
 

@@ -78,6 +78,15 @@ jobs:
       - name: Ensure goreleaser up to date
         run: make check
 
+      - name: Validate GoReleaser license
+        uses: goreleaser/goreleaser-action@ec59f474b9834571250b370d4735c50f8e2d1e29 # v7
+        env:
+          GORELEASER_KEY: ${{ secrets.goreleaser_key }}
+        with:
+          distribution: goreleaser-pro
+          version: "2.15.4"
+          args: license-verify
+
       - name: Generate sources cache key
         id: sources-cache-key
         if: ${{ env.caching_enabled }}
@@ -229,7 +238,7 @@ jobs:
           GORELEASER_KEY: ${{ secrets.goreleaser_key }}
         with:
           distribution: goreleaser-pro
-          version: "2.11.2"
+          version: "2.15.4"
           args: ${{ env.goreleaser_args }}
           workdir: distributions/${{ inputs.distribution }}
 
