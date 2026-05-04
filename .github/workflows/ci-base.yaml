@@ -92,7 +92,7 @@ jobs:
 
       - name: Cache sources
         id: cache-sources
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         if: ${{ env.caching_enabled }}
         with:
           path: |
@@ -113,14 +113,14 @@ jobs:
       
       - name: Configure AWS Credentials
         if: ${{ inputs.publish }}
-        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6
+        uses: aws-actions/configure-aws-credentials@ec61189d14ec14c8efccab744f656cffd0e33f37 # v6
         with:
           role-to-assume: ${{ secrets.aws_oidc_role_arn }}
           aws-region: us-east-1
       
       - name: Login to ECR
         if: ${{ inputs.publish }}
-        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4
         with:
           registry: ${{ env.registry }}/${{ inputs.distribution }}
 
@@ -160,7 +160,7 @@ jobs:
 
       - name: Configure AWS Credentials
         if: ${{ inputs.publish }}
-        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6
+        uses: aws-actions/configure-aws-credentials@ec61189d14ec14c8efccab744f656cffd0e33f37 # v6
         with:
           role-to-assume: ${{ secrets.aws_oidc_role_arn }}
           aws-region: us-east-1
@@ -198,7 +198,7 @@ jobs:
       - name: Cache goreleaser build
         id: cache-goreleaser
         if: ${{ env.caching_enabled }}
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
           path: |
             distributions/${{ inputs.distribution }}/dist
@@ -219,7 +219,7 @@ jobs:
       - name: Build binaries & packages with GoReleaser
         if: inputs.publish || steps.cache-goreleaser.outputs.cache-hit != 'true'
         id: goreleaser
-        uses: goreleaser/goreleaser-action@ec59f474b9834571250b370d4735c50f8e2d1e29 # v7
+        uses: goreleaser/goreleaser-action@1a80836c5c9d9e5755a25cb59ec6f45a3b5f41a8 # v7
         env:
           NFPM_PASSPHRASE: ${{ secrets.gpg_passphrase }}
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
@@ -283,7 +283,7 @@ jobs:
           echo "binary_tmp=${BINARY_TMP}" >> $GITHUB_OUTPUT
 
       - name: Build and load Docker image
-        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7
+        uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7
         if: steps.cache-goreleaser.outputs.cache-hit == 'true'
         with:
           context: ${{ steps.copy-binary.outputs.binary_tmp }}
@@ -346,7 +346,7 @@ jobs:
 
       - name: Run local e2e tests
         if: ${{ hashFiles(format('distributions/{0}/test/spec-local.yaml', inputs.distribution)) != '' }}
-        uses: newrelic/newrelic-integration-e2e-action@c548a33a0c2941a4db4899ded766923eb3178e0e # v1
+        uses: newrelic/newrelic-integration-e2e-action@d0c7c2b8f9af227365d71c6b7fddbc024c9e331a # v1
         env:
           NR_BACKEND_URL: ${{ env.NR_BACKEND_URL }}
           IMAGE_TAG: ${{ env.image_tag }}
@@ -362,7 +362,7 @@ jobs:
           region: ${{ vars.NR_REGION }}
 
       - name: Trivy security check
-        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.35.0
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: "${{ env.registry }}/${{ inputs.distribution}}:${{ env.image_tag }}"
           format: "table"
@@ -424,7 +424,7 @@ jobs:
 
       - name: Upload Artifacts
         if: ${{ !env.ACT && inputs.publish }}
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: ${{ steps.set-outputs.outputs.artifact_name }}
           path: |
