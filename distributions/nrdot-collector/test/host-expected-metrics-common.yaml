@@ -9,7 +9,6 @@ entities:
       - name: system.disk.io_time
       - name: system.disk.operation_time
       - name: system.disk.operations
-      - name: system.filesystem.inodes.usage
       - name: system.filesystem.usage
       - name: system.filesystem.utilization
       - name: system.memory.usage
