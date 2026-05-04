@@ -72,14 +72,14 @@ jobs:
       - name: Build binaries & packages with GoReleaser
         if: steps.cache-goreleaser.outputs.cache-hit != 'true'
         id: goreleaser
-        uses: goreleaser/goreleaser-action@v6
+        uses: goreleaser/goreleaser-action@ec59f474b9834571250b370d4735c50f8e2d1e29 # v7
         env:
           GORELEASER_KEY: ${{ secrets.goreleaser_key }}
           GOOS: windows
           GOARCH: amd64
         with:
           distribution: goreleaser-pro
-          version: "2.11.2"
+          version: "2.15.4"
           args: "--single-target --snapshot --clean --skip=publish,validate,sign,archive --timeout 2h --config .goreleaser.yaml"
           workdir: distributions/${{ inputs.distribution }}
 
@@ -101,7 +101,7 @@ jobs:
 
       - name: Upload MSI Artifact
         id: upload-msi
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: ${{ steps.find-msi.outputs.msi_artifact_name }}
           path: ${{ steps.find-msi.outputs.msi_path }}
