@@ -444,4 +444,3 @@ jobs:
           path: |
             docker_manifest_sha
             dist
-            !dist/**/msi

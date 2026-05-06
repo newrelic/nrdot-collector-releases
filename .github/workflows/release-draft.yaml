@@ -185,7 +185,7 @@ jobs:
           # Read artifacts.json and upload each file with a path
           jq -r '.[] | select(has("path")) | .path' artifacts/dist/artifacts.json | while IFS= read -r artifact_path; do
             # Skip unrelated build artifacts
-            if [[ ! "$artifact_path" =~ \.(gz|asc|sum|deb|rpm|zip)$ ]]; then
+            if [[ ! "$artifact_path" =~ \.(gz|asc|sum|deb|rpm|zip)$ ]] || [[ "$artifact_path" =~ \.msi\.asc$ ]]; then
               echo "⏭️  Skipping: $artifact_path"
               continue
             fi
