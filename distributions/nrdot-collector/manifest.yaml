@@ -55,4 +55,4 @@ providers:
 # When adding a replace, add a comment before it to document why it's needed and when it can be removed
 replaces:
   # Why: Fixes CVE-2026-42151 and CVE-2026-42154
-  - github.com/prometheus/prometheus v0.311.2 => github.com/prometheus/prometheus v0.311.3
+  - github.com/prometheus/prometheus v0.311.2-0.20260409145810-72293ff1d2e0 => github.com/prometheus/prometheus v0.311.3
