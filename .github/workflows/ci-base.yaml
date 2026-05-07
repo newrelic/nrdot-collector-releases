@@ -178,15 +178,15 @@ jobs:
         run: |
           # Determine base skip flags and snapshot mode based on publish input
           if [ "${{ inputs.publish }}" = "true" ]; then
-            BASE_SKIP="--skip=announce,validate,msi"
+            BASE_SKIP="--skip=announce,validate"
             SNAPSHOT_FLAG=""  # No --snapshot for publishing builds to get proper versions
           else
-            BASE_SKIP="--skip=publish,validate,msi"
+            BASE_SKIP="--skip=publish,validate"
             SNAPSHOT_FLAG="--snapshot"  # Use --snapshot for dev builds to get SNAPSHOT versions
           fi
 
           if [ "${{ github.event.pull_request.user.login }}" = "dependabot[bot]" ]; then
-            BASE_SKIP="--skip=publish,validate,sign,msi"
+            BASE_SKIP="--skip=publish,validate,sign"
           fi
 
           GORELEASER_CONFIG="${{ format('.goreleaser{0}.yaml', inputs.fips && '-fips' || '') }}"
@@ -225,6 +225,12 @@ jobs:
             echo "Tagging locally with $version to force goreleaser to use correct version in artifact names"
             git tag "$version"
           fi
+
+      - name: Setup wixl # Required to build MSI
+        if: inputs.publish || steps.cache-goreleaser.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wixl
 
       - name: Build binaries & packages with GoReleaser
         if: inputs.publish || steps.cache-goreleaser.outputs.cache-hit != 'true'
