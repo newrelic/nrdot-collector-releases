@@ -1,35 +1,3 @@
-locals {
-  instance_config = [
-    {
-      test_key_prefix    = "ec2_ubuntu22_04-0"
-      release_verion     = "22.04"
-      release_short_name = "jammy"
-    },
-    {
-      test_key_prefix    = "ec2_ubuntu24_04-0"
-      release_verion     = "24.04"
-      release_short_name = "noble"
-    },
-  ]
-}
-
-data "aws_ami" "ubuntu_ami" {
-  count       = length(local.instance_config)
-  most_recent = true
-
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd*/ubuntu-${local.instance_config[count.index].release_short_name}-${local.instance_config[count.index].release_verion}-amd64-server-*"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-
-  owners = ["099720109477"] # Canonical
-}
-
 data "aws_vpc" "ec2_vpc" {
   id = var.vpc_id
 }
@@ -63,41 +31,14 @@ resource "aws_security_group" "ec2_allow_all_egress" {
   }
 }
 
-resource "aws_instance" "ubuntu" {
-  count                  = length(local.instance_config)
-  ami                    = data.aws_ami.ubuntu_ami[count.index].id
-  instance_type          = "t2.micro"
-  subnet_id              = data.aws_subnets.private_subnets.ids[0]
-  vpc_security_group_ids = [aws_security_group.ec2_allow_all_egress.id]
-  iam_instance_profile   = data.aws_iam_instance_profile.s3_read_access.name
+module "ubuntu" {
+  source = "./ubuntu"
 
-  tags = {
-      Name = "${var.test_environment}-${var.collector_distro}-${local.instance_config[count.index].test_key_prefix}"
-  }
-
-  user_data_replace_on_change = true
-  user_data                   = <<-EOF
-              #!/bin/bash
-              ################################################
-              echo 'Installing Collector'
-              export DEBIAN_FRONTEND=noninteractive
-              apt update
-              apt install unzip
-              curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-              unzip -q awscliv2.zip
-              ./aws/install
-              deb_package_basepath='s3://${var.releases_bucket_name}/nrdot-collector-releases/${var.collector_distro}/${var.nrdot_version}/${var.commit_sha_short}/'
-              latest_deb_package_filename=$(aws s3 ls $${deb_package_basepath} | sort -r | grep '${var.collector_distro}' | grep 'amd64.deb$' | head -n1 | awk '{print $NF}')
-              echo "Installing collector from: $${deb_package_basepath}$${latest_deb_package_filename}"
-              aws s3 cp "$${deb_package_basepath}$${latest_deb_package_filename}" /tmp/collector.deb
-              export NRDOT_MODE=ROOT
-              dpkg -i /tmp/collector.deb
-              ################################################
-              echo 'Configuring Collector'
-              echo 'NEW_RELIC_LICENSE_KEY=${var.nr_ingest_key}' >> /etc/${var.collector_distro}/${var.collector_distro}.conf
-              echo "OTEL_RESOURCE_ATTRIBUTES='testKey=${var.test_key}'" >> /etc/${var.collector_distro}/${var.collector_distro}.conf
-              systemctl reload-or-restart ${var.collector_distro}.service
-              sleep 30
-              journalctl | grep ${var.collector_distro}
-              EOF
+  test_environment       = var.test_environment
+  collector_distro       = var.collector_distro
+  releases_bucket_name   = var.releases_bucket_name
+  nrdot_version          = var.nrdot_version
+  commit_sha_short       = var.commit_sha_short
+  nr_ingest_key          = var.nr_ingest_key
+  test_key               = var.test_key
 }
