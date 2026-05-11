@@ -30,15 +30,3 @@ resource "aws_security_group" "ec2_allow_all_egress" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
-
-module "ubuntu" {
-  source = "./ubuntu"
-
-  test_environment       = var.test_environment
-  collector_distro       = var.collector_distro
-  releases_bucket_name   = var.releases_bucket_name
-  nrdot_version          = var.nrdot_version
-  commit_sha_short       = var.commit_sha_short
-  nr_ingest_key          = var.nr_ingest_key
-  test_key               = var.test_key
-}

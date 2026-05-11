@@ -7,6 +7,14 @@ locals {
   ]
 }
 
+module "shared" {
+  source = "../shared"
+
+  vpc_id = "${var.vpc_id}"
+  test_environment = "${var.test_environment}"
+  collector_distro = "${var.collector_distro}"
+}
+
 data "aws_ami" "windows_ami" {
   count = length(local.windows_config)
   most_recent = true
@@ -28,9 +36,9 @@ resource "aws_instance" "windows" {
   count = length(local.windows_config)
   ami = data.aws_ami.windows_ami[count.index].id
   instance_type = "t2.micro"
-  subnet_id = data.aws_subnets.private_subnets.ids[0] # TODO: Validate this
-  vpc_security_group_ids = [aws_security_group.ec2_allow_all_egress.id]
-  iam_instance_profile = data.aws_iam_instance_profile.s3_read_access.name
+  subnet_id = module.shared.private_subnet_ids[0]
+  vpc_security_group_ids = [module.shared.security_group_id]
+  iam_instance_profile = module.shared.instance_profile_name
 
   tags = {
     Name = "${var.test_environment}-${var.collector_distro}-${local.windows_config[count.index].test_key_prefix}"
