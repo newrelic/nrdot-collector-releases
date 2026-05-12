@@ -276,8 +276,7 @@ scenarios:
   #     # Tests for existence of signal + specific attributes
   #     nrqls: *internal_telemetry_nrqls
 
-  # Ubuntu 22.04
-  - description: ec2 host metrics and resourcedetection
+  - description: ubuntu 22.04 jammy - ec2 host metrics and resourcedetection
     before:
       - | 
         cd ../../../test/terraform/nightly &&
@@ -296,7 +295,7 @@ scenarios:
       nrqls: *host_metrics_nrqls
 
   # Ubuntu 24.04
-  - description: ec2 host metrics and resourcedetection
+  - description: ubuntu 24.04 noble - ec2 host metrics and resourcedetection
     before:
       - | 
         cd ../../../test/terraform/nightly &&

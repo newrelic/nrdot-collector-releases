@@ -11,7 +11,7 @@ data "aws_eks_cluster" "eks_cluster" {
 }
 
 module "ci_e2e_ec2_ubuntu" {
-  count                = local.ec2_enabled ? 1 : 0
+  count                = local.ec2_enabled && var.platform == "ubuntu" ? 1 : 0
   source               = "../modules/ec2/ubuntu"
   test_environment     = local.test_env_name
   releases_bucket_name = local.releases_bucket_name
