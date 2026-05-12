@@ -18,6 +18,7 @@ receivers:
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/prometheusreceiver v0.150.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/rabbitmqreceiver v0.150.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/receivercreator v0.150.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/oracledbreceiver v0.150.0
 processors:
   - gomod: go.opentelemetry.io/collector/processor/batchprocessor v0.150.0
   - gomod: go.opentelemetry.io/collector/processor/memorylimiterprocessor v0.150.0
@@ -56,3 +57,5 @@ providers:
 replaces:
   # Why: Fixes CVE-2026-42151 and CVE-2026-42154
   - github.com/prometheus/prometheus v0.311.2-0.20260409145810-72293ff1d2e0 => github.com/prometheus/prometheus v0.311.4-0.20260507094802-91c184a899b8
+  # Temporary: oracledbreceiver with CDB/PDB detection from newrelic-forks PR #165 — remove once merged upstream
+  - github.com/open-telemetry/opentelemetry-collector-contrib/receiver/oracledbreceiver v0.150.0 => github.com/newrelic-forks/opentelemetry-collector-contrib/receiver/oracledbreceiver v0.0.0-20260512185325-3bbb94f1db6b
