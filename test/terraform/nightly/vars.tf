@@ -57,3 +57,18 @@ variable "test_key" {
   type        = string
   default     = ""
 }
+
+/* 
+  EC2 config options
+*/ 
+variable "platform" {
+  type = string
+  description = "EC2 platform to test on - ubuntu or windows"
+  default = "ubuntu"
+}
+
+variable "platform_version" {
+  type = string
+  description = "Version of the EC2 platform"
+  default = "24.04"
+}

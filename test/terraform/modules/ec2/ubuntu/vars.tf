@@ -1,3 +1,13 @@
+variable "platform_version" {
+  type = string
+  description = "Version of the EC2 platform"
+
+  validation {
+    condition     = contains(["22.04", "24.04"], var.platform_version)
+    error_message = "platform_version must be either '22.04' or '24.04'"
+  }
+}
+
 variable "releases_bucket_name" {
   type = string
 }

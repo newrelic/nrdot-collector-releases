@@ -280,9 +280,15 @@ scenarios:
   - description: ec2 host metrics and resourcedetection
     before:
       - cd ../../../test/terraform/nightly &&
-          terraform apply -auto-approve -var="test_key=${SCENARIO_TAG}"
+          terraform apply -auto-approve \
+          -var="test_key=${SCENARIO_TAG}" \
+          -var="platform=ubuntu" \
+          -var="platform_version=24.04"
     after:
       - cd ../../../test/terraform/nightly &&
-          terraform destroy -auto-approve -var="test_key=${SCENARIO_TAG}"
+          terraform destroy -auto-approve \
+          -var="test_key=${SCENARIO_TAG}" \
+          -var="platform=ubuntu" \
+          -var="platform_version=24.04"
     tests:
       nrqls: *host_metrics_nrqls

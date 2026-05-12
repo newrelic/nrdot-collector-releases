@@ -1,3 +1,5 @@
+# Module for infrastructure shared by all EC2s
+
 data "aws_vpc" "ec2_vpc" {
   id = var.vpc_id
 }
@@ -19,7 +21,7 @@ data "aws_iam_instance_profile" "s3_read_access" {
 }
 
 resource "aws_security_group" "ec2_allow_all_egress" {
-  name        = "${var.test_environment}-${var.collector_distro}-ec2-all-egress"
+  name        = "${var.test_environment}-${var.collector_distro}-${var.platform}-${var.platform_version}-ec2-all-egress"
   description = "Allow all outbound traffic"
   vpc_id      = data.aws_vpc.ec2_vpc.id
 

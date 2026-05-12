@@ -1,33 +1,32 @@
 locals {
-  instance_config = [
-    {
-      test_key_prefix    = "ec2_ubuntu22_04-0"
-      release_verion     = "22.04"
-      release_short_name = "jammy"
-    },
-    {
-      test_key_prefix    = "ec2_ubuntu24_04-0"
-      release_verion     = "24.04"
-      release_short_name = "noble"
-    }
-  ]
+  # Map of supported Ubuntu versions to codenames
+  ubuntu_codenames = {
+    "22.04" = "jammy"
+    "24.04" = "noble"
+  }
+
+  instance_config = {
+    test_key_prefix    = "ec2_ubuntu${replace(var.platform_version, ".", "_")}-0"
+    release_short_name = local.ubuntu_codenames[var.platform_version]
+  }
 }
 
 module "shared" {
   source = "../shared"
 
+  platform = "ubuntu"
+  platform_version = "${var.platform_version}"
   vpc_id = "${var.vpc_id}"
   test_environment = "${var.test_environment}"
   collector_distro = "${var.collector_distro}"
 }
 
 data "aws_ami" "ubuntu_ami" {
-  count       = length(local.instance_config)
   most_recent = true
 
   filter {
     name   = "name"
-    values = ["ubuntu/images/hvm-ssd*/ubuntu-${local.instance_config[count.index].release_short_name}-${local.instance_config[count.index].release_verion}-amd64-server-*"]
+    values = ["ubuntu/images/hvm-ssd*/ubuntu-${local.instance_config.release_short_name}-${var.platform_version}-amd64-server-*"]
   }
 
   filter {
@@ -39,15 +38,14 @@ data "aws_ami" "ubuntu_ami" {
 }
 
 resource "aws_instance" "ubuntu" {
-  count                  = length(local.instance_config)
-  ami                    = data.aws_ami.ubuntu_ami[count.index].id
+  ami                    = data.aws_ami.ubuntu_ami.id
   instance_type          = "t2.micro"
   subnet_id              = module.shared.private_subnet_ids[0]
   vpc_security_group_ids = [module.shared.security_group_id]
   iam_instance_profile   = module.shared.instance_profile_name
 
   tags = {
-      Name = "${var.test_environment}-${var.collector_distro}-${local.instance_config[count.index].test_key_prefix}"
+      Name = "${var.test_environment}-${var.collector_distro}-${local.instance_config.test_key_prefix}"
   }
 
   user_data_replace_on_change = true
