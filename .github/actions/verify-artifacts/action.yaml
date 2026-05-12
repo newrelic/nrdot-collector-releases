@@ -44,7 +44,7 @@ runs:
         echo "Verifying $BUILD_TYPE artifacts exist for ${{ inputs.distribution }} with SHA: ${{ inputs.commit-sha }}"
         echo "Looking for artifact: $ARTIFACT_NAME"
 
-        if gh api "/repos/${{ github.repository }}/actions/artifacts" \
+        if gh api --paginate "/repos/${{ github.repository }}/actions/artifacts" \
            --jq ".artifacts[] | select(.name == \"$ARTIFACT_NAME\")" \
            | grep -q .; then
           echo "found=true" >> $GITHUB_OUTPUT
