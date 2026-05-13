@@ -24,3 +24,18 @@ module "ci_e2e_ec2_ubuntu" {
   commit_sha_short    = var.commit_sha_short
   platform_version    = var.platform_version
 }
+
+module "ci_e2e_ec2_windows" {
+  count                = local.ec2_enabled && var.platform == "windows" ? 1 : 0
+  source               = "../modules/ec2/windows"
+  test_environment     = local.test_env_name
+  releases_bucket_name = local.releases_bucket_name
+  collector_distro     = var.distro
+  nr_ingest_key        = var.nr_ingest_key
+  # reuse vpc to avoid having to pay for second NAT gateway for this simple use case
+  vpc_id              = data.aws_eks_cluster.eks_cluster.vpc_config[0].vpc_id
+  test_key            = var.test_key
+  nrdot_version       = var.nrdot_version
+  commit_sha_short    = var.commit_sha_short
+  platform_version    = var.platform_version
+}
