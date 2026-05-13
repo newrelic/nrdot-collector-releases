@@ -30,7 +30,7 @@ data "aws_ami" "windows_ami" {
 
 resource "aws_instance" "windows" {
   ami = data.aws_ami.windows_ami.id
-  instance_type = "t2.micro"
+  instance_type = "t3.micro"
   subnet_id = module.shared.private_subnet_ids[0]
   vpc_security_group_ids = [module.shared.security_group_id]
   iam_instance_profile = module.shared.instance_profile_name
