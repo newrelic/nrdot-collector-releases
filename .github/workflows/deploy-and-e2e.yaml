@@ -202,7 +202,7 @@ jobs:
           retry_seconds: 30
           retry_attempts: 20
           agent_enabled: false
-          spec_path: distributions/${{ inputs.distro }}/test/spec-nightly-action-ubuntu.yaml
+          spec_path: distributions/${{ inputs.distro }}/test/spec-nightly-action.yaml
           account_id: ${{ secrets.nr_account_id }}
           api_key: ${{ secrets.nr_api_key }}
           license_key: ${{ secrets.nr_ingest_key }}

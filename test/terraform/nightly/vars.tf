@@ -47,11 +47,6 @@ variable "fips"  {
   default     = false
 }
 
-variable "image_tag" {
-  description = "Tag of the nightly docker image"
-  type        = string
-}
-
 variable "test_key" {
   description = "Test key for scoping queries (used by action-based tests, Go tests use generated pattern)"
   type        = string
