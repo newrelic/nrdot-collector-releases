@@ -73,7 +73,7 @@ jobs:
         id: check-windows-spec
         run: |
           windows_e2e=false
-          if [[ inputs.fips == "false" && -f "distributions/${{ inputs.distro }}/test/spec-nightly-action-windows.yaml" ]]; then
+          if [[ "${{ inputs.fips }}" == "false" && -f "distributions/${{ inputs.distro }}/test/spec-nightly-action-windows.yaml" ]]; then
             windows_e2e=true
           fi
           echo "windows_e2e=${windows_e2e}" >> $GITHUB_OUTPUT
