@@ -197,7 +197,7 @@ jobs:
           terraform_version: 1.9.8
           aws_account_id: ${{ secrets.aws_account_id }}
           working_directory: ./test/terraform/nightly
-          workspace: ${{ needs.setup.outputs.workspace }}
+          workspace: ${{ needs.setup.outputs.workspace }}-ubuntu
           assume_role: "false"
       
       - name: Run Action-based E2E Tests
@@ -248,7 +248,7 @@ jobs:
           terraform_version: 1.9.8
           aws_account_id: ${{ secrets.aws_account_id }}
           working_directory: ./test/terraform/nightly
-          workspace: ${{ needs.setup.outputs.workspace }}
+          workspace: ${{ needs.setup.outputs.workspace }}-windows
           assume_role: "false"
       
       - name: Run Action-based E2E Tests
