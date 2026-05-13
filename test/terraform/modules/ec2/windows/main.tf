@@ -17,7 +17,7 @@ data "aws_ami" "windows_ami" {
 
   filter {
     name = "name"
-    values = ["Windows_Server-${var.platform_version}-Core-Base-*"]
+    values = ["Windows_Server-${var.platform_version}-English-Core-Base-*"]
   }
 
   filter {
