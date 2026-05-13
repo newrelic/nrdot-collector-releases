@@ -197,7 +197,6 @@ jobs:
           LICENSE_KEY: ${{ secrets.nr_ingest_key }}
           IMAGE_TAG: ${{ needs.setup.outputs.image-tag }}
           IMAGE_REPO: ${{ secrets.aws_account_id }}.dkr.ecr.us-east-1.amazonaws.com/${{ inputs.distro }}
-          CLUSTER_NAME: aws-ci-e2etest
         with:
           retry_seconds: 30
           retry_attempts: 20

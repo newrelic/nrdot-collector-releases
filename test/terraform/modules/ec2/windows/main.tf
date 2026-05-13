@@ -45,7 +45,11 @@ resource "aws_instance" "windows" {
                 Write-Host "📋 Fetching MSI from s3"
                 Start-Process -Wait -PassThru msiexec.exe -ArgumentList '/i', 'https://awscli.amazonaws.com/AWSCLIV2.msi', '/qn'
                 $msi_package_basepath = "s3://${var.releases_bucket_name}/nrdot-collector-releases/${var.collector_distro}/${var.nrdot_version}/${var.commit_sha_short}/"
-                $latest_msi_filename = aws s3 ls $msi_package_basepath | Sort-Object -Descending | Where-Object { $_ -match "${var.collector_distro}" -and $_ -match "\.msi$" } | Select-Object -First 1 | ForEach-Object { ($_ -split '\s+')[-1] }
+                $latest_msi_filename = aws s3 ls $msi_package_basepath |
+                  Sort-Object -Descending |
+                  Where-Object { $_ -match "${var.collector_distro}" -and $_ -match "\.msi$" } |
+                  Select-Object -First 1 |
+                  ForEach-Object { ($_ -split '\s+')[-1] }
                 $msi_path = Join-Path $env:TEMP "collector.msi"
                 aws s3 cp "$msi_package_basepath$latest_msi_filename" $msi_path
 
