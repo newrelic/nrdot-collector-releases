@@ -294,7 +294,6 @@ scenarios:
     tests:
       nrqls: *host_metrics_nrqls
 
-  # Ubuntu 24.04
   - description: ubuntu 24.04 noble - ec2 host metrics and resourcedetection
     before:
       - | 

@@ -153,7 +153,6 @@ jobs:
       TF_VAR_nr_ingest_key: ${{ secrets.nr_ingest_key }}
       TF_VAR_distro: ${{ inputs.distro }}
       TF_VAR_fips: ${{ inputs.fips }}
-      TF_VAR_image_tag: ${{ needs.setup.outputs.image-tag }}
       TF_VAR_test_env_prefix: ${{ inputs.workspace_prefix }}
       TF_VAR_nrdot_version: ${{ needs.setup.outputs.distro-version }}
       TF_VAR_commit_sha_short: ${{ needs.setup.outputs.commit-sha-short }}
@@ -203,7 +202,7 @@ jobs:
           retry_seconds: 30
           retry_attempts: 20
           agent_enabled: false
-          spec_path: distributions/${{ inputs.distro }}/test/spec-nightly-action.yaml
+          spec_path: distributions/${{ inputs.distro }}/test/spec-nightly-action-ubuntu.yaml
           account_id: ${{ secrets.nr_account_id }}
           api_key: ${{ secrets.nr_api_key }}
           license_key: ${{ secrets.nr_ingest_key }}
