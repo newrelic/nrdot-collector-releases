@@ -190,7 +190,6 @@ jobs:
             *)       NR_BACKEND_URL="https://otlp.nr-data.net" ;;
           esac
           echo "NR_BACKEND_URL=${NR_BACKEND_URL}" >> $GITHUB_ENV
-          echo "TF_VAR_nr_backend_url=${NR_BACKEND_URL}" >> $GITHUB_ENV
 
       - name: Terraform Setup & Workspace
         uses: ./.github/actions/terraform-setup
