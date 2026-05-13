@@ -1,3 +1,13 @@
+variable "platform_version" {
+  type = string
+  description = "Version of the EC2 platform"
+
+  validation {
+    condition     = contains(["2016", "2019", "2022", "2025"], var.platform_version)
+    error_message = "platform_version must be one of: '2016', '2019', '2022', '2025'"
+  }
+}
+
 variable "releases_bucket_name" {
   type = string
 }
