@@ -24,12 +24,6 @@ variable "commit_sha_short" {
   type        = string
 }
 
-variable "nr_backend_url" {
-  type        = string
-  description = "NR endpoint used in test cluster"
-  sensitive   = true
-}
-
 variable "nr_ingest_key" {
   type        = string
   description = "NR ingest key used in test cluster"
