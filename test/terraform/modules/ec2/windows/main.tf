@@ -42,14 +42,6 @@ resource "aws_instance" "windows" {
   user_data_replace_on_change = true
   user_data                   = <<-EOF
               <powershell>
-                # Start transcript to capture all output (Windows EC2 does not print logs to console)
-                $logFile = "C:\Windows\Temp\install.log"
-                Start-Transcript -Path $logFile -Append
-
-                Write-Host "=========================================="
-                Write-Host "Transcribing logs for nightly run ${var.collector_distro}-windows-${var.platform_version} on $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-                Write-Host "=========================================="
-
                 Write-Host "📋 Fetching MSI from s3"
                 Start-Process -Wait -PassThru msiexec.exe -ArgumentList '/i', 'https://awscli.amazonaws.com/AWSCLIV2.msi', '/qn'
                 $msi_package_basepath = "s3://${var.releases_bucket_name}/nrdot-collector-releases/${var.collector_distro}/${var.nrdot_version}/${var.commit_sha_short}/"
@@ -103,11 +95,6 @@ resource "aws_instance" "windows" {
                 } else {
                   Write-Error "❌ Service is not running"
                 }
-
-                # Stop transcript and upload log to S3
-                Stop-Transcript
-                $s3LogPath = "s3://${var.logs_bucket_name}/${var.collector_distro}/nightly-windows-${var.platform_version}.log"
-                aws s3 cp $logFile $s3LogPath
               </powershell>
               EOF
 }
