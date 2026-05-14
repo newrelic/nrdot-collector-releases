@@ -4,6 +4,7 @@ locals {
   test_spec                                       = yamldecode(file("${path.module}/../../../distributions/${var.distro}/test/spec-nightly-action.yaml"))
   ec2_enabled                                     = try(local.test_spec.terraform.deploy_ec2, false)
   releases_bucket_name = "nr-releases"
+  logs_bucket_name = "nr-nightly-logs"
 }
 
 data "aws_eks_cluster" "eks_cluster" {
@@ -15,6 +16,8 @@ module "ci_e2e_ec2_ubuntu" {
   source               = "../modules/ec2/ubuntu"
   test_environment     = local.test_env_name
   releases_bucket_name = local.releases_bucket_name
+  logs_bucket_name     = local.logs_bucket_name
+
   collector_distro     = var.distro
   nr_ingest_key        = var.nr_ingest_key
   # reuse vpc to avoid having to pay for second NAT gateway for this simple use case
@@ -30,6 +33,8 @@ module "ci_e2e_ec2_windows" {
   source               = "../modules/ec2/windows"
   test_environment     = local.test_env_name
   releases_bucket_name = local.releases_bucket_name
+  logs_bucket_name     = local.logs_bucket_name
+  
   collector_distro     = var.distro
   nr_ingest_key        = var.nr_ingest_key
   # reuse vpc to avoid having to pay for second NAT gateway for this simple use case

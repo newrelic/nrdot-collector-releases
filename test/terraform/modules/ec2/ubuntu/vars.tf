@@ -12,6 +12,10 @@ variable "releases_bucket_name" {
   type = string
 }
 
+variable "logs_bucket_name" {
+  type = string
+}
+
 variable "test_environment" {
   type        = string
   description = "Name of test environment to distinguish entities"
