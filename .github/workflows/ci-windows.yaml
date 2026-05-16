@@ -30,12 +30,14 @@ jobs:
             "https://download.newrelic.com/install/newrelic-cli/scripts/install.ps1",
             "$env:TEMP\install.ps1")
           & $env:TEMP\install.ps1
+          # Refresh PATH to include newrelic-cli
+          $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
           # Set newrelic cli profile
           newrelic profiles add --profile test --accountId ${{ secrets.nr_account_id }} --apiKey ${{ secrets.nr_api_key }} --licenseKey ${{ secrets.nr_ingest_key }} -r us
           newrelic profiles default --profile test
           newrelic events post --accountId ${{ secrets.nr_account_id }} --event '{
               "eventType": "nightlyLog",
-              "platform": "windows"
-              "version": "2025"
+              "platform": "windows",
+              "version": "2025",
               "message": "test"
           }'
