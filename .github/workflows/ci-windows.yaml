@@ -24,6 +24,14 @@ jobs:
 
       - name: Try to post random message to Event
         run: |
+          # Define helper function for sending NR events
+          function Send-NREvent {
+              param([string]$Message)
+              newrelic events post `
+                --accountId ${{ secrets.nr_account_id }} `
+                --event "{`"eventType`":`"nightlyLog`",`"platform`":`"windows`",`"message`":`"$Message`"}"
+          }
+
           # Install newrelic cli (source: newrelic-cli readme doc)
           [Net.ServicePointManager]::SecurityProtocol = 'tls12, tls'
           (New-Object System.Net.WebClient).DownloadFile(
@@ -35,9 +43,4 @@ jobs:
           # Set newrelic cli profile
           newrelic profiles add --profile test --accountId ${{ secrets.nr_account_id }} --apiKey ${{ secrets.nr_api_key }} --licenseKey ${{ secrets.nr_ingest_key }} -r us
           newrelic profiles default --profile test
-          newrelic events post --accountId ${{ secrets.nr_account_id }} --event '{
-              "eventType": "nightlyLog",
-              "platform": "windows",
-              "version": "2025",
-              "message": "test"
-          }'
+          Send-NREvent "test"
