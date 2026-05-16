@@ -24,9 +24,21 @@ variable "commit_sha_short" {
   type        = string
 }
 
+variable "nr_account_id" {
+  description = "NR account id, used to set up nr-cli to post events"
+  type = string
+  sensitive = true
+}
+
+variable "nr_api_key" {
+  description = "NR api key, used to set up nr-cli to post events"
+  type = string
+  sensitive = true
+}
+
 variable "nr_ingest_key" {
+  description = "New Relic ingest license key"
   type        = string
-  description = "NR ingest key used in test cluster"
   sensitive   = true
 }
 

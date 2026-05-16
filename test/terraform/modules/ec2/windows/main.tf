@@ -42,7 +42,28 @@ resource "aws_instance" "windows" {
   user_data_replace_on_change = true
   user_data                   = <<-EOF
               <powershell>
-                Write-Host "📋 Fetching MSI from s3"
+                # We need to send events to New Relic as events because Windows EC2 only "includes the last three system event log errors"
+                # Define helper function for sending NR events.
+                function Send-NREvent {
+                    param([string]$Message)
+                    newrelic events post `
+                      --accountId ${var.nr_account_id} `
+                      --event "{`"eventType`":`"nightlyLog`",`"platform`":`"windows`",`"version`":`"${var.nrdot_version}`",`"message`":`"$Message`"}"
+                }
+
+                # Install newrelic cli (source: newrelic-cli readme doc)
+                [Net.ServicePointManager]::SecurityProtocol = 'tls12, tls'
+                (New-Object System.Net.WebClient).DownloadFile(
+                  "https://download.newrelic.com/install/newrelic-cli/scripts/install.ps1",
+                  "$env:TEMP\install.ps1")
+                & $env:TEMP\install.ps1
+                # Refresh PATH to include newrelic-cli
+                $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+                # Set newrelic cli profile
+                newrelic profiles add --profile test --accountId ${var.nr_account_id} --apiKey ${var.nr_api_key} --licenseKey ${var.nr_ingest_key} -r us
+                newrelic profiles default --profile test
+
+                Send-NREvent "Fetching MSI from s3"
                 Start-Process -Wait -PassThru msiexec.exe -ArgumentList '/i', 'https://awscli.amazonaws.com/AWSCLIV2.msi', '/qn'
                 $msi_package_basepath = "s3://${var.releases_bucket_name}/nrdot-collector-releases/${var.collector_distro}/${var.nrdot_version}/${var.commit_sha_short}/"
                 $latest_msi_filename = aws s3 ls $msi_package_basepath |
@@ -57,7 +78,7 @@ resource "aws_instance" "windows" {
                 Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name 'NEW_RELIC_LICENSE_KEY' -Value "${var.nr_ingest_key}"
                 Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name 'OTEL_RESOURCE_ATTRIBUTES' -Value "${var.test_key}"
 
-                Write-Host "📋 Installing collector"
+                Send-NREvent "Installing collector"
                 $log_path = Join-Path $env:TEMP "msi-install.log"
                 $msi_args = @(
                     '/i',
@@ -72,7 +93,7 @@ resource "aws_instance" "windows" {
                 Write-Host '`nInstallation Log (Last 200 lines):'
                 Get-Content $log_path | Select-Object -Last 200
                 if ($process.ExitCode -ne 0) {
-                  Write-Host "❌ MSI installation failed with exit code $($process.ExitCode)"
+                  Send-NREvent "MSI installation failed with exit code $($process.ExitCode)"
                   if (Test-Path $log_path) {
                     Write-Host '`nInstallation Log - Errors and Warnings:'
                     Get-Content $log_path | Select-String -Pattern 'error|warning|failed|exception|fatal' -Context 2,2
@@ -81,7 +102,7 @@ resource "aws_instance" "windows" {
                   exit $process.ExitCode
                 }
 
-                Write-Host "⏳ Waiting 30 seconds for collector to spool up"
+                Send-NREvent "Waiting 30 seconds for collector to spool up"
                 Start-Sleep -Seconds 30
                 
                 # Dump collector logs
@@ -91,9 +112,10 @@ resource "aws_instance" "windows" {
                 # Check if service is running
                 $service = Get-Service -Name "${var.collector_distro}"
                 if ($service -and $service.Status -eq 'Running') {
-                  Write-Host "✅ Service nrdot-collector is running"
+                  Send-NREvent "Service nrdot-collector is running"
                 } else {
-                  Write-Error "❌ Service is not running"
+                  Send-NREvent "Service is not running"
+                  exit 1
                 }
               </powershell>
               EOF

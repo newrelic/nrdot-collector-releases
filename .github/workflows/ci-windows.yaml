@@ -29,7 +29,7 @@ jobs:
               param([string]$Message)
               newrelic events post `
                 --accountId ${{ secrets.nr_account_id }} `
-                --event "{`"eventType`":`"nightlyLog`",`"platform`":`"windows`",`"message`":`"$Message`"}"
+                --event "{`"eventType`":`"nightlyLog`",`"platform`":`"windows-GitHub`",`"version`":`"2025`",`"message`":`"$Message`"}"
           }
 
           # Install newrelic cli (source: newrelic-cli readme doc)
