@@ -53,7 +53,7 @@ resource "aws_instance" "windows" {
                         version = "${var.nrdot_version}"
                         message = $Message
                     } | ConvertTo-Json -Compress
-                    newrelic events post --accountId $accountId --event $event
+                    newrelic events post --accountId "$accountId" --event "$event"
                 }
 
                 # Install newrelic cli (source: newrelic-cli readme doc)
@@ -65,13 +65,14 @@ resource "aws_instance" "windows" {
                 # Refresh PATH to include newrelic-cli
                 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
                 # Set newrelic cli profile
-                newrelic profiles add --profile test --accountId "${var.nr_account_id}" --apiKey "${var.nr_api_key}" --licenseKey "${var.nr_ingest_key}" -r us
-                newrelic profiles default --profile test
+                newrelic profiles add --profile "e2e" --accountId "${var.nr_account_id}" --apiKey "${var.nr_api_key}" --licenseKey "${var.nr_ingest_key}" -r us
+                newrelic profiles default --profile "e2e"
+                Send-NREvent "newrelic-cli install successful"
 
-                Send-NREvent "Fetching MSI from s3"
                 Start-Process -Wait -PassThru msiexec.exe -ArgumentList '/i', 'https://awscli.amazonaws.com/AWSCLIV2.msi', '/qn'
-                # Refresh PATH to include aws cli
                 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+                Send-NREvent "awscli install successful"
+
                 $msi_package_basepath = "s3://${var.releases_bucket_name}/nrdot-collector-releases/${var.collector_distro}/${var.nrdot_version}/${var.commit_sha_short}/"
                 $latest_msi_filename = aws s3 ls $msi_package_basepath |
                   Sort-Object -Descending |
@@ -80,12 +81,11 @@ resource "aws_instance" "windows" {
                   ForEach-Object { ($_ -split '\s+')[-1] }
                 $msi_path = Join-Path $env:TEMP "collector.msi"
                 aws s3 cp "$msi_package_basepath$latest_msi_filename" $msi_path
+                Send-NREvent "msi fetch from s3 successful"
 
                 # Set nrdot config environment variables.
                 Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name 'NEW_RELIC_LICENSE_KEY' -Value "${var.nr_ingest_key}"
                 Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name 'OTEL_RESOURCE_ATTRIBUTES' -Value "testKey=${var.test_key}"
-
-                Send-NREvent "Installing collector"
                 $log_path = Join-Path $env:TEMP "msi-install.log"
                 $msi_args = @(
                     '/i',
@@ -100,7 +100,7 @@ resource "aws_instance" "windows" {
                 Write-Host '`nInstallation Log (Last 200 lines):'
                 Get-Content $log_path | Select-Object -Last 200
                 if ($process.ExitCode -ne 0) {
-                  Send-NREvent "MSI installation failed with exit code $($process.ExitCode)"
+                  Send-NREvent "msi installation failed with exit code $($process.ExitCode)"
                   if (Test-Path $log_path) {
                     Write-Host '`nInstallation Log - Errors and Warnings:'
                     Get-Content $log_path | Select-String -Pattern 'error|warning|failed|exception|fatal' -Context 2,2
@@ -108,20 +108,19 @@ resource "aws_instance" "windows" {
                   }
                   exit $process.ExitCode
                 }
+                Send-NREvent "msi installation successful"
 
-                Send-NREvent "Waiting 30 seconds for collector to spool up"
+                # wait for collector to spool and dump collector logs
                 Start-Sleep -Seconds 30
-                
-                # Dump collector logs
                 Write-Host "`nCollector logs from Windows Event Log:"
                 Get-WinEvent -LogName Application -MaxEvents 100 -ErrorAction SilentlyContinue | Where-Object { $_.ProviderName -eq "${var.collector_distro}" } | Select-Object -ExpandProperty Message
 
                 # Check if service is running
                 $service = Get-Service -Name "${var.collector_distro}"
                 if ($service -and $service.Status -eq 'Running') {
-                  Send-NREvent "Service nrdot-collector is running"
+                  Send-NREvent "service nrdot-collector is running"
                 } else {
-                  Send-NREvent "Service is not running"
+                  Send-NREvent "service is not running"
                   exit 1
                 }
               </powershell>
