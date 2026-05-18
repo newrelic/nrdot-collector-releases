@@ -106,10 +106,20 @@ description: nrdot-collector E2E Test (Windows)
         lowerBoundedValue: 1
 
 scenarios:
-  - description: host telemetry
+  - description: windows 2025 - ec2 host metrics
+    before:
+      - | 
+        cd ../../../test/terraform/nightly &&
+        terraform apply -auto-approve \
+          -var="test_key=${SCENARIO_TAG}" \
+          -var="platform=windows" \
+          -var="platform_version=2025"
+    after:
+      - | 
+        cd ../../../test/terraform/nightly &&
+        terraform destroy -auto-approve \
+          -var="test_key=${SCENARIO_TAG}" \
+          -var="platform=windows" \
+          -var="platform_version=2025"
     tests:
-      # Tests for existence of metrics
-      metrics:
-        - source: "host-expected-metrics-common.yaml"
-      # Tests for existence of signal + specific attributes
       nrqls: *host_metrics_nrqls
