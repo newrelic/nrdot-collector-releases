@@ -70,6 +70,8 @@ resource "aws_instance" "windows" {
 
                 Send-NREvent "Fetching MSI from s3"
                 Start-Process -Wait -PassThru msiexec.exe -ArgumentList '/i', 'https://awscli.amazonaws.com/AWSCLIV2.msi', '/qn'
+                # Refresh PATH to include aws cli
+                $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
                 $msi_package_basepath = "s3://${var.releases_bucket_name}/nrdot-collector-releases/${var.collector_distro}/${var.nrdot_version}/${var.commit_sha_short}/"
                 $latest_msi_filename = aws s3 ls $msi_package_basepath |
                   Sort-Object -Descending |
