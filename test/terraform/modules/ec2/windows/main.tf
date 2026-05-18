@@ -65,7 +65,7 @@ resource "aws_instance" "windows" {
                 # Refresh PATH to include newrelic-cli
                 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
                 # Set newrelic cli profile
-                newrelic profiles add --profile test --accountId ${var.nr_account_id} --apiKey ${var.nr_api_key} --licenseKey ${var.nr_ingest_key} -r us
+                newrelic profiles add --profile test --accountId "${var.nr_account_id}" --apiKey "${var.nr_api_key}" --licenseKey "${var.nr_ingest_key}" -r us
                 newrelic profiles default --profile test
 
                 Send-NREvent "Fetching MSI from s3"
