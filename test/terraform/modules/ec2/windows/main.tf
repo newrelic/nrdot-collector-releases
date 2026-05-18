@@ -50,9 +50,10 @@ resource "aws_instance" "windows" {
                     $event = @{
                         eventType = "NightlyLog"
                         platform = "windows"
-                        version = "${var.nrdot_version}"
+                        version = "${var.platform_version}"
                         message = $Message
                     } | ConvertTo-Json -Compress
+                    $event = $event -replace '"', '\"'
                     newrelic events post --accountId "$accountId" --event "$event"
                 }
 
