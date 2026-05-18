@@ -46,9 +46,14 @@ resource "aws_instance" "windows" {
                 # Define helper function for sending NR events.
                 function Send-NREvent {
                     param([string]$Message)
-                    newrelic events post `
-                      --accountId ${var.nr_account_id} `
-                      --event "{`"eventType`":`"nightlyLog`",`"platform`":`"windows`",`"version`":`"${var.nrdot_version}`",`"message`":`"$Message`"}"
+                    $accountId = "${var.nr_account_id}"
+                    $event = @{
+                        eventType = "nightlyLog"
+                        platform = "windows"
+                        version = "${var.nrdot_version}"
+                        message = $Message
+                    } | ConvertTo-Json -Compress
+                    newrelic events post --accountId $accountId --event $event
                 }
 
                 # Install newrelic cli (source: newrelic-cli readme doc)

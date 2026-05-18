@@ -27,9 +27,14 @@ jobs:
           # Define helper function for sending NR events
           function Send-NREvent {
               param([string]$Message)
-              newrelic events post `
-                --accountId ${{ secrets.nr_account_id }} `
-                --event "{`"eventType`":`"nightlyLog`",`"platform`":`"windows-GitHub`",`"version`":`"2025`",`"message`":`"$Message`"}"
+              $accountId = "${{ secrets.nr_account_id }}"
+              $event = @{
+                  eventType = "nightlyLog"
+                  platform = "windows-GitHub"
+                  version = "2025"
+                  message = $Message
+              } | ConvertTo-Json -Compress
+              newrelic events post --accountId $accountId --event $event
           }
 
           # Install newrelic cli (source: newrelic-cli readme doc)
@@ -43,4 +48,4 @@ jobs:
           # Set newrelic cli profile
           newrelic profiles add --profile test --accountId ${{ secrets.nr_account_id }} --apiKey ${{ secrets.nr_api_key }} --licenseKey ${{ secrets.nr_ingest_key }} -r us
           newrelic profiles default --profile test
-          Send-NREvent "test"
+          Send-NREvent "Basic sanity check"
