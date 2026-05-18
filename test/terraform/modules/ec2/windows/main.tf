@@ -85,7 +85,7 @@ resource "aws_instance" "windows" {
 
                 # Set nrdot config environment variables.
                 Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name 'NEW_RELIC_LICENSE_KEY' -Value "${var.nr_ingest_key}"
-                Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name 'OTEL_RESOURCE_ATTRIBUTES' -Value "${var.test_key}"
+                Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name 'OTEL_RESOURCE_ATTRIBUTES' -Value "testKey=${var.test_key}"
 
                 Send-NREvent "Installing collector"
                 $log_path = Join-Path $env:TEMP "msi-install.log"
