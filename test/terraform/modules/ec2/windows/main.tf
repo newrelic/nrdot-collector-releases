@@ -42,6 +42,10 @@ resource "aws_instance" "windows" {
   user_data_replace_on_change = true
   user_data                   = <<-EOF
               <powershell>
+                # Proof of life - write error event immediately
+                New-EventLog -LogName System -Source "E2EUserDataScript" -ErrorAction SilentlyContinue
+                Write-EventLog -LogName System -Source "E2EUserDataScript" -EntryType Error -EventId 1000 -Message "UserData script started execution"
+
                 # We need to send events to New Relic as events because Windows EC2 only "includes the last three system event log errors"
                 # Define helper function for sending NR events.
                 function Send-NREvent {
