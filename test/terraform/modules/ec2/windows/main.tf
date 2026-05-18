@@ -48,7 +48,7 @@ resource "aws_instance" "windows" {
                     param([string]$Message)
                     $accountId = "${var.nr_account_id}"
                     $event = @{
-                        eventType = "nightlyLog"
+                        eventType = "NightlyLog"
                         platform = "windows"
                         version = "${var.nrdot_version}"
                         message = $Message
