@@ -4,11 +4,8 @@ locals {
     "22.04" = "jammy"
     "24.04" = "noble"
   }
-
-  instance_config = {
-    test_key_prefix    = "ec2_ubuntu${replace(var.platform_version, ".", "_")}-0"
-    release_short_name = local.ubuntu_codenames[var.platform_version]
-  }
+  release_short_name  = local.ubuntu_codenames[var.platform_version]
+  instance_identifier = "ec2_ubuntu${replace(var.platform_version, ".", "_")}-0"
 }
 
 module "common_infrastructure" {
@@ -26,7 +23,7 @@ data "aws_ami" "ubuntu_ami" {
 
   filter {
     name   = "name"
-    values = ["ubuntu/images/hvm-ssd*/ubuntu-${local.instance_config.release_short_name}-${var.platform_version}-amd64-server-*"]
+    values = ["ubuntu/images/hvm-ssd*/ubuntu-${local.release_short_name}-${var.platform_version}-amd64-server-*"]
   }
 
   filter {
@@ -45,7 +42,7 @@ resource "aws_instance" "ubuntu" {
   iam_instance_profile   = module.common_infrastructure.instance_profile_name
 
   tags = {
-      Name = "${var.test_environment}-${var.collector_distro}-${local.instance_config.test_key_prefix}"
+      Name = "${var.test_environment}-${var.collector_distro}-${local.instance_identifier}"
   }
 
   user_data_replace_on_change = true

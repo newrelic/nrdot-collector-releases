@@ -1,5 +1,5 @@
 locals {
-  test_key_prefix = "ec2_windows_server_${var.platform_version}"
+  instance_identifier = "ec2_windows_server_${var.platform_version}"
 }
 
 module "common_infrastructure" {
@@ -36,7 +36,7 @@ resource "aws_instance" "windows" {
   iam_instance_profile = module.common_infrastructure.instance_profile_name
 
   tags = {
-    Name = "${var.test_environment}-${var.collector_distro}-${local.test_key_prefix}"
+    Name = "${var.test_environment}-${var.collector_distro}-${local.instance_identifier}"
   }
 
   user_data_replace_on_change = true
