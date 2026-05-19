@@ -1,5 +1,4 @@
 locals {
-  # Map of supported Ubuntu versions to codenames
   ubuntu_codenames = {
     "22.04" = "jammy"
     "24.04" = "noble"
