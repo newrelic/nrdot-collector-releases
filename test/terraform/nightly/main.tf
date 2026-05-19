@@ -31,8 +31,6 @@ module "ci_e2e_ec2_windows" {
   test_environment     = local.test_env_name
   releases_bucket_name = local.releases_bucket_name
   collector_distro     = var.distro
-  nr_account_id        = var.nr_account_id
-  nr_api_key           = var.nr_api_key
   nr_ingest_key        = var.nr_ingest_key
   # reuse vpc to avoid having to pay for second NAT gateway for this simple use case
   vpc_id              = data.aws_eks_cluster.eks_cluster.vpc_config[0].vpc_id
