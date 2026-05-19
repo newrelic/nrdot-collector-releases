@@ -68,12 +68,14 @@ resource "aws_instance" "windows" {
                 # Set newrelic cli profile
                 newrelic profiles add --profile "e2e" --accountId "${var.nr_account_id}" --apiKey "${var.nr_api_key}" --licenseKey "${var.nr_ingest_key}" -r us
                 newrelic profiles default --profile "e2e"
-                Send-NREvent "newrelic-cli install successful"
+                Write-Host "✅ newrelic-cli install successful"
 
+                Write-Host "📋 Starting AWS CLI installation..."
                 Start-Process -Wait -PassThru msiexec.exe -ArgumentList '/i', 'https://awscli.amazonaws.com/AWSCLIV2.msi', '/qn'
                 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-                Send-NREvent "awscli install successful"
+                Write-Host "✅ AWS CLI installation completed"
 
+                Write-Host "📋 Fetching MSI package from S3..."
                 $msi_package_basepath = "s3://${var.releases_bucket_name}/nrdot-collector-releases/${var.collector_distro}/${var.nrdot_version}/${var.commit_sha_short}/"
                 $latest_msi_filename = aws s3 ls $msi_package_basepath |
                   Sort-Object -Descending |
@@ -82,7 +84,7 @@ resource "aws_instance" "windows" {
                   ForEach-Object { ($_ -split '\s+')[-1] }
                 $msi_path = Join-Path $env:TEMP "collector.msi"
                 aws s3 cp "$msi_package_basepath$latest_msi_filename" $msi_path
-                Send-NREvent "msi fetch from s3 successful"
+                Write-Host "✅ MSI package fetched successfully"
 
                 # Set nrdot config environment variables.
                 Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name 'NEW_RELIC_LICENSE_KEY' -Value "${var.nr_ingest_key}"
@@ -95,13 +97,14 @@ resource "aws_instance" "windows" {
                     '/l*',
                     $log_path
                 )
+                Write-Host "📋 Starting MSI installation..."
                 $process = Start-Process -Wait -PassThru msiexec.exe -ArgumentList $msi_args
 
                 # Validate install successful
                 Write-Host '`nInstallation Log (Last 200 lines):'
                 Get-Content $log_path | Select-Object -Last 200
                 if ($process.ExitCode -ne 0) {
-                  Send-NREvent "msi installation failed with exit code $($process.ExitCode)"
+                  Write-Host "❌ MSI installation failed with exit code $($process.ExitCode)"
                   if (Test-Path $log_path) {
                     Write-Host '`nInstallation Log - Errors and Warnings:'
                     Get-Content $log_path | Select-String -Pattern 'error|warning|failed|exception|fatal' -Context 2,2
@@ -109,19 +112,20 @@ resource "aws_instance" "windows" {
                   }
                   exit $process.ExitCode
                 }
-                Send-NREvent "msi installation successful"
+                Write-Host "✅ MSI installation successful"
 
-                # wait for collector to spool and dump collector logs
+                Write-Host "⏳ Waiting 30 seconds for collector to spool up..."
                 Start-Sleep -Seconds 30
+
                 Write-Host "`nCollector logs from Windows Event Log:"
                 Get-WinEvent -LogName Application -MaxEvents 100 -ErrorAction SilentlyContinue | Where-Object { $_.ProviderName -eq "${var.collector_distro}" } | Select-Object -ExpandProperty Message
 
                 # Check if service is running
                 $service = Get-Service -Name "${var.collector_distro}"
                 if ($service -and $service.Status -eq 'Running') {
-                  Send-NREvent "service nrdot-collector is running"
+                  Write-Host "✅ Service ${var.collector_distro} is running"
                 } else {
-                  Send-NREvent "service is not running"
+                  Write-Host "❌ Service ${var.collector_distro} is not running"
                   exit 1
                 }
               </powershell>
