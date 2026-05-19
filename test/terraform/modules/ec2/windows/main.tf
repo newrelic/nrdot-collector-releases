@@ -42,34 +42,6 @@ resource "aws_instance" "windows" {
   user_data_replace_on_change = true
   user_data                   = <<-EOF
               <powershell>
-                # We need to send events to New Relic as events because Windows EC2 only "includes the last three system event log errors"
-                # Define helper function for sending NR events.
-                function Send-NREvent {
-                    param([string]$Message)
-                    $accountId = "${var.nr_account_id}"
-                    $event = @{
-                        eventType = "NightlyLog"
-                        platform = "windows"
-                        version = "${var.platform_version}"
-                        message = $Message
-                    } | ConvertTo-Json -Compress
-                    $event = $event -replace '"', '\"'
-                    newrelic events post --accountId "$accountId" --event "$event"
-                }
-
-                # Install newrelic cli (source: newrelic-cli readme doc)
-                [Net.ServicePointManager]::SecurityProtocol = 'tls12, tls'
-                (New-Object System.Net.WebClient).DownloadFile(
-                  "https://download.newrelic.com/install/newrelic-cli/scripts/install.ps1",
-                  "$env:TEMP\install.ps1")
-                & $env:TEMP\install.ps1
-                # Refresh PATH to include newrelic-cli
-                $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-                # Set newrelic cli profile
-                newrelic profiles add --profile "e2e" --accountId "${var.nr_account_id}" --apiKey "${var.nr_api_key}" --licenseKey "${var.nr_ingest_key}" -r us
-                newrelic profiles default --profile "e2e"
-                Write-Host "newrelic-cli install successful"
-
                 Write-Host "Starting AWS CLI installation..."
                 Start-Process -Wait -PassThru msiexec.exe -ArgumentList '/i', 'https://awscli.amazonaws.com/AWSCLIV2.msi', '/qn'
                 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
