@@ -1,4 +1,4 @@
-# Module for infrastructure shared by all EC2s
+# Module for infrastructure common to all EC2s
 
 data "aws_vpc" "ec2_vpc" {
   id = var.vpc_id

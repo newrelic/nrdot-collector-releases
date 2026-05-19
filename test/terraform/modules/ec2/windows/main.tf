@@ -2,8 +2,8 @@ locals {
   test_key_prefix = "ec2_windows_server_${var.platform_version}"
 }
 
-module "shared" {
-  source = "../shared"
+module "common_infrastructure" {
+  source = "../common"
 
   platform = "windows"
   platform_version = "${var.platform_version}"
@@ -31,9 +31,9 @@ data "aws_ami" "windows_ami" {
 resource "aws_instance" "windows" {
   ami = data.aws_ami.windows_ami.id
   instance_type = "t3.micro"
-  subnet_id = module.shared.private_subnet_ids[0]
-  vpc_security_group_ids = [module.shared.security_group_id]
-  iam_instance_profile = module.shared.instance_profile_name
+  subnet_id = module.common_infrastructure.private_subnet_ids[0]
+  vpc_security_group_ids = [module.common_infrastructure.security_group_id]
+  iam_instance_profile = module.common_infrastructure.instance_profile_name
 
   tags = {
     Name = "${var.test_environment}-${var.collector_distro}-${local.test_key_prefix}"
