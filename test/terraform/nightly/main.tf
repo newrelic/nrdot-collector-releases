@@ -1,8 +1,8 @@
 locals {
-  fips_str                                        = var.fips ? "-fips" : ""
-  test_env_name                                   = "${var.test_env_prefix}${local.fips_str}"
-  test_spec                                       = yamldecode(file("${path.module}/../../../distributions/${var.distro}/test/spec-nightly-action.yaml"))
-  ec2_enabled                                     = try(local.test_spec.terraform.deploy_ec2, false)
+  fips_str         = var.fips ? "-fips" : ""
+  test_env_name    = "${var.test_env_prefix}${local.fips_str}"
+  test_spec        = yamldecode(file("${path.module}/../../../distributions/${var.distro}/test/spec-nightly-${var.platform}.yaml"))
+  ec2_enabled      = try(local.test_spec.terraform.deploy_ec2, false)
   releases_bucket_name = "nr-releases"
 }
 
