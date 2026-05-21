@@ -1,8 +1,6 @@
 locals {
-  fips_str         = var.fips ? "-fips" : ""
-  test_env_name    = "${var.test_env_prefix}${local.fips_str}"
-  test_spec        = yamldecode(file("${path.module}/../../../distributions/${var.distro}/test/spec-nightly-${var.platform}.yaml"))
-  ec2_enabled      = try(local.test_spec.terraform.deploy_ec2, false)
+  fips_str             = var.fips ? "-fips" : ""
+  test_env_name        = "${var.test_env_prefix}${local.fips_str}"
   releases_bucket_name = "nr-releases"
 }
 
@@ -11,7 +9,7 @@ data "aws_eks_cluster" "eks_cluster" {
 }
 
 module "ci_e2e_ec2_ubuntu" {
-  count                = local.ec2_enabled && var.platform == "ubuntu" ? 1 : 0
+  count                = var.platform == "ubuntu" ? 1 : 0
   source               = "../modules/ec2/ubuntu"
   test_environment     = local.test_env_name
   releases_bucket_name = local.releases_bucket_name
@@ -26,7 +24,7 @@ module "ci_e2e_ec2_ubuntu" {
 }
 
 module "ci_e2e_ec2_windows" {
-  count                = local.ec2_enabled && var.platform == "windows" ? 1 : 0
+  count                = var.platform == "windows" ? 1 : 0
   source               = "../modules/ec2/windows"
   test_environment     = local.test_env_name
   releases_bucket_name = local.releases_bucket_name
