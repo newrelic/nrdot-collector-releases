@@ -24,15 +24,9 @@ variable "commit_sha_short" {
   type        = string
 }
 
-variable "nr_backend_url" {
-  type        = string
-  description = "NR endpoint used in test cluster"
-  sensitive   = true
-}
-
 variable "nr_ingest_key" {
+  description = "New Relic ingest license key"
   type        = string
-  description = "NR ingest key used in test cluster"
   sensitive   = true
 }
 
@@ -47,13 +41,23 @@ variable "fips"  {
   default     = false
 }
 
-variable "image_tag" {
-  description = "Tag of the nightly docker image"
-  type        = string
-}
-
 variable "test_key" {
   description = "Test key for scoping queries (used by action-based tests, Go tests use generated pattern)"
   type        = string
   default     = ""
+}
+
+/* 
+  EC2 config options
+*/ 
+variable "platform" {
+  type = string
+  description = "EC2 platform to test on - ubuntu or windows"
+  default = "ubuntu"
+}
+
+variable "platform_version" {
+  type = string
+  description = "Version of the EC2 platform"
+  default = "24.04"
 }

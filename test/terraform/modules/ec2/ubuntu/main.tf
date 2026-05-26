@@ -1,25 +1,28 @@
 locals {
-  instance_config = [
-    {
-      test_key_prefix    = "ec2_ubuntu22_04-0"
-      release_verion     = "22.04"
-      release_short_name = "jammy"
-    },
-    {
-      test_key_prefix    = "ec2_ubuntu24_04-0"
-      release_verion     = "24.04"
-      release_short_name = "noble"
-    },
-  ]
+  ubuntu_codenames = {
+    "22.04" = "jammy"
+    "24.04" = "noble"
+  }
+  release_short_name  = local.ubuntu_codenames[var.platform_version]
+  instance_identifier = "ec2_ubuntu${replace(var.platform_version, ".", "_")}-0"
+}
+
+module "common_infrastructure" {
+  source = "../common"
+
+  platform = "ubuntu"
+  platform_version = "${var.platform_version}"
+  vpc_id = "${var.vpc_id}"
+  test_environment = "${var.test_environment}"
+  collector_distro = "${var.collector_distro}"
 }
 
 data "aws_ami" "ubuntu_ami" {
-  count       = length(local.instance_config)
   most_recent = true
 
   filter {
     name   = "name"
-    values = ["ubuntu/images/hvm-ssd*/ubuntu-${local.instance_config[count.index].release_short_name}-${local.instance_config[count.index].release_verion}-amd64-server-*"]
+    values = ["ubuntu/images/hvm-ssd*/ubuntu-${local.release_short_name}-${var.platform_version}-amd64-server-*"]
   }
 
   filter {
@@ -30,49 +33,15 @@ data "aws_ami" "ubuntu_ami" {
   owners = ["099720109477"] # Canonical
 }
 
-data "aws_vpc" "ec2_vpc" {
-  id = var.vpc_id
-}
-
-data "aws_subnets" "private_subnets" {
-  filter {
-    name   = "vpc-id"
-    values = [var.vpc_id]
-  }
-  filter {
-    name   = "tag:Name"
-    values = ["*private*"]
-  }
-}
-
-# Shared IAM resources pre-created by bootstrap script — not managed by Terraform.
-data "aws_iam_instance_profile" "s3_read_access" {
-  name = "nrdot-ec2-s3-nr-releases-read-access"
-}
-
-resource "aws_security_group" "ec2_allow_all_egress" {
-  name        = "${var.test_environment}-${var.collector_distro}-ec2-all-egress"
-  description = "Allow all outbound traffic"
-  vpc_id      = data.aws_vpc.ec2_vpc.id
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-
 resource "aws_instance" "ubuntu" {
-  count                  = length(local.instance_config)
-  ami                    = data.aws_ami.ubuntu_ami[count.index].id
+  ami                    = data.aws_ami.ubuntu_ami.id
   instance_type          = "t2.micro"
-  subnet_id              = data.aws_subnets.private_subnets.ids[0]
-  vpc_security_group_ids = [aws_security_group.ec2_allow_all_egress.id]
-  iam_instance_profile   = data.aws_iam_instance_profile.s3_read_access.name
+  subnet_id              = module.common_infrastructure.private_subnet_ids[0]
+  vpc_security_group_ids = [module.common_infrastructure.security_group_id]
+  iam_instance_profile   = module.common_infrastructure.instance_profile_name
 
   tags = {
-      Name = "${var.test_environment}-${var.collector_distro}-${local.instance_config[count.index].test_key_prefix}"
+      Name = "${var.test_environment}-${var.collector_distro}-${local.instance_identifier}"
   }
 
   user_data_replace_on_change = true
