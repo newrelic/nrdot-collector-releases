@@ -62,23 +62,3 @@ jobs:
       nr_ingest_key: ${{ secrets.OTELCOMM_NR_INGEST_KEY }}
       nr_account_id: ${{ vars.OTELCOMM_NR_TEST_ACCOUNT_ID }}
       nr_api_key: ${{ secrets.OTELCOMM_NR_API_KEY }}
-    
-  temp-windows-archive-smoke-test:
-    name: (Temporary) Windows Archive Smoke Test
-    runs-on: windows-latest
-    steps:
-      - name: Download and run collector
-        shell: pwsh
-        run: |
-          # The only point of this test is to validate that the provided .exe instructions work. This will be removed.
-          $env:collector_distro = "nrdot-collector"
-          $env:collector_version = "1.15.1"
-          $env:license_key = "${{ secrets.OTELCOMM_NR_INGEST_KEY }}"
-          Invoke-WebRequest -Uri "https://github.com/newrelic/nrdot-collector-releases/releases/download/$env:collector_version/${env:collector_distro}_${env:collector_version}_windows_amd64.zip" -OutFile "nrdot-collector.zip"
-          Expand-Archive -Path "nrdot-collector.zip" -DestinationPath "."
-          $env:NEW_RELIC_LICENSE_KEY = $env:license_key
-          .\nrdot-collector.exe --config .\config.yaml > collector.log 2>&1 &
-          Start-Sleep -Seconds 5
-          Get-Process -Name "nrdot-collector" -ErrorAction Stop
-          Stop-Process -Name "nrdot-collector" -Force
-          Get-Content collector.log
