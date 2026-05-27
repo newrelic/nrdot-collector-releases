@@ -90,7 +90,7 @@ echo "NEW_RELIC_LICENSE_KEY=${license_key}" | sudo tee -a /etc/${collector_distr
 sudo systemctl reload-or-restart "${collector_distro}.service"
 ```
 
-### RPM Installation
+##### RPM Installation
 ```bash
 export collector_distro="nrdot-collector"
 export collector_version="1.15.1"
@@ -103,7 +103,7 @@ echo "NEW_RELIC_LICENSE_KEY=${license_key}" | sudo tee -a /etc/${collector_distr
 sudo systemctl reload-or-restart "${collector_distro}.service"
 ```
 
-### Archives
+##### Archives
 Archives contain the binary and the default configuration.
 ```bash
 export collector_distro="nrdot-collector"
@@ -113,6 +113,22 @@ export license_key="YOUR_LICENSE_KEY"
 curl "https://github.com/newrelic/nrdot-collector-releases/releases/download/${collector_version}/${collector_distro}_${collector_version}_linux_${collector_arch}.tar.gz" --location --output collector.tar.gz
 tar -xzf collector.tar.gz
 NEW_RELIC_LICENSE_KEY="${license_key}" ./nrdot-collector --config ./config.yaml 
+```
+
+### Windows MSI
+NRDOT must be installed from an Administrator account, and will run as a service with the `Local System` service account.
+
+The OpenTelemetry Community uses a [tiered platform support model](https://github.com/open-telemetry/opentelemetry-collector/blob/main/docs/platform-support.md#tiered-platform-support-model). Windows falls under [tier 2](https://github.com/open-telemetry/opentelemetry-collector/blob/main/docs/platform-support.md#tier-2--secondary-support), which indicates upstream issues with Windows are lower-poriority and may be fixed more slowly.
+
+> **Warning:** The instructions below store the license key as a system-wide environment variable, which is readable by all users on a machine.
+
+```powershell
+$env:collector_distro = "nrdot-collector"
+$env:collector_version="1.15.1"
+$env:license_key="YOUR_LICENSE_KEY"
+Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name 'NEW_RELIC_LICENSE_KEY' -Value "$env:license_key"
+Invoke-WebRequest -Uri "https://github.com/newrelic/nrdot-collector-releases/releases/download/$env:collector_version/$env:collector_distro.msi" -OutFile "nrdot-collector.msi"
+Start-Process -Wait -PassThru msiexec.exe -ArgumentList "/i nrdot-collector.msi /qn"
 ```
 
 ## Configuration
