@@ -139,7 +139,7 @@ Restart-Service -Name "$env:collector_distro"
 ```
 
 #### Archives (.exe)
-Archives contain the .exe and default configuration. The collector will run in the foreground and will not persist across reboots.
+Zipped archives contain the .exe and default configuration. The collector will run in the foreground and will not persist across reboots.
 
 ```powershell
 $env:collector_distro = "nrdot-collector"
