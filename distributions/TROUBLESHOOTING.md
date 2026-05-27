@@ -56,7 +56,7 @@ To tweak configuration in our MSI files, you may supply the `COLLECTOR_SVC_ARGS`
 # Uninstall if necessary
 Start-Process -Wait -PassThru msiexec.exe -ArgumentList '/x nrdot-collector.msi /qn'
 # Install with custom config
-$collector_svc_args = '--config "C:\Program Files\nrdot-collector\custom-config.yaml" --config "yaml:service::telemetry::logs::level: WARN"'
+$collector_svc_args = '--config "C:\Program Files\nrdot-collector\config.yaml" --config "yaml:service::telemetry::logs::level: WARN"'
 Start-Process -Wait -PassThru msiexec.exe -ArgumentList "/i nrdot-collector.msi COLLECTOR_SVC_ARGS=`"$collector_svc_args`" /qn"
 ```
 
