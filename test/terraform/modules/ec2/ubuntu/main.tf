@@ -45,28 +45,12 @@ resource "aws_instance" "ubuntu" {
   }
 
   user_data_replace_on_change = true
-  user_data                   = <<-EOF
-              #!/bin/bash
-              ################################################
-              echo 'Installing Collector'
-              export DEBIAN_FRONTEND=noninteractive
-              apt update
-              apt install unzip
-              curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-              unzip -q awscliv2.zip
-              ./aws/install
-              deb_package_basepath='s3://${var.releases_bucket_name}/nrdot-collector-releases/${var.collector_distro}/${var.nrdot_version}/${var.commit_sha_short}/'
-              latest_deb_package_filename=$(aws s3 ls $${deb_package_basepath} | sort -r | grep '${var.collector_distro}' | grep 'amd64.deb$' | head -n1 | awk '{print $NF}')
-              echo "Installing collector from: $${deb_package_basepath}$${latest_deb_package_filename}"
-              aws s3 cp "$${deb_package_basepath}$${latest_deb_package_filename}" /tmp/collector.deb
-              export NRDOT_MODE=ROOT
-              dpkg -i /tmp/collector.deb
-              ################################################
-              echo 'Configuring Collector'
-              echo 'NEW_RELIC_LICENSE_KEY=${var.nr_ingest_key}' >> /etc/${var.collector_distro}/${var.collector_distro}.conf
-              echo "OTEL_RESOURCE_ATTRIBUTES='testKey=${var.test_key}'" >> /etc/${var.collector_distro}/${var.collector_distro}.conf
-              systemctl reload-or-restart ${var.collector_distro}.service
-              sleep 30
-              journalctl | grep ${var.collector_distro}
-              EOF
+  user_data                   = templatefile("${path.module}/userdata.sh.tftpl", {
+    releases_bucket_name = var.releases_bucket_name
+    collector_distro     = var.collector_distro
+    nrdot_version        = var.nrdot_version
+    commit_sha_short     = var.commit_sha_short
+    nr_ingest_key        = var.nr_ingest_key
+    test_key             = var.test_key
+  })
 }
