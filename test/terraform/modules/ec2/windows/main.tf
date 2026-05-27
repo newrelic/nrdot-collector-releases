@@ -59,8 +59,6 @@ resource "aws_instance" "windows" {
                 Write-Host "MSI package fetched successfully"
 
                 # Set nrdot config environment variables.
-                Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name 'NEW_RELIC_LICENSE_KEY' -Value "${var.nr_ingest_key}"
-                Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name 'OTEL_RESOURCE_ATTRIBUTES' -Value "testKey=${var.test_key}"
                 $log_path = Join-Path $env:TEMP "msi-install.log"
                 $msi_args = @(
                     '/i',
@@ -85,6 +83,19 @@ resource "aws_instance" "windows" {
                   exit $process.ExitCode
                 }
                 Write-Host "MSI installation successful"
+
+                # Set environment variables
+                New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\${var.collector_distro}' `
+                -Name 'Environment' `
+                -PropertyType MultiString `
+                -Value @(
+                  "NEW_RELIC_LICENSE_KEY=${var.nr_ingest_key}",
+                  "OTEL_RESOURCE_ATTRIBUTES=testKey=${var.test_key}"
+                ) `
+                -Force
+
+                # Restart service to pick up registry key change
+                Restart-Service -Name "${var.collector_distro}"
 
                 Write-Host "Waiting 30 seconds for collector to spool up..."
                 Start-Sleep -Seconds 30
