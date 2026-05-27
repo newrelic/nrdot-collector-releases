@@ -115,8 +115,11 @@ tar -xzf collector.tar.gz
 NEW_RELIC_LICENSE_KEY="${license_key}" ./nrdot-collector --config ./config.yaml 
 ```
 
-### Windows MSI
-NRDOT must be installed from an Administrator account, and will run as a service under the `Local System` service account.
+### Windows MSI and Archives
+All windows install options are also available under [Releases](https://github.com/newrelic/nrdot-collector-releases/releases), including checksums and signatures. Windows binaries and MSI files are only provided for `amd64` architecture.
+
+#### MSI Installation
+NRDOT must be installed from an Administrator account, and will run as an automatic service under the `Local System` service account.
 
 ```powershell
 $env:collector_distro = "nrdot-collector"
@@ -132,6 +135,19 @@ New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\$env:collector_d
                 ) `
                 -Force
 Restart-Service -Name "$env:collector_distro"
+```
+
+#### Archives
+Archives contain the .exe and default configuration. The collector will run in the foreground and will not persist across reboots.
+
+```powershell
+$env:collector_distro = "nrdot-collector"
+$env:collector_version = "1.15.1"
+$env:license_key = "YOUR_LICENSE_KEY"
+Invoke-WebRequest -Uri "https://github.com/newrelic/nrdot-collector-releases/releases/download/$env:collector_version/${env:collector_distro}_${env:collector_version}_windows_amd64.zip" -OutFile "nrdot-collector.zip"
+Expand-Archive -Path "nrdot-collector.zip" -DestinationPath "."
+$env:NEW_RELIC_LICENSE_KEY = $env:license_key
+.\nrdot-collector.exe --config .\config.yaml
 ```
 
 ## Configuration
