@@ -131,7 +131,7 @@ New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\$env:collector_d
                 -Name 'Environment' `
                 -PropertyType MultiString `
                 -Value @(
-                  "NEW_RELIC_LICENSE_KEY=$env:license_key" # Required
+                  "NEW_RELIC_LICENSE_KEY=$env:license_key"
                   # Add any other config environment variables to this registry key (comma-separated)
                 ) `
                 -Force
