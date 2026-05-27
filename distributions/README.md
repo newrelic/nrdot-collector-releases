@@ -116,7 +116,7 @@ NEW_RELIC_LICENSE_KEY="${license_key}" ./nrdot-collector --config ./config.yaml
 ```
 
 ### Windows MSI and Archives
-All windows install options are available under [Releases](https://github.com/newrelic/nrdot-collector-releases/releases), including checksums and signatures. Windows binaries and MSI files are only provided for `amd64` architecture.
+All windows install options are available under [Releases](https://github.com/newrelic/nrdot-collector-releases/releases). Windows binaries and MSI files are only provided for `amd64` architecture.
 
 #### MSI Installation
 NRDOT must be installed from an Administrator account, and will run as an automatic service under the `Local System` service account.
