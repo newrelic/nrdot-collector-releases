@@ -137,7 +137,7 @@ New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\$env:collector_d
 Restart-Service -Name "$env:collector_distro"
 ```
 
-#### Archives
+#### Archives (.exe)
 Archives contain the .exe and default configuration. The collector will run in the foreground and will not persist across reboots.
 
 ```powershell
