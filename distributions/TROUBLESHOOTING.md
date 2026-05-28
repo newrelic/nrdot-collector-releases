@@ -50,16 +50,6 @@ OTELCOL_OPTIONS="--config=/etc/nrdot-collector/config.yaml --config 'yaml:servic
 systemctl reload-or-restart nrdot-collector.service
 ```
 
-#### Windows MSI
-To tweak configuration in our MSI files, you may supply the `COLLECTOR_SVC_ARGS` argument during install:
-```powershell
-# Uninstall if necessary
-Start-Process -Wait -PassThru msiexec.exe -ArgumentList '/x nrdot-collector.msi /qn'
-# Install with custom config
-$collector_svc_args = '--config "C:\Program Files\nrdot-collector\config.yaml" --config "yaml:service::telemetry::logs::level: WARN"'
-Start-Process -Wait -PassThru msiexec.exe -ArgumentList "/i nrdot-collector.msi COLLECTOR_SVC_ARGS=`"$collector_svc_args`" /qn"
-```
-
 
 ### Collector logs
 Each component in the collector emits logs, enabled by the [internal telemetry configuration](https://opentelemetry.io/docs/collector/internal-telemetry/#configure-internal-logs) of the collector which are often the quickest way to determine the root cause of an issue.
