@@ -90,7 +90,7 @@ echo "NEW_RELIC_LICENSE_KEY=${license_key}" | sudo tee -a /etc/${collector_distr
 sudo systemctl reload-or-restart "${collector_distro}.service"
 ```
 
-### RPM Installation
+##### RPM Installation
 ```bash
 export collector_distro="nrdot-collector"
 export collector_version="1.15.1"
@@ -103,7 +103,7 @@ echo "NEW_RELIC_LICENSE_KEY=${license_key}" | sudo tee -a /etc/${collector_distr
 sudo systemctl reload-or-restart "${collector_distro}.service"
 ```
 
-### Archives
+#### Archives
 Archives contain the binary and the default configuration.
 ```bash
 export collector_distro="nrdot-collector"
