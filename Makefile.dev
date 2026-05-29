@@ -6,22 +6,27 @@ ci_custom_matrix:
 	@# repeat --matrix arg for multiple distros
 	act push -W .github/workflows/ci.yaml \
 		--matrix distribution:nrdot-collector \
-		--matrix fips:false
+		--matrix fips:false \
+		--var-file .actvars
 
 ci_custom_fips_matrix:
 	@# repeat --matrix arg for multiple distros
 	act push -W .github/workflows/ci-fips.yaml \
-		--matrix distribution:nrdot-collector
+		--matrix distribution:nrdot-collector \
+		--var-file .actvars
 
 ci_nightly_custom_matrix:
 	@# repeat --matrix arg for multiple distros
 	act schedule -W .github/workflows/ci-nightly.yaml \
-		--matrix distribution:nrdot-collector
+		--matrix distribution:nrdot-collector \
+		--var-file .actvars
 
 ci_nightly_fips_custom_matrix:
 	@# repeat --matrix arg for multiple distros
 	act schedule -W .github/workflows/ci-nightly-fips.yaml \
-		--matrix distribution:nrdot-collector
+		--matrix distribution:nrdot-collector \
+		--var-file .actvars
 
 ci_check_links:
-	act push -W .github/workflows/check-links.yaml
+	act push -W .github/workflows/check-links.yaml \
+	--var-file .actvars
