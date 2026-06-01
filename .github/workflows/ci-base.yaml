@@ -250,7 +250,7 @@ jobs:
 
       - name: Skip GoReleaser build (cached)
         if: steps.cache-goreleaser.outputs.cache-hit == 'true'
-        run: echo "✅ GoReleaser build skipped - using cached binaries (TEST)"
+        run: echo "✅ GoReleaser build skipped - using cached binaries (TEST 2)"
 
       - name: Validate GoReleaser build
         run: ./scripts/validate-goreleaser-build.sh -d ${{ inputs.distribution }}
