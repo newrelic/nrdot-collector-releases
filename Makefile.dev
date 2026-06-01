@@ -6,7 +6,6 @@ ci_custom_matrix:
 	@# repeat --matrix arg for multiple distros
 	act push -W .github/workflows/ci.yaml \
 		--matrix distribution:nrdot-collector \
-		--matrix fips:false \
 		--var-file .actvars
 
 ci_custom_fips_matrix:
