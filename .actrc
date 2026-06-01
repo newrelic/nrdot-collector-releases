@@ -7,3 +7,4 @@
 --artifact-server-path $PWD/.artifacts
 --bind
 --cache-server-addr host.docker.internal
+--var-file .actvars
