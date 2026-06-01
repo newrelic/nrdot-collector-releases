@@ -31,6 +31,8 @@ test/**/charts/*.tgz
 # directories used in act builds
 .tmp
 .artifacts
+.actvars
+.cache
 
 # Claude Code local context
 CLAUDE.local.md
