@@ -392,6 +392,7 @@ jobs:
           TRIVY_SKIP_JAVA_DB_UPDATE: true
 
       - name: Prepare GoReleaser Artifacts
+        if: ${{ inputs.publish }}
         id: set-outputs
         run: |
           echo "=== Getting Docker Image SHA from Local Registry ==="

@@ -33,7 +33,6 @@ test/**/charts/*.tgz
 .artifacts
 .actvars
 .cache
-docker_manifest_sha
 
 # Claude Code local context
 CLAUDE.local.md
