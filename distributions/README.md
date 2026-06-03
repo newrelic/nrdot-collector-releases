@@ -115,6 +115,47 @@ tar -xzf collector.tar.gz
 NEW_RELIC_LICENSE_KEY="${license_key}" ./nrdot-collector --config ./config.yaml 
 ```
 
+### Windows MSI and Archives
+All windows install options are available under [Releases](https://github.com/newrelic/nrdot-collector-releases/releases). Windows binaries and MSI files are only provided for `amd64` architecture.
+
+> Note: Windows binaries may be delayed compared to Linux if upstream Windows builds break. This is due to OpenTelemetry's upstream [tier 2 platform support policy](https://github.com/open-telemetry/opentelemetry-collector/blob/main/docs/platform-support.md#tiered-platform-support-model).
+
+#### MSI Installation
+NRDOT must be installed from an Administrator account, and will run as an automatic service under the `Local System` service account.
+
+```powershell
+$collector_distro = "nrdot-collector"
+$collector_version = "1.15.1"
+$license_key = "YOUR_LICENSE_KEY"
+Invoke-WebRequest -Uri "https://github.com/newrelic/nrdot-collector-releases/releases/download/$collector_version/$collector_distro.msi" -OutFile "nrdot-collector.msi"
+Start-Process -Wait -PassThru msiexec.exe -ArgumentList "/i nrdot-collector.msi /qn"
+$RegistryArgs = @{
+    Path         = "HKLM:\SYSTEM\CurrentControlSet\Services\$collector_distro"
+    Name         = 'Environment'
+    PropertyType = 'MultiString'
+    Value        = @(
+        "NEW_RELIC_LICENSE_KEY=$license_key"
+        # Add any other config environment variables to this registry key (comma-separated)
+    )
+    Force        = $true
+}
+New-ItemProperty @RegistryArgs
+Restart-Service -Name "$collector_distro"
+```
+
+#### Archives (.exe)
+Zipped archives contain the .exe and default configuration. The collector will run as a background process and will not persist across reboots.
+
+```powershell
+$collector_distro = "nrdot-collector"
+$collector_version = "1.15.1"
+$license_key = "YOUR_LICENSE_KEY"
+Invoke-WebRequest -Uri "https://github.com/newrelic/nrdot-collector-releases/releases/download/$collector_version/${collector_distro}_${collector_version}_windows_amd64.zip" -OutFile "nrdot-collector.zip"
+Expand-Archive -Path "nrdot-collector.zip" -DestinationPath "."
+$env:NEW_RELIC_LICENSE_KEY = $license_key
+Start-Process -FilePath ".\nrdot-collector.exe" -ArgumentList "--config", ".\config.yaml"
+```
+
 ## Configuration
 
 ### Customize Default Configuration
