@@ -91,6 +91,7 @@ resource "aws_instance" "windows" {
                 -Value @(
                   "NEW_RELIC_LICENSE_KEY=${var.nr_ingest_key}",
                   "OTEL_RESOURCE_ATTRIBUTES=testKey=${var.test_key}"
+                  # Add any other config environment variables to this registry key (comma-separated)
                 ) `
                 -Force
 
