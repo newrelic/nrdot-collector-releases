@@ -85,15 +85,18 @@ resource "aws_instance" "windows" {
                 Write-Host "MSI installation successful"
 
                 # Set environment variables
-                New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\${var.collector_distro}' `
-                -Name 'Environment' `
-                -PropertyType MultiString `
-                -Value @(
-                  "NEW_RELIC_LICENSE_KEY=${var.nr_ingest_key}",
-                  "OTEL_RESOURCE_ATTRIBUTES=testKey=${var.test_key}"
-                  # Add any other config environment variables to this registry key (comma-separated)
-                ) `
-                -Force
+                $RegistryArgs = @{
+                    Path         = 'HKLM:\SYSTEM\CurrentControlSet\Services\${var.collector_distro}'
+                    Name         = 'Environment'
+                    PropertyType = 'MultiString'
+                    Value        = @(
+                        "NEW_RELIC_LICENSE_KEY=${var.nr_ingest_key}",
+                        "OTEL_RESOURCE_ATTRIBUTES=testKey=${var.test_key}"
+                        # Add any other config environment variables to this registry key (comma-separated)
+                    )
+                    Force        = $true
+                }
+                New-ItemProperty @RegistryArgs
 
                 # Restart service to pick up registry key change
                 Restart-Service -Name "${var.collector_distro}"
