@@ -141,7 +141,7 @@ Restart-Service -Name "$collector_distro"
 ```
 
 #### Archives (.exe)
-Zipped archives contain the .exe and default configuration. The collector will run in the foreground and will not persist across reboots.
+Zipped archives contain the .exe and default configuration. The collector will run as a background process and will not persist across reboots.
 
 ```powershell
 $collector_distro = "nrdot-collector"
@@ -150,7 +150,7 @@ $license_key = "YOUR_LICENSE_KEY"
 Invoke-WebRequest -Uri "https://github.com/newrelic/nrdot-collector-releases/releases/download/$collector_version/${collector_distro}_${collector_version}_windows_amd64.zip" -OutFile "nrdot-collector.zip"
 Expand-Archive -Path "nrdot-collector.zip" -DestinationPath "."
 $env:NEW_RELIC_LICENSE_KEY = $license_key
-.\nrdot-collector.exe --config .\config.yaml
+Start-Process -FilePath ".\nrdot-collector.exe" -ArgumentList "--config", ".\config.yaml"
 ```
 
 ## Configuration
