@@ -129,14 +129,17 @@ $collector_version = "1.15.1"
 $license_key = "YOUR_LICENSE_KEY"
 Invoke-WebRequest -Uri "https://github.com/newrelic/nrdot-collector-releases/releases/download/$collector_version/$collector_distro.msi" -OutFile "nrdot-collector.msi"
 Start-Process -Wait -PassThru msiexec.exe -ArgumentList "/i nrdot-collector.msi /qn"
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\$collector_distro" `
-                -Name 'Environment' `
-                -PropertyType MultiString `
-                -Value @(
-                  "NEW_RELIC_LICENSE_KEY=$license_key"
-                  # Add any other config environment variables to this registry key (comma-separated)
-                ) `
-                -Force
+$RegistryArgs = @{
+    Path         = "HKLM:\SYSTEM\CurrentControlSet\Services\$collector_distro"
+    Name         = 'Environment'
+    PropertyType = 'MultiString'
+    Value        = @(
+        "NEW_RELIC_LICENSE_KEY=$license_key"
+        # Add any other config environment variables to this registry key (comma-separated)
+    )
+    Force        = $true
+}
+New-ItemProperty @RegistryArgs
 Restart-Service -Name "$collector_distro"
 ```
 

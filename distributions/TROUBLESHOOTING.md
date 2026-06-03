@@ -51,7 +51,9 @@ systemctl reload-or-restart nrdot-collector.service
 ```
 
 #### Windows MSI
-To tweak configuration in our MSI files, you may supply the `COLLECTOR_SVC_ARGS` argument during install:
+To tweak configuration in our MSI files, you may supply the `COLLECTOR_SVC_ARGS` argument during install.
+
+These instructions assume the collector has been installed - For a fresh install, see the [MSI Install instructions](./README.md#msi-installation). 
 ```powershell
 # Uninstall if necessary
 Start-Process -Wait -PassThru msiexec.exe -ArgumentList '/x nrdot-collector.msi /qn'
