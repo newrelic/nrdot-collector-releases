@@ -118,7 +118,7 @@ NEW_RELIC_LICENSE_KEY="${license_key}" ./nrdot-collector --config ./config.yaml
 ### Windows MSI and Archives
 All windows install options are available under [Releases](https://github.com/newrelic/nrdot-collector-releases/releases). Windows binaries and MSI files are only provided for `amd64` architecture.
 
-> Note: Windows binaries may be delayed compared to Linux due to OpenTelemetry's upstream [tier 2 platform support policy](https://github.com/open-telemetry/opentelemetry-collector/blob/main/docs/platform-support.md#tiered-platform-support-model).
+> Note: Windows binaries may be delayed due to OpenTelemetry's upstream [tier 2 platform support policy](https://github.com/open-telemetry/opentelemetry-collector/blob/main/docs/platform-support.md#tiered-platform-support-model).
 
 #### MSI Installation
 NRDOT must be installed from an Administrator account, and will run as an automatic service under the `Local System` service account.
