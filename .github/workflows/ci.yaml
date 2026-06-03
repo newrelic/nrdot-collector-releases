@@ -62,21 +62,3 @@ jobs:
       nr_ingest_key: ${{ secrets.OTELCOMM_NR_INGEST_KEY }}
       nr_account_id: ${{ vars.OTELCOMM_NR_TEST_ACCOUNT_ID }}
       nr_api_key: ${{ secrets.OTELCOMM_NR_API_KEY }}
-
-  # TEMP: Remove this job after testing
-  test-windows-install:
-    name: Test Windows Install (TEMP)
-    runs-on: windows-latest
-    steps:
-      - name: Test PowerShell install script
-        shell: pwsh
-        run: |
-          $collector_distro = "nrdot-collector"
-          $collector_version = "1.15.1"
-          $license_key = "${{ secrets.OTELCOMM_NR_INGEST_KEY }}"
-          Invoke-WebRequest -Uri "https://github.com/newrelic/nrdot-collector-releases/releases/download/$collector_version/${collector_distro}_${collector_version}_windows_amd64.zip" -OutFile "nrdot-collector.zip"
-          Expand-Archive -Path "nrdot-collector.zip" -DestinationPath "."
-          $env:NEW_RELIC_LICENSE_KEY = $license_key
-          $env:OTEL_RESOURCE_ATTRIBUTES = "test.name=nrdot-windows-test"
-          Start-Process -FilePath ".\nrdot-collector.exe" -ArgumentList "--config", ".\config.yaml"
-          Start-Sleep -Seconds 120
