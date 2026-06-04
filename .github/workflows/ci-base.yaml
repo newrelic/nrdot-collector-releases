@@ -38,10 +38,10 @@ on:
     outputs:
       artifact_name:
         description: "Name of the uploaded artifact"
-        value: ${{ jobs.build.outputs.artifact_name }}
+        value: ${{ jobs.merge.outputs.artifact_name }}
       docker_manifest_sha_name:
         description: "Name of the docker manifest SHA file"
-        value: ${{ jobs.build.outputs.docker_manifest_sha_name }}
+        value: ${{ jobs.merge.outputs.docker_manifest_sha_name }}
 
 permissions:
   contents: read
@@ -75,9 +75,6 @@ jobs:
       fail-fast: false
       matrix:
         goos: ${{ fromJson(needs.setup.outputs.goos) }}
-    outputs:
-      artifact_name: ${{ steps.set-outputs.outputs.artifact_name }}
-      docker_manifest_sha_name: ${{ steps.set-outputs.outputs.docker_manifest_sha_name }}
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -406,6 +403,9 @@ jobs:
     if: false # Skip merging for now until we're ready to iterate on it
     needs: build
     runs-on: ubuntu-latest
+    outputs:
+      artifact_name: ${{ steps.set-outputs.outputs.artifact_name }}
+      docker_manifest_sha_name: ${{ steps.set-outputs.outputs.docker_manifest_sha_name }}
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
