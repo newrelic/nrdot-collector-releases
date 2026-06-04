@@ -18,6 +18,7 @@ runs:
       id: find
       shell: bash
       run: |
+        # Extract GOOS values from goreleaser file and extracts to JSON array for use in matrix.
         fips_suffix=$([[ "${{ inputs.fips }}" == "true" ]] && echo "-fips" || echo "")
         goreleaser_file="distributions/${{ inputs.distribution }}/.goreleaser${fips_suffix}.yaml"
 

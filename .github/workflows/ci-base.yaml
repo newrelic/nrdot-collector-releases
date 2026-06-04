@@ -52,8 +52,29 @@ env:
   registry: "${{ secrets.aws_account_id }}.dkr.ecr.us-east-1.amazonaws.com"
 
 jobs:
-  build:
+  setup:
     runs-on: ubuntu-latest
+    outputs:
+      goos: ${{ steps.targets.outputs.goos }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Discover build targets
+        id: targets
+        uses: ./.github/actions/discover-targets
+        with:
+          distribution: ${{ inputs.distribution }}
+          fips: ${{ inputs.fips }}
+
+  build:
+    name: Build (${{ matrix.goos }})
+    needs: setup
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        goos: ${{ fromJson(needs.setup.outputs.goos) }}
     outputs:
       artifact_name: ${{ steps.set-outputs.outputs.artifact_name }}
       docker_manifest_sha_name: ${{ steps.set-outputs.outputs.docker_manifest_sha_name }}
@@ -72,9 +93,6 @@ jobs:
           cache: ${{ env.caching_enabled }}
           check-latest: true
 
-      - name: Tidy go.mod files
-        run: go mod tidy
-
       - name: Ensure goreleaser up to date
         run: make check
 
@@ -87,6 +105,9 @@ jobs:
           version: "2.15.4"
           args: license-verify
 
+      - name: Tidy go.mod files
+        run: go mod tidy
+
       - name: Generate sources cache key
         id: sources-cache-key
         if: ${{ env.caching_enabled }}
@@ -97,7 +118,7 @@ jobs:
             'Makefile',
             'fips/fips.go'
           ) }}"
-          echo "sources_key=sources-${{ inputs.distribution }}-${SOURCES_HASH}" >> $GITHUB_OUTPUT
+          echo "sources_key=sources-${{ inputs.distribution }}-${{ matrix.goos }}-${SOURCES_HASH}" >> $GITHUB_OUTPUT
 
       - name: Cache sources
         id: cache-sources
@@ -149,31 +170,6 @@ jobs:
             libc6-dev-arm64-cross \
             libc6-dev-amd64-cross
 
-      - name: Import GPG key
-        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@2dc316deee8e90f13e1a351ab510b4d5bc0c82cd # v7
-        with:
-          gpg_private_key: ${{ secrets.gpg_private_key }}
-          passphrase: ${{ secrets.gpg_passphrase }}
-
-      - name: Write GPG to path in memory for signing rpm/deb
-        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        id: write_gpg_to_path
-        run: |
-          GPG_KEY_PATH="$(mktemp /dev/shm/gpg.XXXXXX)"
-          echo "$GPG_PRIVATE_KEY" | base64 -d >> "$GPG_KEY_PATH"
-          echo "gpg_key_path=$GPG_KEY_PATH" >> $GITHUB_OUTPUT
-        env:
-          GPG_PRIVATE_KEY: ${{ secrets.gpg_private_key }}
-
-      - name: Configure AWS Credentials
-        if: ${{ inputs.publish }}
-        uses: aws-actions/configure-aws-credentials@d979d5b3a71173a29b74b5b88418bfda9437d885 # v6
-        with:
-          role-to-assume: ${{ secrets.aws_oidc_role_arn }}
-          aws-region: us-east-1
-
       - name: Build Args
         run: |
           # Determine base skip flags and snapshot mode based on publish input
@@ -191,7 +187,7 @@ jobs:
 
           GORELEASER_CONFIG="${{ format('.goreleaser{0}.yaml', inputs.fips && '-fips' || '') }}"
 
-          echo "goreleaser_args=$SNAPSHOT_FLAG --clean $BASE_SKIP --timeout 2h --config $GORELEASER_CONFIG" >> $GITHUB_ENV
+          echo "goreleaser_args=--split $SNAPSHOT_FLAG --clean $BASE_SKIP --timeout 2h --config $GORELEASER_CONFIG" >> $GITHUB_ENV
           echo "goreleaser_file=$GORELEASER_CONFIG" >> $GITHUB_ENV
 
       - name: Generate binary cache key
@@ -203,7 +199,7 @@ jobs:
             format('distributions/{0}/_build*/*', inputs.distribution)
           ) }}"
           ARGS_HASH=$(echo "${{ env.goreleaser_args }}" | sha256sum | cut -d' ' -f1)
-          echo binary_key=goreleaser-build-${{ inputs.distribution }}-${ARGS_HASH}-${BINARY_HASH} >> $GITHUB_OUTPUT
+          echo binary_key=goreleaser-build-${{ inputs.distribution }}-${{ matrix.goos }}-${ARGS_HASH}-${BINARY_HASH} >> $GITHUB_OUTPUT
 
       - name: Cache goreleaser build
         id: cache-goreleaser
@@ -237,6 +233,7 @@ jobs:
         id: goreleaser
         uses: goreleaser/goreleaser-action@1a80836c5c9d9e5755a25cb59ec6f45a3b5f41a8 # v7
         env:
+          GOOS: ${{ matrix.goos }}
           NFPM_PASSPHRASE: ${{ secrets.gpg_passphrase }}
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
           GPG_KEY_PATH: ${{ steps.write_gpg_to_path.outputs.gpg_key_path }}
@@ -253,9 +250,10 @@ jobs:
         run: echo "✅ GoReleaser build skipped - using cached binaries"
 
       - name: Validate GoReleaser build
-        run: ./scripts/validate-goreleaser-build.sh -d ${{ inputs.distribution }}
+        run: ./scripts/validate-goreleaser-build.sh -d ${{ inputs.distribution }} -s
           
       - name: Extract relevant metadata
+        if: matrix.goos == 'linux'
         run: |
           # Always use metadata.json from the dist folder (works for both cached and fresh builds)
           VERSION=$(jq -r '.version' distributions/${{ inputs.distribution }}/dist/metadata.json)
@@ -272,7 +270,7 @@ jobs:
 
       - name: Copy GoReleaser binary to Docker context
         id: copy-binary
-        if: steps.cache-goreleaser.outputs.cache-hit == 'true'
+        if: matrix.goos == 'linux' && steps.cache-goreleaser.outputs.cache-hit == 'true'
         run: |
           cd distributions/${{ inputs.distribution }}
           BINARY_PATH="$(find dist -name "${{ inputs.distribution }}*_linux_${{ env.arch }}*" -type d)/${{ inputs.distribution }}"
@@ -300,7 +298,7 @@ jobs:
 
       - name: Build and load Docker image
         uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7
-        if: steps.cache-goreleaser.outputs.cache-hit == 'true'
+        if: matrix.goos == 'linux' && steps.cache-goreleaser.outputs.cache-hit == 'true'
         with:
           context: ${{ steps.copy-binary.outputs.binary_tmp }}
           platforms: linux/${{ env.arch }}
@@ -310,7 +308,7 @@ jobs:
             ${{ env.registry }}/${{ inputs.distribution }}:${{ env.image_tag }}
 
       - name: Validate Usage of BoringCrypto
-        if: inputs.fips
+        if: matrix.goos == 'linux' && inputs.fips
         run: |
           ARCH=$(echo '${{ runner.arch }}' | sed 's/X/amd/g')
           ARCH=${ARCH@L}
@@ -335,11 +333,12 @@ jobs:
           echo "✅ Binary Go version matches fips/spec.yaml: go${BINARY_GO_VERSION}"
 
       - name: Validate FIPS ciphers
-        if: inputs.fips
+        if: matrix.goos == 'linux' && inputs.fips
         run: |
           ./fips/validation/validate.sh "${{ env.registry }}/${{ inputs.distribution }}:${{ env.image_tag }}"
 
       - name: Setup local kind cluster
+        if: matrix.goos == 'linux'
         uses: helm/kind-action@ef37e7f390d99f746eb8b610417061a60e82a6cc # v1.14.0
         with:
           version: v0.21.0
@@ -347,12 +346,15 @@ jobs:
           wait: 60s
 
       - name: Load image into kind cluster
+        if: matrix.goos == 'linux'
         run: |
           kind load docker-image "${{ env.registry }}/${{ inputs.distribution }}:${{ env.image_tag }}" --name ${{ inputs.test_cluster_name }}
 
       - uses: azure/setup-helm@dda3372f752e03dde6b3237bc9431cdc2f7a02a2 # v5.0.0
+        if: matrix.goos == 'linux'
 
       - name: Derive NR backend URL from region
+        if: matrix.goos == 'linux'
         run: |
           case "${{ vars.NR_REGION }}" in
             Staging) echo "NR_BACKEND_URL=https://staging-otlp.nr-data.net" >> $GITHUB_ENV ;;
@@ -361,7 +363,7 @@ jobs:
           esac
 
       - name: Run local e2e tests
-        if: ${{ hashFiles(format('distributions/{0}/test/spec-local.yaml', inputs.distribution)) != '' }}
+        if: matrix.goos == 'linux' && hashFiles(format('distributions/{0}/test/spec-local.yaml', inputs.distribution)) != ''
         uses: newrelic/newrelic-integration-e2e-action@d0c7c2b8f9af227365d71c6b7fddbc024c9e331a # v1
         env:
           NR_BACKEND_URL: ${{ env.NR_BACKEND_URL }}
@@ -378,6 +380,7 @@ jobs:
           region: ${{ vars.NR_REGION }}
 
       - name: Trivy security check
+        if: matrix.goos == 'linux'
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: "${{ env.registry }}/${{ inputs.distribution}}:${{ env.image_tag }}"
@@ -391,6 +394,61 @@ jobs:
           TRIVY_SKIP_DB_UPDATE: ${{ !env.ACT }}
           TRIVY_SKIP_JAVA_DB_UPDATE: true
 
+      - name: Upload dist artifacts
+        if: false
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: split-dist-${{ inputs.distribution }}${{ inputs.fips && '-fips' || '' }}-${{ matrix.goos }}
+          path: distributions/${{ inputs.distribution }}/dist
+          retention-days: 1
+
+  merge:
+    if: false # Skip merging for now until we're ready to iterate on it
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 0 # required for tag metadata
+
+      - run: ./scripts/free-disk-space.sh
+
+      - name: Download all split dist artifacts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          pattern: split-dist=${{ inputs.distribution }}${{ inputs.fips && '-fips' || '' }}*
+          path: distributions/${{ inputs.distribution }}/dist
+          merge-multiple: true
+
+      - name: Setup Go
+        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
+        with:
+          go-version: "~1.26"
+          cache: ${{ env.caching_enabled }}
+          check-latest: true
+
+      - name: Tidy go.mod files
+        run: go mod tidy
+
+      - name: Import GPG key
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
+        id: import_gpg
+        uses: crazy-max/ghaction-import-gpg@2dc316deee8e90f13e1a351ab510b4d5bc0c82cd # v7
+        with:
+          gpg_private_key: ${{ secrets.gpg_private_key }}
+          passphrase: ${{ secrets.gpg_passphrase }}
+
+      - name: Write GPG to path in memory for signing packages
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
+        id: write_gpg_to_path
+        run: |
+          GPG_KEY_PATH="$(mktemp /dev/shm/gpg.XXXXXX)"
+          echo "$GPG_PRIVATE_KEY" | base64 -d >> "$GPG_KEY_PATH"
+          echo "gpg_key_path=$GPG_KEY_PATH" >> $GITHUB_OUTPUT
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.gpg_private_key }}
+      
       - name: Prepare GoReleaser Artifacts
         if: ${{ inputs.publish }}
         id: set-outputs

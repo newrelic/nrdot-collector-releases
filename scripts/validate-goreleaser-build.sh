@@ -5,10 +5,13 @@
 # Script to validate a goreleaser distribution's dist file
 set -e
 
-while getopts d: flag
+split=false
+
+while getopts d:s flag
 do
     case "${flag}" in
         d) distro=${OPTARG};;
+        s) split=true;;
         *) exit 1;;
     esac
 done
@@ -71,6 +74,11 @@ else
             exit 1
         else
             echo "  Found artifact: ${artifact}"
+        fi
+        # Skip checksum validation in split mode (checksums are generated during merge)
+        if [ "${split}" = true ]; then
+            echo "  ⏭️ Skipping checksum validation (split mode)"
+            continue
         fi
         # Search for the corresponding checksum file and verify it exists
         sum_file=$( jq -r ".[] | select(.type == \"Checksum\" and .extra.ChecksumOf == \"${artifact}\") | .path" dist/artifacts.json )
