@@ -5,10 +5,10 @@ $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";"
 Write-Host "AWS CLI installation completed"
 
 Write-Host "Fetching MSI package from S3..."
-$msi_package_basepath = "s3://${var.releases_bucket_name}/nrdot-collector-releases/${var.collector_distro}/${var.nrdot_version}/${var.commit_sha_short}/"
+$msi_package_basepath = "s3://${releases_bucket_name}/nrdot-collector-releases/${collector_distro}/${nrdot_version}/${commit_sha_short}/"
 $latest_msi_filename = aws s3 ls $msi_package_basepath |
     Sort-Object -Descending |
-    Where-Object { $_ -match "${var.collector_distro}" -and $_ -match "\.msi$" } |
+    Where-Object { $_ -match "${collector_distro}" -and $_ -match "\.msi$" } |
     Select-Object -First 1 |
     ForEach-Object { ($_ -split '\s+')[-1] }
 $msi_path = Join-Path $env:TEMP "collector.msi"
@@ -43,12 +43,12 @@ Write-Host "MSI installation successful"
 
 # Set environment variables
 $RegistryArgs = @{
-    Path         = 'HKLM:\SYSTEM\CurrentControlSet\Services\${var.collector_distro}'
+    Path         = 'HKLM:\SYSTEM\CurrentControlSet\Services\${collector_distro}'
     Name         = 'Environment'
     PropertyType = 'MultiString'
     Value        = @(
-        "NEW_RELIC_LICENSE_KEY=${var.nr_ingest_key}",
-        "OTEL_RESOURCE_ATTRIBUTES=testKey=${var.test_key}"
+        "NEW_RELIC_LICENSE_KEY=${nr_ingest_key}",
+        "OTEL_RESOURCE_ATTRIBUTES=testKey=${test_key}"
         # Add any other config environment variables to this registry key (comma-separated)
     )
     Force        = $true
@@ -56,20 +56,20 @@ $RegistryArgs = @{
 New-ItemProperty @RegistryArgs
 
 # Restart service to pick up registry key change
-Restart-Service -Name "${var.collector_distro}"
+Restart-Service -Name "${collector_distro}"
 
 Write-Host "Waiting 30 seconds for collector to spool up..."
 Start-Sleep -Seconds 30
 
 Write-Host "`nCollector logs from Windows Event Log:"
-Get-WinEvent -LogName Application -MaxEvents 100 -ErrorAction SilentlyContinue | Where-Object { $_.ProviderName -eq "${var.collector_distro}" } | Select-Object -ExpandProperty Message
+Get-WinEvent -LogName Application -MaxEvents 100 -ErrorAction SilentlyContinue | Where-Object { $_.ProviderName -eq "${collector_distro}" } | Select-Object -ExpandProperty Message
 
 # Check if service is running
-$service = Get-Service -Name "${var.collector_distro}"
+$service = Get-Service -Name "${collector_distro}"
 if ($service -and $service.Status -eq 'Running') {
-    Write-Host "Service ${var.collector_distro} is running"
+    Write-Host "Service ${collector_distro} is running"
 } else {
-    Write-Host "Service ${var.collector_distro} is not running"
+    Write-Host "Service ${collector_distro} is not running"
     exit 1
 }
 </powershell>
