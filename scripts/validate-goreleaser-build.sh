@@ -6,12 +6,14 @@
 set -e
 
 split=false
+goos=""
 
-while getopts d:s flag
+while getopts d:sg: flag
 do
     case "${flag}" in
         d) distro=${OPTARG};;
         s) split=true;;
+        g) goos=${OPTARG};;
         *) exit 1;;
     esac
 done
@@ -21,14 +23,28 @@ if [ -z ${distro} ]; then
     exit 1
 fi
 
+if [ "${split}" = true ] && [ -z "${goos}" ]; then
+    echo "Split mode requires GOOS to be provided with -g."
+    exit 1
+fi
+
 cd "distributions/${distro}"
 if [ ! -d "dist" ]; then
     echo "❌ dist directory not found!"
     exit 1
 fi
 
+# Set metadata directory based on mode
+if [ "${split}" = true ]; then
+    # In split mode, metadata files are in dist/<goos>/
+    metadata_dir="dist/${goos}"
+else
+    # In normal/merge mode, metadata files are at dist root
+    metadata_dir="dist"
+fi
+
 echo "📋 Verifying metadata files exist..."
-files=("dist/artifacts.json" "dist/metadata.json")
+files=("${metadata_dir}/artifacts.json" "${metadata_dir}/metadata.json")
 missing_files=()
 for file in "${files[@]}"; do
     if [ ! -f "$file" ]; then
@@ -45,7 +61,7 @@ else
 fi
 
 echo "📋 Verifying Binaries exist..."
-binaries=$( jq -r '.[] | select(.type == "Binary") | .path' dist/artifacts.json )
+binaries=$( jq -r '.[] | select(.type == "Binary") | .path' "${metadata_dir}/artifacts.json" )
 if [ -z "${binaries}" ]; then
     echo "❌ No binaries found in artifacts.json"
     exit 1
@@ -62,7 +78,7 @@ fi
 echo "✅ All binaries found!"
 
 echo "📋 Validating Archives and Packages..."
-artifacts=$( jq -r '.[] | select(.type == "Archive" or .type == "Linux Package") | .path' dist/artifacts.json )
+artifacts=$( jq -r '.[] | select(.type == "Archive" or .type == "Linux Package") | .path' "${metadata_dir}/artifacts.json" )
 if [ -z "${artifacts}" ]; then
     echo "⚠️ No archives or packages found in artifacts.json"
 else
@@ -81,7 +97,7 @@ else
             continue
         fi
         # Search for the corresponding checksum file and verify it exists
-        sum_file=$( jq -r ".[] | select(.type == \"Checksum\" and .extra.ChecksumOf == \"${artifact}\") | .path" dist/artifacts.json )
+        sum_file=$( jq -r ".[] | select(.type == \"Checksum\" and .extra.ChecksumOf == \"${artifact}\") | .path" "${metadata_dir}/artifacts.json" )
         if [ -z "${sum_file}" ]; then
             echo "❌ Checksum not defined for ${artifact} in artifacts.json"
             exit 1

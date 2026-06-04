@@ -247,13 +247,13 @@ jobs:
         run: echo "✅ GoReleaser build skipped - using cached binaries"
 
       - name: Validate GoReleaser build
-        run: ./scripts/validate-goreleaser-build.sh -d ${{ inputs.distribution }} -s
+        run: ./scripts/validate-goreleaser-build.sh -d ${{ inputs.distribution }} -s -g ${{ matrix.goos }}
           
       - name: Extract relevant metadata
         if: matrix.goos == 'linux'
         run: |
-          # Always use metadata.json from the dist folder (works for both cached and fresh builds)
-          VERSION=$(jq -r '.version' distributions/${{ inputs.distribution }}/dist/metadata.json)
+          # In split mode, metadata.json is in dist/<goos>/metadata.json
+          VERSION=$(jq -r '.version' distributions/${{ inputs.distribution }}/dist/${{ matrix.goos }}/metadata.json)
           echo "Version from metadata.json: $VERSION"
           ARCH=$(echo '${{ runner.arch }}' | sed 's/X/amd/g')
           ARCH=${ARCH@L}
