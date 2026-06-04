@@ -1,0 +1,22 @@
+#!/bin/bash
+################################################
+echo 'Installing Collector'
+export DEBIAN_FRONTEND=noninteractive
+apt update
+apt install unzip
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip -q awscliv2.zip
+./aws/install
+deb_package_basepath="s3://${releases_bucket_name}/nrdot-collector-releases/${collector_distro}/${nrdot_version}/${commit_sha_short}/"
+latest_deb_package_filename=$(aws s3 ls $${deb_package_basepath} | sort -r | grep '${collector_distro}' | grep 'amd64.deb$' | head -n1 | awk '{print $NF}')
+echo "Installing collector from: $${deb_package_basepath}$${latest_deb_package_filename}"
+aws s3 cp "$${deb_package_basepath}$${latest_deb_package_filename}" /tmp/collector.deb
+export NRDOT_MODE=ROOT
+dpkg -i /tmp/collector.deb
+################################################
+echo 'Configuring Collector'
+echo 'NEW_RELIC_LICENSE_KEY=${nr_ingest_key}' >> /etc/${collector_distro}/${collector_distro}.conf
+echo "OTEL_RESOURCE_ATTRIBUTES='testKey=${test_key}'" >> /etc/${collector_distro}/${collector_distro}.conf
+systemctl reload-or-restart ${collector_distro}.service
+sleep 30
+journalctl | grep ${collector_distro}
