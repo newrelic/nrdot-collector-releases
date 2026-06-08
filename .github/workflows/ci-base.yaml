@@ -48,7 +48,7 @@ permissions:
   id-token: write
 
 env:
-  caching_enabled: false
+  caching_enabled: ${{ !inputs.publish }}
   registry: "${{ secrets.aws_account_id }}.dkr.ecr.us-east-1.amazonaws.com"
 
 jobs:
