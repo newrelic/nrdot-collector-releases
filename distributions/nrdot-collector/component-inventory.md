@@ -14,18 +14,23 @@ This document maps each component in the `nrdot-collector` distribution to the u
 
 | Component | Use Cases |
 |-----------|-----------|
+| `apachereceiver` | OHI |
+| `awsecscontainermetricsreceiver` | OHI, k8s |
 | `dockerstatsreceiver` | OHI |
 | `elasticsearchreceiver` | OHI |
 | `filelogreceiver` | Host, k8s |
+| `haproxyreceiver` | OHI |
 | `hostmetricsreceiver` | Host, k8s, OHI |
 | `jmxreceiver` | OHI |
 | `k8seventsreceiver` | OHI, k8s |
 | `kafkametricsreceiver` | OHI |
+| `kafkareceiver` | OHI |
 | `kubeletstatsreceiver` | OHI, k8s |
 | `nginxreceiver` | OHI |
 | `otlpreceiver` | Core |
 | `prometheusreceiver` | Gateway, k8s |
 | `rabbitmqreceiver` | OHI |
+| `redisreceiver` | OHI |
 | `receivercreator` | OHI |
 
 ## Processors
