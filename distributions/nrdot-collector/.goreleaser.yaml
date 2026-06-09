@@ -6,7 +6,7 @@ release:
   disable: "true"
 msi:
   - id: nrdot-collector
-    name: nrdot-collector
+    name: nrdot-collector_{{ .Version }}_windows_{{ .MsiArch }}
     wxs: ./windows/installer.wxs
     extra_files:
       - config.yaml
