@@ -326,7 +326,7 @@ jobs:
           terraform_version: 1.9.8
           aws_account_id: ${{ secrets.aws_account_id }}
           working_directory: ./test/terraform/nightly
-          workspace: ${{ needs.setup.outputs.workspace }}-windows
+          workspace: ${{ needs.setup.outputs.workspace }}-windows-${{ matrix.version }}
           assume_role: "false"
       
       - name: Generate E2E scenario tag
