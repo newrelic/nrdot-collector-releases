@@ -6,18 +6,23 @@ dist:
   output_path: ./_build
 receivers:
   - gomod: go.opentelemetry.io/collector/receiver/otlpreceiver v0.150.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/apachereceiver v0.150.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/awsecscontainermetricsreceiver v0.150.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/dockerstatsreceiver v0.150.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/elasticsearchreceiver v0.150.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/filelogreceiver v0.150.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/haproxyreceiver v0.150.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/hostmetricsreceiver v0.150.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/jmxreceiver v0.150.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/k8seventsreceiver v0.150.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/k8sobjectsreceiver v0.150.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/kafkametricsreceiver v0.150.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/kafkareceiver v0.150.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/kubeletstatsreceiver v0.150.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/nginxreceiver v0.150.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/prometheusreceiver v0.150.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/rabbitmqreceiver v0.150.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/redisreceiver v0.150.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/receivercreator v0.150.0
 processors:
   - gomod: go.opentelemetry.io/collector/processor/batchprocessor v0.150.0
