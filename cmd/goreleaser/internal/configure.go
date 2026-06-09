@@ -483,7 +483,7 @@ func MSI(dist Distribution) []config.MSI {
 	return []config.MSI{
 		{
 			ID:   dist.FullName,
-			Name: fmt.Sprintf("%s", dist.FullName), // installer filename
+			Name: fmt.Sprintf("%s_{{ .Version }}_windows_{{ .MsiArch }}", dist.FullName), // installer filename
 			WXS:  "./windows/installer.wxs",
 			Files: []string{
 				"config.yaml",

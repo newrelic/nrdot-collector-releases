@@ -127,7 +127,7 @@ NRDOT must be installed from an Administrator account, and will run as an automa
 $collector_distro = "nrdot-collector"
 $collector_version = "1.16.0"
 $license_key = "YOUR_LICENSE_KEY"
-Invoke-WebRequest -Uri "https://github.com/newrelic/nrdot-collector-releases/releases/download/$collector_version/$collector_distro.msi" -OutFile "nrdot-collector.msi"
+Invoke-WebRequest -Uri "https://github.com/newrelic/nrdot-collector-releases/releases/download/${collector_version}/${collector_distro}_${collector_version}_windows_x64.msi" -OutFile "nrdot-collector.msi"
 Start-Process -Wait -PassThru msiexec.exe -ArgumentList "/i nrdot-collector.msi /qn"
 $RegistryArgs = @{
     Path         = "HKLM:\SYSTEM\CurrentControlSet\Services\$collector_distro"
