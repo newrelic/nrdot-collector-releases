@@ -260,7 +260,7 @@ jobs:
         shell: bash
         run: |
           RANDOM_SUFFIX=$(echo $RANDOM$RANDOM | md5sum | cut -c1-7)
-          echo "SCENARIO_TAG=e2e-${GITHUB_SHA:0:7}-${RANDOM_SUFFIX}" >> $GITHUB_ENV
+          echo "SCENARIO_TAG=e2e-ubuntu-${{ matrix.version }}-${GITHUB_SHA:0:7}-${RANDOM_SUFFIX}" >> $GITHUB_ENV
 
       - name: Terraform Apply
         run: |
@@ -333,7 +333,7 @@ jobs:
         shell: bash
         run: |
           RANDOM_SUFFIX=$(echo $RANDOM$RANDOM | md5sum | cut -c1-7)
-          echo "SCENARIO_TAG=e2e-${GITHUB_SHA:0:7}-${RANDOM_SUFFIX}" >> $GITHUB_ENV
+          echo "SCENARIO_TAG=e2e-windows-${{ matrix.version }}-${GITHUB_SHA:0:7}-${RANDOM_SUFFIX}" >> $GITHUB_ENV
 
       - name: Terraform Apply
         run: |
