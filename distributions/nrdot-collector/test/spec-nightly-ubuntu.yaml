@@ -134,38 +134,6 @@ description: nrdot-collector E2E Nightly Test - Ubuntu EC2
         lowerBoundedValue: 1
 
 scenarios:
-  - description: ubuntu 22.04 jammy - ec2 host metrics and resourcedetection
-    before:
-      - |
-        cd ../../../test/terraform/nightly &&
-        terraform apply -auto-approve \
-          -var="test_key=${SCENARIO_TAG}" \
-          -var="platform=ubuntu" \
-          -var="platform_version=22.04"
-    after:
-      - |
-        cd ../../../test/terraform/nightly &&
-        terraform destroy -auto-approve \
-          -var="test_key=${SCENARIO_TAG}" \
-          -var="platform=ubuntu" \
-          -var="platform_version=22.04"
-    tests:
-      nrqls: *host_metrics_nrqls
-
-  - description: ubuntu 24.04 noble - ec2 host metrics and resourcedetection
-    before:
-      - |
-        cd ../../../test/terraform/nightly &&
-        terraform apply -auto-approve \
-          -var="test_key=${SCENARIO_TAG}" \
-          -var="platform=ubuntu" \
-          -var="platform_version=24.04"
-    after:
-      - |
-        cd ../../../test/terraform/nightly &&
-        terraform destroy -auto-approve \
-          -var="test_key=${SCENARIO_TAG}" \
-          -var="platform=ubuntu" \
-          -var="platform_version=24.04"
+  - description: ubuntu - ec2 host metrics and resourcedetection
     tests:
       nrqls: *host_metrics_nrqls

@@ -106,20 +106,6 @@ description: nrdot-collector E2E Test (Windows)
         lowerBoundedValue: 1
 
 scenarios:
-  - description: windows 2025 - ec2 host metrics
-    before:
-      - | 
-        cd ../../../test/terraform/nightly &&
-        terraform apply -auto-approve \
-          -var="test_key=${SCENARIO_TAG}" \
-          -var="platform=windows" \
-          -var="platform_version=2025"
-    after:
-      - | 
-        cd ../../../test/terraform/nightly &&
-        terraform destroy -auto-approve \
-          -var="test_key=${SCENARIO_TAG}" \
-          -var="platform=windows" \
-          -var="platform_version=2025"
+  - description: windows - ec2 host metrics
     tests:
       nrqls: *host_metrics_nrqls
