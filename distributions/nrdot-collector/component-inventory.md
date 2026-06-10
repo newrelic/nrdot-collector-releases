@@ -24,6 +24,7 @@ This document maps each component in the `nrdot-collector` distribution to the u
 | `jmxreceiver` | OHI |
 | `k8seventsreceiver` | OHI, k8s |
 | `kafkametricsreceiver` | OHI |
+| `kafkareceiver` | OHI |
 | `kubeletstatsreceiver` | OHI, k8s |
 | `nginxreceiver` | OHI |
 | `otlpreceiver` | Core |

@@ -16,6 +16,7 @@ receivers:
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/jmxreceiver v0.150.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/k8seventsreceiver v0.150.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/kafkametricsreceiver v0.150.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/kafkareceiver v0.150.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/kubeletstatsreceiver v0.150.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/nginxreceiver v0.150.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/prometheusreceiver v0.150.0
@@ -60,3 +61,5 @@ providers:
 replaces:
   # Why: Fixes CVE-2026-42151 and CVE-2026-42154
   - github.com/prometheus/prometheus v0.311.2-0.20260409145810-72293ff1d2e0 => github.com/prometheus/prometheus v0.311.4-0.20260507094802-91c184a899b8
+  # Why: Fixes CVE-2026-41602 (Integer Overflow in TFramedTransport). Required by kafkareceiver. Can be removed when collector-contrib bumps thrift >= v0.23.0
+  - github.com/apache/thrift v0.22.0 => github.com/apache/thrift v0.23.0
