@@ -1,0 +1,73 @@
+# Component Inventory
+#
+# Maps each component in the `nrdot-collector` distribution to the use cases
+# that require it. As use cases evolve and begin to use components already
+# present in the distro, this list might become stale and need updating, so
+# it's not meant to be authoritative — it's best-effort context for maintainers.
+#
+# This file is validated against manifest.yaml by
+# scripts/validate-component-inventory.sh (run as part of `make ci`). Component
+# names must match the path suffix after /<category>/ in the manifest's gomod
+# value (e.g. `extension/observer/dockerobserver` -> `observer/dockerobserver`).
+#
+# Use-case legend:
+#   Core    - Core (not use-case specific)
+#   Host    - Host Monitoring
+#   k8s     - Kubernetes Monitoring
+#   ATP     - Host Monitoring with process metrics
+#   Gateway - Gateway Mode
+#   OHI     - On-Host Integrations
+
+receivers:
+  dockerstatsreceiver: [OHI]
+  elasticsearchreceiver: [OHI]
+  filelogreceiver: [Host, k8s]
+  hostmetricsreceiver: [Host, k8s, OHI]
+  jmxreceiver: [OHI]
+  k8seventsreceiver: [OHI, k8s]
+  kafkametricsreceiver: [OHI]
+  kubeletstatsreceiver: [OHI, k8s]
+  nginxreceiver: [OHI]
+  otlpreceiver: [Core]
+  prometheusreceiver: [Gateway, k8s]
+  rabbitmqreceiver: [OHI]
+  receivercreator: [OHI]
+
+processors:
+  adaptivetelemetryprocessor: [ATP]
+  attributesprocessor: [Core]
+  batchprocessor: [Core]
+  cumulativetodeltaprocessor: [Core]
+  filterprocessor: [Core]
+  groupbyattrsprocessor: [k8s, Gateway]
+  k8sattributesprocessor: [k8s, ATP, OHI]
+  memorylimiterprocessor: [Core]
+  metricsgenerationprocessor: [k8s, ATP, OHI]
+  metricstransformprocessor: [Core]
+  resourcedetectionprocessor: [Core]
+  resourceprocessor: [k8s, Gateway]
+  spanprocessor: [Gateway]
+  tailsamplingprocessor: [Gateway]
+  transformprocessor: [Core]
+
+exporters:
+  debugexporter: [Core]
+  loadbalancingexporter: [Gateway]
+  otlpexporter: [Core]
+  otlphttpexporter: [Core]
+
+connectors:
+  routingconnector: [Core]
+
+extensions:
+  healthcheckextension: [Core]
+  observer/dockerobserver: [OHI]
+  observer/hostobserver: [OHI]
+  observer/k8sobserver: [OHI]
+
+providers:
+  envprovider: [Core]
+  fileprovider: [Core]
+  httpprovider: [Core]
+  httpsprovider: [Core]
+  yamlprovider: [Core]

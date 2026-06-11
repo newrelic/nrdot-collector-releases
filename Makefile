@@ -19,7 +19,7 @@ NRLICENSE := $(TOOLS_BIN_DIR)/nrlicense
 
 DISTRIBUTIONS ?= "nrdot-collector,nrdot-collector-experimental"
 
-ci: check manifests-check build build-fips version-check licenses-check
+ci: check manifests-check component-inventory-check build build-fips version-check licenses-check
 check: ensure-goreleaser-up-to-date
 
 build: go ocb
@@ -41,9 +41,6 @@ goreleaser-verify: goreleaser
 
 ensure-goreleaser-up-to-date: generate-goreleaser
 	@git diff -s --exit-code distributions/*/.goreleaser*.yaml || (echo "Check failed: The goreleaser templates have changed but the .goreleaser.yamls haven't. Run 'make generate-goreleaser' and update your PR." && exit 1)
-
-validate-components:
-	@./scripts/validate-components.sh
 
 .PHONY: ocb
 ocb:
@@ -186,3 +183,10 @@ manifests-check:
 		echo "$${diff}"; \
 		exit 1; \
 	} || exit 0
+
+# Check that each distro's component-inventory.yaml (if present) matches its manifest.yaml
+.PHONY: component-inventory-check
+component-inventory-check:
+	@for distro in $$(echo ${DISTRIBUTIONS} | tr ',' ' ' | tr -d '"'); do \
+		./scripts/validate-component-inventory.sh "$$distro" || exit 1; \
+	done
