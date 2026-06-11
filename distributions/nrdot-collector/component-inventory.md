@@ -27,7 +27,7 @@ This document maps each component in the `nrdot-collector` distribution to the u
 | `kubeletstatsreceiver` | OHI, k8s |
 | `nginxreceiver` | OHI-nginx |
 | `otlpreceiver` | Core |
-| `prometheusreceiver` | Gateway, k8s |
+| `prometheusreceiver` | Gateway, k8s, OHI-ibmmq |
 | `rabbitmqreceiver` | OHI-rabbitmq |
 | `redisreceiver` | OHI-redis |
 | `receivercreator` | OHI |
