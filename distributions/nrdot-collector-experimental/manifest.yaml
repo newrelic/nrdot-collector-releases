@@ -62,3 +62,5 @@ providers:
 replaces:
   # Why: Fixes CVE-2026-42151 and CVE-2026-42154
   - github.com/prometheus/prometheus v0.311.2-0.20260409145810-72293ff1d2e0 => github.com/prometheus/prometheus v0.311.4-0.20260507094802-91c184a899b8
+  # Why: Fixes CVE-2026-41602 (Integer Overflow in TFramedTransport). Required by kafkareceiver. Can be removed when contrib is bumped to v0.151.0+
+  - github.com/apache/thrift v0.22.0 => github.com/apache/thrift v0.23.0
