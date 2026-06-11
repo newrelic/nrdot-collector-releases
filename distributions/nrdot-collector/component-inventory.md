@@ -14,23 +14,22 @@ This document maps each component in the `nrdot-collector` distribution to the u
 
 | Component | Use Cases |
 |-----------|-----------|
-| `apachereceiver` | OHI |
-| `awsecscontainermetricsreceiver` | OHI, k8s |
+| `awsecscontainermetricsreceiver` | OHI-ecs, k8s |
 | `dockerstatsreceiver` | OHI |
-| `elasticsearchreceiver` | OHI |
+| `elasticsearchreceiver` | OHI-elasticsearch |
 | `filelogreceiver` | Host, k8s |
-| `haproxyreceiver` | OHI |
+| `haproxyreceiver` | OHI-haproxy |
 | `hostmetricsreceiver` | Host, k8s, OHI |
 | `jmxreceiver` | OHI |
 | `k8seventsreceiver` | OHI, k8s |
-| `kafkametricsreceiver` | OHI |
-| `kafkareceiver` | OHI |
+| `kafkametricsreceiver` | OHI-kafka |
+| `kafkareceiver` | OHI-kafka |
 | `kubeletstatsreceiver` | OHI, k8s |
-| `nginxreceiver` | OHI |
+| `nginxreceiver` | OHI-nginx |
 | `otlpreceiver` | Core |
 | `prometheusreceiver` | Gateway, k8s |
-| `rabbitmqreceiver` | OHI |
-| `redisreceiver` | OHI |
+| `rabbitmqreceiver` | OHI-rabbitmq |
+| `redisreceiver` | OHI-redis |
 | `receivercreator` | OHI |
 
 ## Processors

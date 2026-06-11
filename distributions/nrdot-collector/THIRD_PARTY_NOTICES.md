@@ -164,22 +164,6 @@ Distributed under the following license(s):
 
 
 
-## [github.com/open-telemetry/opentelemetry-collector-contrib/receiver/apachereceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib)
-
-Distributed under the following license(s):
-
-* Apache-2.0
-
-
-
-## [github.com/open-telemetry/opentelemetry-collector-contrib/receiver/awsecscontainermetricsreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib)
-
-Distributed under the following license(s):
-
-* Apache-2.0
-
-
-
 ## [github.com/open-telemetry/opentelemetry-collector-contrib/receiver/dockerstatsreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib)
 
 Distributed under the following license(s):
@@ -197,14 +181,6 @@ Distributed under the following license(s):
 
 
 ## [github.com/open-telemetry/opentelemetry-collector-contrib/receiver/filelogreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib)
-
-Distributed under the following license(s):
-
-* Apache-2.0
-
-
-
-## [github.com/open-telemetry/opentelemetry-collector-contrib/receiver/haproxyreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib)
 
 Distributed under the following license(s):
 
@@ -237,14 +213,6 @@ Distributed under the following license(s):
 
 
 ## [github.com/open-telemetry/opentelemetry-collector-contrib/receiver/kafkametricsreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib)
-
-Distributed under the following license(s):
-
-* Apache-2.0
-
-
-
-## [github.com/open-telemetry/opentelemetry-collector-contrib/receiver/kafkareceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib)
 
 Distributed under the following license(s):
 
@@ -285,14 +253,6 @@ Distributed under the following license(s):
 
 
 ## [github.com/open-telemetry/opentelemetry-collector-contrib/receiver/receivercreator](https://github.com/open-telemetry/opentelemetry-collector-contrib)
-
-Distributed under the following license(s):
-
-* Apache-2.0
-
-
-
-## [github.com/open-telemetry/opentelemetry-collector-contrib/receiver/redisreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib)
 
 Distributed under the following license(s):
 
