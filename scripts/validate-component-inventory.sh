@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Copyright New Relic, Inc. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 # Validate that distributions/<distro>/component-inventory.yaml lists exactly
 # the components present in distributions/<distro>/manifest.yaml.
 #
