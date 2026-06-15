@@ -53,7 +53,7 @@ config:
         receivers:
           - host_metrics
         processors:
-          -resource_detection/env
+          - resource_detection/env
         exporters:
           - otlphttp
       # disable preset pipelines
