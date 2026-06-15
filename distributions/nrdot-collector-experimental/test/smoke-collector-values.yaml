@@ -23,7 +23,7 @@ ports:
 
 config:
   receivers:
-    hostmetrics:
+    host_metrics:
       collection_interval: 60s
       scrapers:
         cpu:
@@ -51,7 +51,7 @@ config:
     pipelines:
       metrics/host:
         receivers:
-          - hostmetrics
+          - host_metrics
         processors:
           - resourcedetection/env
         exporters:

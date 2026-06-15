@@ -25,7 +25,7 @@ The `hostmetricsreceiver` auto-detects files to scrape system metrics from. When
 
 Warning message indicating this issue:
 ```
-2025-01-01T21:08:21.097Z	warn	filesystemscraper/factory.go:48	No `root_path` config set when running in docker environment, will report container filesystem stats. See https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/hostmetricsreceiver#collecting-host-metrics-from-inside-a-container-linux-only	{"otelcol.component.id": "hostmetrics", "otelcol.component.kind": "Receiver", "otelcol.signal": "metrics"}
+2025-01-01T21:08:21.097Z	warn	filesystemscraper/factory.go:48	No `root_path` config set when running in docker environment, will report container filesystem stats. See https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/hostmetricsreceiver#collecting-host-metrics-from-inside-a-container-linux-only	{"otelcol.component.id": "host_metrics", "otelcol.component.kind": "Receiver", "otelcol.signal": "metrics"}
 ```
 
 **Resolution:** Follow the [receiver's docs](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/hostmetricsreceiver/README.md#collecting-host-metrics-from-inside-a-container-linux-only) to mount the host file system and configure `root_path`:
@@ -33,7 +33,7 @@ Warning message indicating this issue:
 docker run -v /:/hostfs \
 -e NEW_RELIC_LICENSE_KEY='license-key' newrelic/nrdot-collector \
 --config /etc/nrdot-collector/config.yaml \
---config 'yaml:receivers::hostmetrics::root_path: /hostfs'
+--config 'yaml:receivers::host_metrics::root_path: /hostfs'
 ```
 
 ## Gateway Mode
