@@ -7,7 +7,7 @@ receivers:
       grpc:
       http:
 
-  hostmetrics:
+  host_metrics:
     # Default collection interval is 60s. Lower if you need finer granularity.
     collection_interval: 60s
     scrapers:
@@ -66,7 +66,7 @@ receivers:
 
 processors:
   # group system.cpu metrics by cpu
-  metricstransform:
+  metrics_transform:
     transforms:
       - include: system.cpu.utilization
         action: update
@@ -169,7 +169,7 @@ processors:
 
   batch:
 
-  resourcedetection:
+  resource_detection:
     detectors: ["system"]
     system:
       hostname_sources: ["os"]
@@ -177,14 +177,14 @@ processors:
         host.id:
           enabled: true
 
-  resourcedetection/cloud:
+  resource_detection/cloud:
     detectors: ["gcp", "ec2", "azure"]
     timeout: 2s
     override: true
 
   # Gives OTEL_RESOURCE_ATTRIBUTES precedence over other sources.
   # host.id is set from env whenever the collector is orchestrated by NR Agents.
-  resourcedetection/env:
+  resource_detection/env:
     detectors: ["env"]
     timeout: 2s
     override: true
@@ -198,10 +198,10 @@ exporters:
 service:
   pipelines:
     metrics/host:
-      receivers: [hostmetrics]
+      receivers: [host_metrics]
       processors:
         - memory_limiter
-        - metricstransform
+        - metrics_transform
         - filter/exclude_cpu_utilization
         - filter/exclude_memory_utilization
         - filter/exclude_memory_usage
@@ -212,27 +212,27 @@ service:
         - filter/exclude_network
         - attributes/exclude_system_paging
         - transform/host
-        - resourcedetection
-        - resourcedetection/cloud
-        - resourcedetection/env
+        - resource_detection
+        - resource_detection/cloud
+        - resource_detection/env
         - cumulativetodelta
         - batch
       exporters: [otlphttp]
     logs/host:
       receivers: [file_log]
-      processors: [memory_limiter, transform, resourcedetection, resourcedetection/cloud, resourcedetection/env, batch]
+      processors: [memory_limiter, transform, resource_detection, resource_detection/cloud, resource_detection/env, batch]
       exporters: [otlphttp]
     traces:
       receivers: [otlp]
-      processors: [memory_limiter, transform, resourcedetection, resourcedetection/cloud, resourcedetection/env, batch]
+      processors: [memory_limiter, transform, resource_detection, resource_detection/cloud, resource_detection/env, batch]
       exporters: [otlphttp]
     metrics:
       receivers: [otlp]
-      processors: [memory_limiter, transform, resourcedetection, resourcedetection/cloud, resourcedetection/env, batch]
+      processors: [memory_limiter, transform, resource_detection, resource_detection/cloud, resource_detection/env, batch]
       exporters: [otlphttp]
     logs:
       receivers: [otlp]
-      processors: [memory_limiter, transform, resourcedetection, resourcedetection/cloud, resourcedetection/env, batch]
+      processors: [memory_limiter, transform, resource_detection, resource_detection/cloud, resource_detection/env, batch]
       exporters: [otlphttp]
 
   extensions: [health_check]

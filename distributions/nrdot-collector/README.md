@@ -58,8 +58,8 @@ Process metrics are disabled by default due to their high cardinality. To enable
 Example configuration:
 ```shell
 newrelic/nrdot-collector --config /etc/nrdot-collector/config.yaml \
---config='yaml:receivers::hostmetrics::scrapers::processes: ' \
---config='yaml:receivers::hostmetrics::scrapers::process: { metrics: { process.cpu.utilization: { enabled: true }, process.cpu.time: { enabled: false } } }'
+--config='yaml:receivers::host_metrics::scrapers::processes: ' \
+--config='yaml:receivers::host_metrics::scrapers::process: { metrics: { process.cpu.utilization: { enabled: true }, process.cpu.time: { enabled: false } } }'
 ```
 
 ---

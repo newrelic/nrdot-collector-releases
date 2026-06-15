@@ -83,7 +83,7 @@ receivers:
         tls:
           cert_file: /certs/server.crt
           key_file: /certs/server.key
-  hostmetrics:
+  host_metrics:
     collection_interval: 1s
     scrapers:
       memory:
@@ -97,7 +97,7 @@ exporters:
 service:
   pipelines:
     metrics:
-      receivers: [otlp, hostmetrics]
+      receivers: [otlp, host_metrics]
       exporters: [otlphttp]
 
 EOF
