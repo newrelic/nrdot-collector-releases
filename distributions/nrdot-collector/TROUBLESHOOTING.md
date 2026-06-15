@@ -10,9 +10,9 @@ If you are [seeing telemetry getting ingested into New Relic](../TROUBLESHOOTING
 Example log messages indicating this issue:
 ```
 # example 1
-2025-01-01T22:49:09.110Z        warn    system/system.go:143    failed to get host ID   {"otelcol.component.id": "resourcedetection", "otelcol.component.kind" : "Processor", "otelcol.pipeline.id": "logs/host", "otelcol.signal": "logs", "error": "failed to obtain \"host.id\": error detecting resource: host id not found in: /etc/machine-id or /var/lib/dbus/machine-id"}
+2025-01-01T22:49:09.110Z        warn    system/system.go:143    failed to get host ID   {"otelcol.component.id": "resource_detection", "otelcol.component.kind" : "Processor", "otelcol.pipeline.id": "logs/host", "otelcol.signal": "logs", "error": "failed to obtain \"host.id\": error detecting resource: host id not found in: /etc/machine-id or /var/lib/dbus/machine-id"}
 # example 2
-2025-01-01T23:07:27.866Z        warn    system/system.go:143    failed to get host ID   {"otelcol.component.id": "resourcedetection", "otelcol.component.kind": "Processor", "otelcol.pipeline.id": "metrics/host", "otelcol.signal": "metrics", "error": "empty \"host.id\""}
+2025-01-01T23:07:27.866Z        warn    system/system.go:143    failed to get host ID   {"otelcol.component.id": "resource_detection", "otelcol.component.kind": "Processor", "otelcol.pipeline.id": "metrics/host", "otelcol.signal": "metrics", "error": "empty \"host.id\""}
 ```
 
 **Resolution:** Set the `host.id` attribute manually via the [environment variable](./README.md#use-case-specific-configuration) `OTEL_RESOURCE_ATTRIBUTES`:

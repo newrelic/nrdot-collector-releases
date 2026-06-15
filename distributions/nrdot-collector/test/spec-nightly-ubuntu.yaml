@@ -134,6 +134,6 @@ description: nrdot-collector E2E Nightly Test - Ubuntu EC2
         lowerBoundedValue: 1
 
 scenarios:
-  - description: ubuntu - ec2 host metrics and resourcedetection
+  - description: ubuntu - ec2 host metrics and resource detection
     tests:
       nrqls: *host_metrics_nrqls
