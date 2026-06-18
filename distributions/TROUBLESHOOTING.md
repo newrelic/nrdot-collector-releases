@@ -68,7 +68,7 @@ Each component in the collector emits logs, enabled by the [internal telemetry c
 By default, the log `level` is set to `INFO` which is usually sufficient for debugging, but you can use the above-mentioned instructions to override it to a value that suits your needs.
 ```
 # Example warning log by hostmetricsreceiver
-2025-01-01T23:19:05.097Z    warn    filesystemscraper/factory.go:48    No `root_path` config set when running in docker environment, will report container filesystem stats. See https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/hostmetricsreceiver#collecting-host-metrics-from-inside-a-container-linux-only    {"otelcol.component.id": "hostmetrics", "otelcol.component.kind": "Receiver", "otelcol.signal": "metrics"}
+2025-01-01T23:19:05.097Z    warn    filesystemscraper/factory.go:48    No `root_path` config set when running in docker environment, will report container filesystem stats. See https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/hostmetricsreceiver#collecting-host-metrics-from-inside-a-container-linux-only    {"otelcol.component.id": "host_metrics", "otelcol.component.kind": "Receiver", "otelcol.signal": "metrics"}
 # Example of logs of successful startup and processing
 2025-01-01T23:19:14.828Z    info    service@v0.121.0/service.go:281    Everything is ready. Begin running and processing data.
 2025-01-01T23:19:16.031Z    info    Metrics    {"otelcol.component.id": "debug", "otelcol.component.kind": "Exporter", "otelcol.signal": "metrics", "resource metrics": 4, "metrics": 9, "data points": 32}

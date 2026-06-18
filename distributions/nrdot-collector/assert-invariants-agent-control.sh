@@ -28,7 +28,7 @@ for env_var in "${env_vars[@]}"; do
 done
 
 echo 'Checking for host.id detection'
-yq -e '.processors.resourcedetection.system.resource_attributes["host.id"].enabled == "true"' "${core_distro_dir}/config.yaml" ||
+yq -e '.processors.resource_detection.system.resource_attributes["host.id"].enabled == "true"' "${core_distro_dir}/config.yaml" ||
   { echo "expected host.id detection to be enabled"; exit 1; }
 
 
