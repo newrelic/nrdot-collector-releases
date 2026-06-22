@@ -23,16 +23,13 @@ receivers:
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/rabbitmqreceiver v0.154.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/redisreceiver v0.154.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/receivercreator v0.154.0
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/oracledbreceiver v0.154.0
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/sqlserverreceiver v0.154.0
-  - gomod: github.com/newrelic-forks/opentelemetry-collector-contrib/receiver/nroracledbreceiver v0.154.0
-  - gomod: github.com/newrelic-forks/opentelemetry-collector-contrib/receiver/nrsqlserverreceiver v0.154.0
+  - gomod: github.com/newrelic-forks/opentelemetry-collector-contrib/receiver/nroracledbreceiver v0.154.1
+  - gomod: github.com/newrelic-forks/opentelemetry-collector-contrib/receiver/nrsqlserverreceiver v0.154.1
 processors:
   - gomod: go.opentelemetry.io/collector/processor/batchprocessor v0.154.0
   - gomod: go.opentelemetry.io/collector/processor/memorylimiterprocessor v0.154.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/attributesprocessor v0.154.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/cumulativetodeltaprocessor v0.154.0
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/deltatorateprocessor v0.154.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/filterprocessor v0.154.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/groupbyattrsprocessor v0.154.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/k8sattributesprocessor v0.154.0
