@@ -8,24 +8,29 @@ This document maps each component in the `nrdot-collector` distribution to the u
 - **k8s**: Kubernetes Monitoring
 - **ATP**: Host Minitoring with process metrics
 - **Gateway**: Gateway Mode
-- **OHI**: On-Host Integrations
+- **OHI**: On-Host Integrations (shared infrastructure used across multiple integrations)
+- **OHI-{name}**: On-Host Integration specific to a product. The suffix indicates the target integration (e.g., `OHI-kafka` for Kafka monitoring).
 
 ## Receivers
 
 | Component | Use Cases |
 |-----------|-----------|
+| `awsecscontainermetricsreceiver` | OHI-ecs |
 | `dockerstatsreceiver` | OHI |
-| `elasticsearchreceiver` | OHI |
+| `elasticsearchreceiver` | OHI-elasticsearch |
 | `filelogreceiver` | Host, k8s |
+| `haproxyreceiver` | OHI-haproxy |
 | `hostmetricsreceiver` | Host, k8s, OHI |
 | `jmxreceiver` | OHI |
 | `k8seventsreceiver` | OHI, k8s |
-| `kafkametricsreceiver` | OHI |
+| `kafkametricsreceiver` | OHI-kafka |
+| `kafkareceiver` | OHI-kafka |
 | `kubeletstatsreceiver` | OHI, k8s |
-| `nginxreceiver` | OHI |
+| `nginxreceiver` | OHI-nginx |
 | `otlpreceiver` | Core |
 | `prometheusreceiver` | Gateway, k8s |
-| `rabbitmqreceiver` | OHI |
+| `rabbitmqreceiver` | OHI-rabbitmq |
+| `redisreceiver` | OHI-redis |
 | `receivercreator` | OHI |
 
 ## Processors
