@@ -16,12 +16,12 @@ This document maps each component in the `nrdot-collector` distribution to the u
 | Component | Use Cases |
 |-----------|-----------|
 | `awsecscontainermetricsreceiver` | OHI-ecs |
-| `dockerstatsreceiver` | OHI |
+| `dockerstatsreceiver` | OHI-docker |
 | `elasticsearchreceiver` | OHI-elasticsearch |
 | `filelogreceiver` | Host, k8s |
 | `haproxyreceiver` | OHI-haproxy |
 | `hostmetricsreceiver` | Host, k8s, OHI |
-| `jmxreceiver` | OHI |
+| `jmxreceiver` | OHI-kafka |
 | `k8seventsreceiver` | OHI, k8s |
 | `kafkametricsreceiver` | OHI-kafka |
 | `kafkareceiver` | OHI-kafka |
