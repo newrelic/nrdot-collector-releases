@@ -10,6 +10,7 @@ This document maps each component in the `nrdot-collector` distribution to the u
 - **Gateway**: Gateway Mode
 - **OHI**: On-Host Integrations (shared infrastructure used across multiple integrations)
 - **OHI-{name}**: On-Host Integration specific to a product. The suffix indicates the target integration (e.g., `OHI-kafka` for Kafka monitoring).
+- **DB-{name}**: Database Monitoring specific to a database product. The suffix indicates the target database (e.g., `DB-sqlserver` for SQL Server monitoring).
 
 ## Receivers
 
@@ -31,6 +32,8 @@ This document maps each component in the `nrdot-collector` distribution to the u
 | `prometheusreceiver` | Gateway, k8s |
 | `rabbitmqreceiver` | OHI-rabbitmq |
 | `redisreceiver` | OHI-redis |
+| `nroracledbreceiver` | DB-oracle |
+| `nrsqlserverreceiver` | DB-sqlserver |
 | `receivercreator` | OHI |
 
 ## Processors
@@ -86,3 +89,5 @@ This document maps each component in the `nrdot-collector` distribution to the u
 | `httpprovider` | Core |
 | `httpsprovider` | Core |
 | `yamlprovider` | Core |
+| `aesprovider` | DB-oracle, DB-sqlserver |
+| `secretsmanagerprovider` | DB-oracle, DB-sqlserver |
