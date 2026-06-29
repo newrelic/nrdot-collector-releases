@@ -31,6 +31,8 @@ This document maps each component in the `nrdot-collector` distribution to the u
 | `prometheusreceiver` | Gateway, k8s |
 | `rabbitmqreceiver` | OHI-rabbitmq |
 | `redisreceiver` | OHI-redis |
+| `nroracledbreceiver` | OHI-oracle |
+| `nrsqlserverreceiver` | OHI-sqlserver |
 | `receivercreator` | OHI |
 
 ## Processors
@@ -86,3 +88,5 @@ This document maps each component in the `nrdot-collector` distribution to the u
 | `httpprovider` | Core |
 | `httpsprovider` | Core |
 | `yamlprovider` | Core |
+| `aesprovider` | OHI-oracle, OHI-sqlserver |
+| `secretsmanagerprovider` | OHI-oracle, OHI-sqlserver |
