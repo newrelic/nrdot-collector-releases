@@ -99,7 +99,7 @@ fetch_nrdot_versions() {
         echo "  \"coreStable\": \"${core_stable:-none}\","
         echo "  \"coreBeta\": \"${core_beta:-none}\","
         echo "  \"contribBeta\": \"${contrib_beta:-none}\","
-        echo "  \"nrForkContribVersion\": \"${nr_forks_contrib_version:-none}\""
+        echo "  \"nrForkContribVersion\": \"${nr_forks_contrib_version}\""
         echo "}"
     else
         echo "Warning: Could not extract collector versions from nrdot dependencies" >&2

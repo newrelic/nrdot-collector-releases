@@ -14,4 +14,4 @@ receivers:
 processors:
   - gomod: github.com/newrelic/nrdot-collector-components/processor/adaptivetelemetryprocessor v0.154.0
 exporters:
-  - gomod: go.opentelemetry.io/collector/receiver/nopexporter v0.154.0
+  - gomod: go.opentelemetry.io/collector/exporter/nopexporter v0.154.0
