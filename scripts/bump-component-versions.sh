@@ -19,22 +19,6 @@ done
 # Store the current directory
 ORIGINAL_DIR=$(pwd)
 
-# Fetch the latest available version of a Go module. Prints the version to
-# stdout; logs a warning and returns 1 if no versions are found.
-fetch_module_version() {
-    local module="$1"
-
-    local latest_version
-    latest_version=$(${GO} list -m -versions "$module" 2>/dev/null | awk '{print $NF}')
-
-    if [[ -z "$latest_version" ]]; then
-        echo "Warning: No versions found for $module" >&2
-        return 1
-    fi
-
-    echo "$latest_version"
-}
-
 # Fetch the latest nrdot-collector-components version and its OTel dependency versions.
 fetch_nrdot_versions() {
     local nrdot_module="github.com/newrelic/nrdot-collector-components/exporter/nopexporter"
@@ -42,7 +26,12 @@ fetch_nrdot_versions() {
     echo "Fetching latest version of nrdot-collector-components nrdot..." >&2
 
     local latest_version
-    latest_version=$(fetch_module_version "$nrdot_module") || return 1
+    latest_version=$(${GO} list -m -versions "$nrdot_module" 2>/dev/null | awk '{print $NF}')
+
+    if [[ -z "$latest_version" ]]; then
+        echo "Warning: No versions found for $nrdot_module" >&2
+        return 1
+    fi
 
     echo "Latest nrdot version: ${latest_version}" >&2
 
@@ -89,9 +78,19 @@ fetch_nrdot_versions() {
             2>/dev/null | tr ' ' '\n' | grep "^${core_minor}\." | sort -V | tail -1)
     fi
 
-    # Fetch the latest nr-fork contrib version. Required — abort if unavailable.
-    local nr_forks_contrib_version
-    nr_forks_contrib_version=$(fetch_module_version "github.com/newrelic-forks/opentelemetry-collector-contrib/receiver/nrsqlserverreceiver") || return 1
+    # Find the highest nr-fork contrib patch whose minor matches the nrdot
+    # version (nrdot-collector-components is the source of truth for the minor).
+    local nr_forks_contrib_version=""
+    local nrdot_minor
+    nrdot_minor=$(echo "$latest_version" | awk -F'.' '{print $1"."$2}')
+    nr_forks_contrib_version=$(${GO} list -m -versions \
+        "github.com/newrelic-forks/opentelemetry-collector-contrib/receiver/nrsqlserverreceiver" \
+        2>/dev/null | tr ' ' '\n' | grep "^${nrdot_minor}\." | sort -V | tail -1)
+
+    if [[ -z "$nr_forks_contrib_version" ]]; then
+        echo "Warning: No newrelic-forks/opentelemetry-collector contrib version found for target minor $nrdot_minor" >&2
+        return 1
+    fi
 
     # Output as JSON
     if [[ -n "$core_stable" ]] || [[ -n "$core_beta" ]]; then
