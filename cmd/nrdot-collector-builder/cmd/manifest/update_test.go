@@ -123,7 +123,7 @@ func TestUpdateCmd_RunE_NrdotComponents(t *testing.T) {
 		"github.com/newrelic/nrdot-collector-components/processor/adaptivetelemetryprocessor",
 		"github.com/newrelic-forks/opentelemetry-collector-contrib/receiver/nrsqlserverreceiver",
 		"go.opentelemetry.io/collector/receiver/nopreceiver",
-		"go.opentelemetry.io/collector/receiver/nopexporter",
+		"go.opentelemetry.io/collector/exporter/nopexporter",
 	}
 	for _, module := range betaModules {
 		assert.Contains(t, updated, module+" "+targetBeta)
