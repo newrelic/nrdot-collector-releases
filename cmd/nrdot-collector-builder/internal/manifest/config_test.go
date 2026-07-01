@@ -274,7 +274,7 @@ func TestIsCompatibleWithNrVersions(t *testing.T) {
 		},
 		{
 			name:                 "nrdot patch version higher",
-			nrdotVersion:         "v0.142.5",
+			nrdotVersion:         "v0.142.3",
 			nrForkContribVersion: "v0.142.0",
 			betaVersion:          "v0.142.0",
 			expectedMatch:        true,
@@ -282,7 +282,7 @@ func TestIsCompatibleWithNrVersions(t *testing.T) {
 		{
 			name:                 "fork patch version higher",
 			nrdotVersion:         "v0.142.0",
-			nrForkContribVersion: "v0.142.5",
+			nrForkContribVersion: "v0.142.4",
 			betaVersion:          "v0.142.0",
 			expectedMatch:        true,
 		},
