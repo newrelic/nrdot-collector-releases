@@ -19,6 +19,22 @@ done
 # Store the current directory
 ORIGINAL_DIR=$(pwd)
 
+# Fetch the latest available version of a Go module. Prints the version to
+# stdout; logs a warning and returns 1 if no versions are found.
+fetch_module_version() {
+    local module="$1"
+
+    local latest_version
+    latest_version=$(${GO} list -m -versions "$module" 2>/dev/null | awk '{print $NF}')
+
+    if [[ -z "$latest_version" ]]; then
+        echo "Warning: No versions found for $module" >&2
+        return 1
+    fi
+
+    echo "$latest_version"
+}
+
 # Fetch the latest nrdot-collector-components version and its OTel dependency versions.
 fetch_nrdot_versions() {
     local nrdot_module="github.com/newrelic/nrdot-collector-components/exporter/nopexporter"
@@ -26,12 +42,7 @@ fetch_nrdot_versions() {
     echo "Fetching latest version of nrdot-collector-components nrdot..." >&2
 
     local latest_version
-    latest_version=$(${GO} list -m -versions "$nrdot_module" 2>/dev/null | awk '{print $NF}')
-
-    if [[ -z "$latest_version" ]]; then
-        echo "Warning: No versions found for $nrdot_module" >&2
-        return 1
-    fi
+    latest_version=$(fetch_module_version "$nrdot_module") || return 1
 
     echo "Latest nrdot version: ${latest_version}" >&2
 
@@ -78,13 +89,18 @@ fetch_nrdot_versions() {
             2>/dev/null | tr ' ' '\n' | grep "^${core_minor}\." | sort -V | tail -1)
     fi
 
+    # Fetch the latest nr-fork contrib version. Required — abort if unavailable.
+    local nr_forks_contrib_version
+    nr_forks_contrib_version=$(fetch_module_version "github.com/newrelic-forks/opentelemetry-collector-contrib/receiver/nrsqlserverreceiver") || return 1
+
     # Output as JSON
     if [[ -n "$core_stable" ]] || [[ -n "$core_beta" ]]; then
         echo "{"
         echo "  \"nrdotVersion\": \"$latest_version\","
         echo "  \"coreStable\": \"${core_stable:-none}\","
         echo "  \"coreBeta\": \"${core_beta:-none}\","
-        echo "  \"contribBeta\": \"${contrib_beta:-none}\""
+        echo "  \"contribBeta\": \"${contrib_beta:-none}\","
+        echo "  \"nrForkContribVersion\": \"${nr_forks_contrib_version:-none}\""
         echo "}"
     else
         echo "Warning: Could not extract collector versions from nrdot dependencies" >&2
@@ -103,11 +119,13 @@ if [[ $NRDOT_STATUS -eq 0 ]]; then
     CORE_STABLE=$(echo "$NRDOT_VERSIONS" | jq -r '.coreStable // ""')
     CORE_BETA=$(echo "$NRDOT_VERSIONS" | jq -r '.coreBeta // ""')
     CONTRIB_BETA=$(echo "$NRDOT_VERSIONS" | jq -r '.contribBeta // ""')
+    NR_FORK_CONTRIB=$(echo "$NRDOT_VERSIONS" | jq -r '.nrForkContribVersion // ""')
 
-    [[ -n "$NRDOT_VERSION" ]] && NRDOT_FLAGS+=(--nrdot-version "$NRDOT_VERSION")
-    [[ -n "$CORE_STABLE" ]]   && NRDOT_FLAGS+=(--core-stable "$CORE_STABLE")
-    [[ -n "$CORE_BETA" ]]     && NRDOT_FLAGS+=(--core-beta "$CORE_BETA")
-    [[ -n "$CONTRIB_BETA" ]]  && NRDOT_FLAGS+=(--contrib-beta "$CONTRIB_BETA")
+    [[ -n "$NRDOT_VERSION" ]]    && NRDOT_FLAGS+=(--nrdot-version "$NRDOT_VERSION")
+    [[ -n "$CORE_STABLE" ]]      && NRDOT_FLAGS+=(--core-stable "$CORE_STABLE")
+    [[ -n "$CORE_BETA" ]]        && NRDOT_FLAGS+=(--core-beta "$CORE_BETA")
+    [[ -n "$CONTRIB_BETA" ]]     && NRDOT_FLAGS+=(--contrib-beta "$CONTRIB_BETA")
+    [[ -n "$NR_FORK_CONTRIB" ]]  && NRDOT_FLAGS+=(--nr-fork-contrib-version "$NR_FORK_CONTRIB")
 fi
 
 # Change to the CLI tool directory
