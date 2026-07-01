@@ -93,7 +93,7 @@ func TestConfig_IsNrdotComponent(t *testing.T) {
 	assert.False(t, isNrdotComponent(Module{GoMod: "github.com/some/other/module"}))
 }
 
-func TestConfig_IsNrForkContribVersion(t *testing.T) {
+func TestConfig_IsNrForkContribComponent(t *testing.T) {
 	assert.True(t, isNrForkContribComponent(Module{GoMod: "github.com/newrelic-forks/opentelemetry-collector-contrib v1.0.0"}))
 	assert.True(t, isNrForkContribComponent(Module{GoMod: "github.com/newrelic-forks/opentelemetry-collector-contrib"}))
 	assert.False(t, isNrForkContribComponent(Module{GoMod: "github.com/some/other/module"}))
