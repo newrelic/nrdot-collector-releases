@@ -1,0 +1,17 @@
+# This config is for testing purposes and should not be used in production.
+#
+
+dist:
+  module: github.com/newrelic/nrdot-collector-releases/nrdot-collector
+  name: nrdot-collector
+  description: NRDOT Collector
+  version: 1.1.0
+  output_path: ./_build
+
+receivers:
+  - gomod: go.opentelemetry.io/collector/receiver/nopreceiver v0.154.0
+  - gomod: github.com/newrelic-forks/opentelemetry-collector-contrib/receiver/nrsqlserverreceiver v0.154.4
+processors:
+  - gomod: github.com/newrelic/nrdot-collector-components/processor/adaptivetelemetryprocessor v0.154.0
+exporters:
+  - gomod: go.opentelemetry.io/collector/receiver/nopexporter v0.154.0

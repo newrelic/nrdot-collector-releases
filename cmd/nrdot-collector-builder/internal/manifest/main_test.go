@@ -126,14 +126,14 @@ func TestCopyAndUpdateConfigModules_Nrdot(t *testing.T) {
 func TestCopyAndUpdateConfigModules_NrForkContrib(t *testing.T) {
 	cfg := newTestCfg()
 	cfg.Receivers = []Module{
-		{GoMod: "github.com/newrelic-forks/opentelemetry-collector-contrib/receiver/nroracledbreceiver v0.154.4"},
+		{GoMod: "github.com/newrelic-forks/opentelemetry-collector-contrib/receiver/nrsqlserverreceiver v0.154.4"},
 	}
 	updates := map[string]VersionUpdate{
 		"github.com/newrelic-forks/opentelemetry-collector-contrib": {BetaVersion: "v0.155.0"},
 	}
 	result, err := CopyAndUpdateConfigModules(cfg, updates)
 	assert.NoError(t, err)
-	assert.Equal(t, "github.com/newrelic-forks/opentelemetry-collector-contrib/receiver/nroracledbreceiver v0.155.0", result.Receivers[0].GoMod)
+	assert.Equal(t, "github.com/newrelic-forks/opentelemetry-collector-contrib/receiver/nrsqlserverreceiver v0.155.0", result.Receivers[0].GoMod)
 }
 
 func TestCopyAndUpdateConfigModules_NrdotAndNrFork(t *testing.T) {
@@ -142,7 +142,7 @@ func TestCopyAndUpdateConfigModules_NrdotAndNrFork(t *testing.T) {
 		{GoMod: "github.com/newrelic/nrdot-collector-components/processor/adaptivetelemetryprocessor v0.154.0"},
 	}
 	cfg.Receivers = []Module{
-		{GoMod: "github.com/newrelic-forks/opentelemetry-collector-contrib/receiver/nroracledbreceiver v0.154.4"},
+		{GoMod: "github.com/newrelic-forks/opentelemetry-collector-contrib/receiver/nrsqlserverreceiver v0.154.4"},
 	}
 	updates := map[string]VersionUpdate{
 		"github.com/newrelic/nrdot-collector-components":            {BetaVersion: "v0.155.0"},
@@ -151,7 +151,7 @@ func TestCopyAndUpdateConfigModules_NrdotAndNrFork(t *testing.T) {
 	result, err := CopyAndUpdateConfigModules(cfg, updates)
 	assert.NoError(t, err)
 	assert.Equal(t, "github.com/newrelic/nrdot-collector-components/processor/adaptivetelemetryprocessor v0.155.0", result.Processors[0].GoMod)
-	assert.Equal(t, "github.com/newrelic-forks/opentelemetry-collector-contrib/receiver/nroracledbreceiver v0.155.0", result.Receivers[0].GoMod)
+	assert.Equal(t, "github.com/newrelic-forks/opentelemetry-collector-contrib/receiver/nrsqlserverreceiver v0.155.0", result.Receivers[0].GoMod)
 }
 
 func TestCopyAndUpdateConfigModules_NoMatchUnchanged(t *testing.T) {
