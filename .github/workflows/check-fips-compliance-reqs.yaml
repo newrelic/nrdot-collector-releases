@@ -25,7 +25,7 @@ jobs:
   check-boringssl-commit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
 
       - name: Read FIPS spec
         id: fips-spec
@@ -38,7 +38,7 @@ jobs:
           echo "FIPS spec: Go ~${GO_VERSION}, BoringSSL ${BORINGSSL_COMMIT}"
 
       - name: Setup Go (matching fips/spec.yaml)
-        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
         with:
           go-version: "~${{ steps.fips-spec.outputs.go_version }}"
           check-latest: true
@@ -56,7 +56,7 @@ jobs:
 
       - name: Restore BoringSSL commit cache
         id: cache-boringssl
-        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: .boringssl-cache
           key: boringssl-commit-go${{ steps.go-version.outputs.version }}
@@ -101,7 +101,7 @@ jobs:
           echo "sha=${BORINGSSL_SHA}" >> $GITHUB_OUTPUT
 
       - name: Save BoringSSL commit cache
-        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25 # v5
         if: steps.cache-boringssl.outputs.cache-hit != 'true'
         with:
           path: .boringssl-cache
