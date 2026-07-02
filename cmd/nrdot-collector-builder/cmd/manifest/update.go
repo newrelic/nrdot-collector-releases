@@ -33,6 +33,7 @@ var UpdateCmd = &cobra.Command{
 
 		// Get version overrides from persistent flags.
 		nrdotVersion := persistentFlag(cmd, "nrdot-version")
+		nrForkContribVersion := persistentFlag(cmd, "nr-fork-contrib-version")
 		coreStable := persistentFlag(cmd, "core-stable")
 		coreBeta := persistentFlag(cmd, "core-beta")
 		contribBeta := persistentFlag(cmd, "contrib-beta")
@@ -41,6 +42,9 @@ var UpdateCmd = &cobra.Command{
 		nrdotUpdates := make(map[string]manifest.VersionUpdate)
 		if nrdotVersion != "" {
 			nrdotUpdates[manifest.NrModule] = manifest.VersionUpdate{BetaVersion: nrdotVersion}
+		}
+		if nrForkContribVersion != "" {
+			nrdotUpdates[manifest.NrForkContribModule] = manifest.VersionUpdate{BetaVersion: nrForkContribVersion}
 		}
 		if coreStable != "" || coreBeta != "" {
 			nrdotUpdates[manifest.CoreModule] = manifest.VersionUpdate{StableVersion: coreStable, BetaVersion: coreBeta}

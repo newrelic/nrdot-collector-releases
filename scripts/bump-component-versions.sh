@@ -78,13 +78,28 @@ fetch_nrdot_versions() {
             2>/dev/null | tr ' ' '\n' | grep "^${core_minor}\." | sort -V | tail -1)
     fi
 
+    # Find the highest nr-fork contrib patch whose minor matches the nrdot
+    # version (nrdot-collector-components is the source of truth for the minor).
+    local nr_forks_contrib_version=""
+    local nrdot_minor
+    nrdot_minor=$(echo "$latest_version" | awk -F'.' '{print $1"."$2}')
+    nr_forks_contrib_version=$(${GO} list -m -versions \
+        "github.com/newrelic-forks/opentelemetry-collector-contrib/receiver/nrsqlserverreceiver" \
+        2>/dev/null | tr ' ' '\n' | grep "^${nrdot_minor}\." | sort -V | tail -1)
+
+    if [[ -z "$nr_forks_contrib_version" ]]; then
+        echo "Warning: No newrelic-forks/opentelemetry-collector-contrib version found for target minor $nrdot_minor" >&2
+        return 1
+    fi
+
     # Output as JSON
     if [[ -n "$core_stable" ]] || [[ -n "$core_beta" ]]; then
         echo "{"
         echo "  \"nrdotVersion\": \"$latest_version\","
         echo "  \"coreStable\": \"${core_stable:-none}\","
         echo "  \"coreBeta\": \"${core_beta:-none}\","
-        echo "  \"contribBeta\": \"${contrib_beta:-none}\""
+        echo "  \"contribBeta\": \"${contrib_beta:-none}\","
+        echo "  \"nrForkContribVersion\": \"${nr_forks_contrib_version}\""
         echo "}"
     else
         echo "Warning: Could not extract collector versions from nrdot dependencies" >&2
@@ -103,11 +118,13 @@ if [[ $NRDOT_STATUS -eq 0 ]]; then
     CORE_STABLE=$(echo "$NRDOT_VERSIONS" | jq -r '.coreStable // ""')
     CORE_BETA=$(echo "$NRDOT_VERSIONS" | jq -r '.coreBeta // ""')
     CONTRIB_BETA=$(echo "$NRDOT_VERSIONS" | jq -r '.contribBeta // ""')
+    NR_FORK_CONTRIB=$(echo "$NRDOT_VERSIONS" | jq -r '.nrForkContribVersion // ""')
 
-    [[ -n "$NRDOT_VERSION" ]] && NRDOT_FLAGS+=(--nrdot-version "$NRDOT_VERSION")
-    [[ -n "$CORE_STABLE" ]]   && NRDOT_FLAGS+=(--core-stable "$CORE_STABLE")
-    [[ -n "$CORE_BETA" ]]     && NRDOT_FLAGS+=(--core-beta "$CORE_BETA")
-    [[ -n "$CONTRIB_BETA" ]]  && NRDOT_FLAGS+=(--contrib-beta "$CONTRIB_BETA")
+    [[ -n "$NRDOT_VERSION" ]]    && NRDOT_FLAGS+=(--nrdot-version "$NRDOT_VERSION")
+    [[ -n "$CORE_STABLE" ]]      && NRDOT_FLAGS+=(--core-stable "$CORE_STABLE")
+    [[ -n "$CORE_BETA" ]]        && NRDOT_FLAGS+=(--core-beta "$CORE_BETA")
+    [[ -n "$CONTRIB_BETA" ]]     && NRDOT_FLAGS+=(--contrib-beta "$CONTRIB_BETA")
+    [[ -n "$NR_FORK_CONTRIB" ]]  && NRDOT_FLAGS+=(--nr-fork-contrib-version "$NR_FORK_CONTRIB")
 fi
 
 # Change to the CLI tool directory

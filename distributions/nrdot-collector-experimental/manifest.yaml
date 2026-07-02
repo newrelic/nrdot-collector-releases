@@ -21,8 +21,8 @@ receivers:
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/nginxreceiver v0.154.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/prometheusreceiver v0.154.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/rabbitmqreceiver v0.154.0
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/redisreceiver v0.154.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/receivercreator v0.154.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/redisreceiver v0.154.0
   - gomod: github.com/newrelic-forks/opentelemetry-collector-contrib/receiver/nroracledbreceiver v0.154.4
   - gomod: github.com/newrelic-forks/opentelemetry-collector-contrib/receiver/nrsqlserverreceiver v0.154.4
 processors:
@@ -60,9 +60,9 @@ providers:
   - gomod: go.opentelemetry.io/collector/confmap/provider/httpprovider v1.60.0
   - gomod: go.opentelemetry.io/collector/confmap/provider/httpsprovider v1.60.0
   - gomod: go.opentelemetry.io/collector/confmap/provider/yamlprovider v1.60.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/confmap/provider/aesprovider v0.154.0
   # Secret Management Providers
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/confmap/provider/secretsmanagerprovider v0.154.0
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/confmap/provider/aesprovider v0.154.0
 # When adding a replace, add a comment before it to document why it's needed and when it can be removed
 replaces:
   # Why: Fixes CVE-2026-42151 and CVE-2026-42154

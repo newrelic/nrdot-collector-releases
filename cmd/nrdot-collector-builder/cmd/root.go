@@ -10,12 +10,13 @@ import (
 )
 
 var (
-	jsonOutput         bool
-	verbose            bool
-	nrdotVersion       string
-	coreStableVersion  string
-	coreBetaVersion    string
-	contribBetaVersion string
+	jsonOutput           bool
+	verbose              bool
+	nrdotVersion         string
+	nrForkContribVersion string
+	coreStableVersion    string
+	coreBetaVersion      string
+	contribBetaVersion   string
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -33,6 +34,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVar(&jsonOutput, "json", false, "Output results in JSON format")
 	rootCmd.PersistentFlags().BoolVar(&verbose, "verbose", false, "Verbose output")
 	rootCmd.PersistentFlags().StringVar(&nrdotVersion, "nrdot-version", "", "Pin nrdot-collector-components to this version")
+	rootCmd.PersistentFlags().StringVar(&nrForkContribVersion, "nr-fork-contrib-version", "", "Pin newrelic-forks/opentelemetry-collector-contrib to this version")
 	rootCmd.PersistentFlags().StringVar(&coreStableVersion, "core-stable", "", "Pin OTel core stable (v1.x) modules to this version")
 	rootCmd.PersistentFlags().StringVar(&coreBetaVersion, "core-beta", "", "Pin OTel core beta (v0.x) modules to this version")
 	rootCmd.PersistentFlags().StringVar(&contribBetaVersion, "contrib-beta", "", "Pin OTel contrib modules to this version")
