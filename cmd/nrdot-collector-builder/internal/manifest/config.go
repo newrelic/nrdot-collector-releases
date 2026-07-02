@@ -151,11 +151,10 @@ func (c *Config) SetVersions() error {
 				if isStableVersion(componentVersion) {
 					versions.StableCoreVersion = componentVersion
 				} else {
-					if isCompatibleWithNrVersions(versions.NrdotVersion, versions.NrForkContribVersion, componentVersion) {
-						versions.BetaCoreVersion = componentVersion
-					} else {
+					if !isCompatibleWithNrVersions(versions.NrdotVersion, versions.NrForkContribVersion, componentVersion) {
 						return fmt.Errorf("beta core version %s incompatible with nrdot %s or nr-fork %s", componentVersion, versions.NrdotVersion, versions.NrForkContribVersion)
 					}
+					versions.BetaCoreVersion = componentVersion
 				}
 			}
 
