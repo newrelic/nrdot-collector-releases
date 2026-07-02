@@ -177,12 +177,12 @@ func TestIsCompatibleWithNrComponent(t *testing.T) {
 			name:          "different minor versions - nrdot higher",
 			nrdotVersion:  "v0.143.0",
 			betaVersion:   "v0.142.5",
-			expectedMatch: true,
+			expectedMatch: false,
 		},
 		{
 			name:          "different minor versions - beta higher",
 			nrdotVersion:  "v0.142.0",
-			betaVersion:   "v0.142.1",
+			betaVersion:   "v0.143.0",
 			expectedMatch: false,
 		},
 		{
@@ -195,7 +195,7 @@ func TestIsCompatibleWithNrComponent(t *testing.T) {
 			name:          "different patch versions - beta higher",
 			nrdotVersion:  "v0.142.3",
 			betaVersion:   "v0.142.5",
-			expectedMatch: false,
+			expectedMatch: true,
 		},
 		{
 			name:          "edge case - large version numbers",
@@ -231,7 +231,7 @@ func TestIsCompatibleWithNrVersions(t *testing.T) {
 			expectedMatch:        true,
 		},
 		{
-			name:                 "all versions populated, beta higher than one",
+			name:                 "all versions populated, beta minor version higher than one",
 			nrdotVersion:         "v0.141.0",
 			nrForkContribVersion: "v0.142.0",
 			betaVersion:          "v0.142.0",
@@ -245,7 +245,7 @@ func TestIsCompatibleWithNrVersions(t *testing.T) {
 			expectedMatch:        true,
 		},
 		{
-			name:                 "nrdotVersion empty, beta higher",
+			name:                 "nrdotVersion empty, beta minor version higher",
 			nrdotVersion:         "",
 			nrForkContribVersion: "v0.141.0",
 			betaVersion:          "v0.142.0",
@@ -291,7 +291,7 @@ func TestIsCompatibleWithNrVersions(t *testing.T) {
 			nrdotVersion:         "v0.142.0",
 			nrForkContribVersion: "v0.142.0",
 			betaVersion:          "v0.142.5",
-			expectedMatch:        false,
+			expectedMatch:        true,
 		},
 	}
 

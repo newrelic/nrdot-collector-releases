@@ -110,7 +110,7 @@ func isStableVersion(version string) bool {
 }
 
 func isCompatibleWithNrComponent(nrComponentVersion, betaVersion string) bool {
-	return semver.Compare(nrComponentVersion, betaVersion) >= 0
+	return semver.MajorMinor(nrComponentVersion) == semver.MajorMinor(betaVersion)
 }
 
 func isCompatibleWithNrVersions(nrdotVersion, nrForkContribVersion, betaVersion string) bool {
@@ -150,12 +150,19 @@ func (c *Config) SetVersions() error {
 			if isOtelCoreComponent(component.GoMod) {
 				if isStableVersion(componentVersion) {
 					versions.StableCoreVersion = componentVersion
-				} else if isCompatibleWithNrVersions(versions.NrdotVersion, versions.NrForkContribVersion, componentVersion) {
-					versions.BetaCoreVersion = componentVersion
+				} else {
+					if isCompatibleWithNrVersions(versions.NrdotVersion, versions.NrForkContribVersion, componentVersion) {
+						versions.BetaCoreVersion = componentVersion
+					} else {
+						return fmt.Errorf("beta core version %s incompatible with nrdot %s or nr-fork %s", componentVersion, versions.NrdotVersion, versions.NrForkContribVersion)
+					}
 				}
 			}
 
-			if isOtelContribComponent(component.GoMod) && !isStableVersion(componentVersion) && isCompatibleWithNrVersions(versions.NrdotVersion, versions.NrForkContribVersion, componentVersion) {
+			if isOtelContribComponent(component.GoMod) && !isStableVersion(componentVersion) {
+				if !isCompatibleWithNrVersions(versions.NrdotVersion, versions.NrForkContribVersion, componentVersion) {
+					return fmt.Errorf("contrib version %s incompatible with nrdot %s or nr-fork %s", componentVersion, versions.NrdotVersion, versions.NrForkContribVersion)
+				}
 				versions.BetaContribVersion = componentVersion
 			}
 
