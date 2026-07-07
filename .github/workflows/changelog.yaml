@@ -37,7 +37,7 @@ jobs:
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
         run: |
-          CHLOG_EXEMPT_PREFIXES=('chore:' '[chore]')
+          CHLOG_EXEMPT_PREFIXES=('[chore]' 'chore:' 'ci:' 'docs:')
           for prefix in "${CHLOG_EXEMPT_PREFIXES[@]}"; do
             if [[ "$PR_TITLE" == "$prefix"* ]]; then
               echo "Title has exempt prefix '$prefix'; changelog not required."
