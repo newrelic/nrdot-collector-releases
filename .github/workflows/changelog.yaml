@@ -1,0 +1,113 @@
+# This action requires that any PR targeting the main branch should add a
+# yaml file to the ./.chloggen/ directory. If a CHANGELOG entry is not required,
+# or if performing maintance on the Changelog, add either \"[chore]\" to the title of
+# the pull request or add the \"Skip Changelog\" label to disable this action.
+
+name: changelog
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled, edited]
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+env:
+  # Make sure to exit early if cache segment download times out after 2 minutes.
+  # We limit cache download as a whole to 5 minutes.
+  SEGMENT_DOWNLOAD_TIMEOUT_MINS: 2
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  changelog:
+    runs-on: ubuntu-24.04
+    if: ${{ github.actor != 'dependabot[bot]' }}
+    env:
+      PR_HEAD: ${{ github.event.pull_request.head.sha }}
+
+    steps:
+      - name: Check if changelog exempt
+        id: check
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+        run: |
+          CHLOG_EXEMPT_PREFIXES=('chore:' '[chore]')
+          for prefix in "${CHLOG_EXEMPT_PREFIXES[@]}"; do
+            if [[ "$PR_TITLE" == "$prefix"* ]]; then
+              echo "Title has exempt prefix '$prefix'; changelog not required."
+              echo "exempt=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          done
+
+          CHLOG_EXEMPT_LABELS=('Skip Changelog' 'dependencies')
+          for label in "${CHLOG_EXEMPT_LABELS[@]}"; do
+            if echo "$PR_LABELS" | grep -qF "\"$label\""; then
+              echo "PR has exempt label '$label'; changelog not required."
+              echo "exempt=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          done
+
+          echo "No exempt prefix or label; changelog required."
+          echo "exempt=false" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          # Fetch complete history unless the PR is changelog-exempt.
+          fetch-depth: ${{ steps.check.outputs.exempt == 'true' && '1' || '0' }}
+      - uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6
+        with:
+          go-version: oldstable
+          cache-dependency-path: "**/*.sum"
+
+      - name: Ensure no changes to the CHANGELOG.md or CHANGELOG-API.md
+        if: ${{ steps.check.outputs.exempt != 'true' }}
+        run: |
+          if [[ "$(git diff --name-only "$(git merge-base origin/main "$PR_HEAD")" "$PR_HEAD" ./CHANGELOG*.md)" ]]
+          then
+            echo "CHANGELOG.md and CHANGELOG-API.md should not be directly modified."
+            echo "Please add a .yaml file to the ./.chloggen/ directory."
+            echo "Alternately, add either \"chore:\" or \"[chore]\" to the title of the pull request or add the \"Skip Changelog\" label if this job should be skipped."
+            false
+          else
+            echo "CHANGELOG.md and CHANGELOG-API.md were not modified."
+          fi
+
+      - name: Ensure ./.chloggen/*.yaml addition(s)
+        if: ${{ steps.check.outputs.exempt != 'true' }}
+        run: |
+          if [[ 1 -gt "$(git diff --diff-filter=AM --name-only "$(git merge-base origin/main "$PR_HEAD")" "$PR_HEAD" ./.chloggen | grep -c \\.yaml)" ]]
+          then
+            echo "No changelog entry was added or changed in the ./.chloggen/ directory."
+            echo "Please add or edit an existing .yaml file in the ./.chloggen/ directory."
+            echo "See CONTRIBUTING.md for more details."
+            echo "Alternately, add either \"[chore]\" to the title of the pull request or add the \"Skip Changelog\" label if this job should be skipped."
+            false
+          else
+            echo "A changelog entry was added to the ./.chloggen/ directory."
+          fi
+
+      - name: Validate ./.chloggen/*.yaml changes
+        run: |
+          make install-tools
+          make chlog-validate \
+            || { echo "New ./.chloggen/*.yaml file failed validation."; exit 1; }
+
+      # In order to validate any links in the yaml file, render the config to markdown
+      - name: Render .chloggen changelog entries
+        if: ${{ steps.check.outputs.exempt != 'true' }}
+        run: make chlog-preview > changelog_preview.md
+      - name: Link Checker
+        if: ${{ steps.check.outputs.exempt != 'true' }}
+        id: lychee
+        uses: lycheeverse/lychee-action@8646ba30535128ac92d33dfc9133794bfdd9b411 # v2.8.0
+        with:
+          args: "--verbose --no-progress ./changelog_preview.md --config .github/lychee.toml"
+          failIfEmpty: false

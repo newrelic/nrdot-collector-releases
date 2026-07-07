@@ -186,3 +186,23 @@ manifests-check:
 		echo "$${diff}"; \
 		exit 1; \
 	} || exit 0
+
+CHLOGGEN := $(TOOLS_BIN_DIR)/chloggen
+CHLOGGEN_CONFIG := "${SRC_ROOT}/.chloggen/config.yaml"
+CHLOGGEN_
+
+.PHONY: chlog-new
+chlog-new:
+	$(CHLOGGEN) new --config $(CHOLGGEN_CONFIG)
+
+.PHONY: chlog-validate
+chlog-validate: ${CHLOGGEN}
+	$(CHLOGGEN) validate --config $(CHOLGGEN_CONFIG)
+
+.PHONY: chlog-preview
+chlog-preview:
+	$(CHLOGGEN) update --config $(CHLOGGEN_CONFIG) --dry
+
+.PHONY: chlog-update
+chlog-preview:
+	$(CHLOGGEN) update --config $(CHOLGGEN_CONFIG) --version $(VERSION)

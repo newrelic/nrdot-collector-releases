@@ -1,0 +1,14 @@
+change_logs:
+    api: CHANGELOG-API.md
+    user: CHANGELOG.md
+default_change_logs:
+    - user
+entries_dir: .chloggen
+template_yaml: .chloggen/TEMPLATE.yaml
+summary_template: .chloggen/summary.tmpl
+components:
+    - all
+    - distributions/nrdot-collector
+    - distributions/nrdot-collector-experimental
+    - cmd/goreleaser
+    - cmd/nrdot-collector-builder
