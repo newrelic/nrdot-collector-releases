@@ -189,20 +189,20 @@ manifests-check:
 
 CHLOGGEN := $(TOOLS_BIN_DIR)/chloggen
 CHLOGGEN_CONFIG := "${SRC_ROOT}/.chloggen/config.yaml"
-CHLOGGEN_
+CHLOGGEN_FILENAME?=$(shell git branch --show-current)
 
 .PHONY: chlog-new
 chlog-new:
-	$(CHLOGGEN) new --config $(CHOLGGEN_CONFIG)
+	$(CHLOGGEN) new --config $(CHLOGGEN_CONFIG) --filename $(CHLOGGEN_FILENAME)
 
 .PHONY: chlog-validate
 chlog-validate: ${CHLOGGEN}
-	$(CHLOGGEN) validate --config $(CHOLGGEN_CONFIG)
+	$(CHLOGGEN) validate --config $(CHLOGGEN_CONFIG)
 
 .PHONY: chlog-preview
 chlog-preview:
 	$(CHLOGGEN) update --config $(CHLOGGEN_CONFIG) --dry
 
 .PHONY: chlog-update
-chlog-preview:
-	$(CHLOGGEN) update --config $(CHOLGGEN_CONFIG) --version $(VERSION)
+chlog-update:
+	$(CHLOGGEN) update --config $(CHLOGGEN_CONFIG) --version $(VERSION)
