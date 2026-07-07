@@ -83,7 +83,9 @@ jobs:
       - name: Ensure ./.chloggen/*.yaml addition(s)
         if: ${{ steps.check.outputs.exempt != 'true' }}
         run: |
-          if [[ 1 -gt "$(git diff --diff-filter=AM --name-only "$(git merge-base origin/main "$PR_HEAD")" "$PR_HEAD" ./.chloggen | grep -c \\.yaml)" ]]
+          excluded_yamls=(config.yaml TEMPLATE.yaml)
+          chloggen_yamls="$(git diff --diff-filter=AM --name-only "$(git merge-base origin/main "$PR_HEAD")" "$PR_HEAD" ./.chloggen)"
+          if [[ 1 -gt "$(echo "$chloggen_yamls" | grep \\.yaml | grep -vc -f <(printf '/%s$\n' "${excluded_yamls[@]}"))" ]]
           then
             echo "No changelog entry was added or changed in the ./.chloggen/ directory."
             echo "Please add or edit an existing .yaml file in the ./.chloggen/ directory."
