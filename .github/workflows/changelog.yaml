@@ -1,7 +1,7 @@
 # This action requires that any PR targeting the main branch should add a
 # yaml file to the ./.chloggen/ directory. If a CHANGELOG entry is not required,
 # or if performing maintenance on the Changelog, add the "Skip Changelog" label,
-# or prefix the pull request title with any of the following: "[chore]", "chore",
+# or prefix the pull request title with any of the following: "chore",
 # "build", "ci", "refactor", "style", "test".
 
 name: changelog
@@ -38,7 +38,7 @@ jobs:
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
         run: |
-          CHLOG_EXEMPT_PREFIXES=('[chore]' 'chore' 'build' 'ci' 'refactor' 'style' 'test')
+          CHLOG_EXEMPT_PREFIXES=('chore' 'build' 'ci' 'refactor' 'style' 'test')
           for prefix in "${CHLOG_EXEMPT_PREFIXES[@]}"; do
             if [[ "$PR_TITLE" == "$prefix"* ]]; then
               echo "Title has exempt prefix '$prefix'; changelog not required."
@@ -59,23 +59,23 @@ jobs:
           echo "No exempt prefix or label; changelog required."
           echo "exempt=false" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           # Fetch complete history unless the PR is changelog-exempt.
           fetch-depth: ${{ steps.check.outputs.exempt == 'true' && '1' || '0' }}
-      - uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6
+      - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
         with:
           go-version: oldstable
           cache-dependency-path: "**/*.sum"
 
-      - name: Ensure no changes to the CHANGELOG.md or CHANGELOG-API.md
+      - name: Ensure no changes to CHANGELOG.md
         if: ${{ steps.check.outputs.exempt != 'true' }}
         run: |
           if [[ "$(git diff --name-only "$(git merge-base origin/main "$PR_HEAD")" "$PR_HEAD" ./CHANGELOG*.md)" ]]
           then
             echo "CHANGELOG.md should not be directly modified."
             echo "Please add a .yaml file to the ./.chloggen/ directory."
-            echo "Alternately, add either \"chore:\" or \"[chore]\" to the title of the pull request or add the \"Skip Changelog\" label if this job should be skipped."
+            echo "Alternately, add the \"Skip Changelog\" label or prefix the pull request title with any of the following: \"chore\", \"build\", \"ci\", \"refactor\", \"style\", or \"test\"."
             false
           else
             echo "CHANGELOG.md was not modified."
@@ -91,7 +91,7 @@ jobs:
             echo "No changelog entry was added or changed in the ./.chloggen/ directory."
             echo "Please add or edit an existing .yaml file in the ./.chloggen/ directory."
             echo "See CONTRIBUTING.md for more details."
-            echo "Alternately, add either \"[chore]\" to the title of the pull request or add the \"Skip Changelog\" label if this job should be skipped."
+            echo "Alternately, add \"chore:\" to the title of the pull request or add the \"Skip Changelog\" label if this job should be skipped."
             false
           else
             echo "A changelog entry was added to the ./.chloggen/ directory."
@@ -99,7 +99,6 @@ jobs:
 
       - name: Validate ./.chloggen/*.yaml changes
         run: |
-          make install-tools
           make chlog-validate \
             || { echo "New ./.chloggen/*.yaml file failed validation."; exit 1; }
 

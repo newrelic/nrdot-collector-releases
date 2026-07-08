@@ -45,6 +45,9 @@ ensure-goreleaser-up-to-date: generate-goreleaser
 validate-components:
 	@./scripts/validate-components.sh
 
+validate-actions-hashes:
+	@./scripts/validate-actions-hashes.sh
+
 .PHONY: ocb
 ocb:
 ifeq (, $(shell command -v ocb 2>/dev/null))
@@ -189,20 +192,27 @@ manifests-check:
 
 CHLOGGEN := $(TOOLS_BIN_DIR)/chloggen
 CHLOGGEN_CONFIG := "${SRC_ROOT}/.chloggen/config.yaml"
-CHLOGGEN_FILENAME?=$(shell git branch --show-current)
+BRANCH_NAME?=$(shell git branch --show-current)
+PR_NUMBER?=$(shell gh pr view $(BRANCH_NAME) --json number --jq '.number' 2>/dev/null)
 
+# Generate a new changelog entry.
+# The .issues field will be pre-populated with the PR number if one exists.
 .PHONY: chlog-new
-chlog-new:
-	$(CHLOGGEN) new --config $(CHLOGGEN_CONFIG) --filename $(CHLOGGEN_FILENAME)
+chlog-new: ${CHLOGGEN}
+	@filepath=$$($(CHLOGGEN) new --config $(CHLOGGEN_CONFIG) --filename $(BRANCH_NAME) | sed -n 's/^Changelog entry template copied to: //p'); \
+	if [ -n "$(PR_NUMBER)" ]; then \
+		yq -i '.issues = [$(PR_NUMBER)] | .issues style="flow"' "$$filepath"; \
+	fi; \
+	echo "$$filepath"
 
 .PHONY: chlog-validate
 chlog-validate: ${CHLOGGEN}
 	$(CHLOGGEN) validate --config $(CHLOGGEN_CONFIG)
 
 .PHONY: chlog-preview
-chlog-preview:
+chlog-preview: ${CHLOGGEN}
 	$(CHLOGGEN) update --config $(CHLOGGEN_CONFIG) --dry
 
 .PHONY: chlog-update
-chlog-update:
+chlog-update: ${CHLOGGEN}
 	$(CHLOGGEN) update --config $(CHLOGGEN_CONFIG) --version $(VERSION)
