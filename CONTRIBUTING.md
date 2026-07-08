@@ -53,14 +53,14 @@ The type must be one of the following:
 
 ### Changelog
 
-Pull requests which include user-facing changes must be accompanied by a changelog entry. This repository uses OpenTelemetry's `chloggen` tool to manage changelog entries. To make a changelog entry:
+This repository uses OpenTelemetry's `chloggen` tool to manage changelog entries. To make a changelog entry:
 
 1. Create an entry file using `make chlog-new`
 2. Fill in the empty fields in the new file
 3. Run `make chlog-validate` to validate the new file
 4. Commit the file with your changes
 
-If a changelog entry is not required, you may prefix your PR title with any of the conventional commit tags marked "no" in the table above, or add the `Skip Changelog` label to your pull request.
+Pull requests which include user-facing changes must be accompanied by a changelog entry. If a changelog entry is not required, you may prefix your PR title with any of the conventional commit tags marked "no" in the table above, or add the `Skip Changelog` label.
 
 During the release process, all changelog entries are transcribed in CHANGELOG.md and added to [NRDOT's release notes](https://docs.newrelic.com/docs/release-notes/nrdot-release-notes/).
 
