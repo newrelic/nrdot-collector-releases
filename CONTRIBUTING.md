@@ -43,7 +43,7 @@ The type must be one of the following:
 |--------------|---------------------------------------------------------------|--------------------|
 | **build**    | Changes that affect the build system or external dependencies | no                 |
 | **ci**       | Changes to CI configs and scripts                             | no                 |
-| **docs**     | Documentation changes                                         | no                 |
+| **docs**     | Documentation changes                                         | yes                |
 | **feat**     | A new feature                                                 | yes                |
 | **fix**      | A bug fix related to one of the distros                       | yes                |
 | **perf**     | A performance enhancement                                     | yes                |
@@ -62,7 +62,7 @@ This repository uses OpenTelemetry's `chloggen` tool to manage changelog entries
 
 Pull requests which include user-facing changes must be accompanied by a changelog entry. If a changelog entry is not required, you may prefix your PR title with any of the conventional commit tags marked "no" in the table above, or add the `Skip Changelog` label.
 
-During the release process, all changelog entries are transcribed in CHANGELOG.md and added to [NRDOT's release notes](https://docs.newrelic.com/docs/release-notes/nrdot-release-notes/).
+During the release process, all changelog entries are added to [NRDOT's release notes](https://docs.newrelic.com/docs/release-notes/nrdot-release-notes/).
 
 ## Contributor License Agreement
 
