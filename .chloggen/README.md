@@ -25,7 +25,6 @@ summary_template: .chloggen/summary.tmpl
 # (Optional) Default filename: CHANGELOG.md
 change_logs:
   user: CHANGELOG.md
-  api: CHANGELOG-API.md
 
 # The default change_log or change_logs to which an entry should be added.
 # If 'change_logs' is specified in this file, and no value is specified for 'default_change_logs',

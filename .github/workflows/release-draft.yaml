@@ -69,13 +69,30 @@ jobs:
           go-version: "~1.26"
           check-latest: true
 
+      - name: Extract release notes
+        run: |
+          release_notes_file="${RUNNER_TEMP}/release-notes.md"
+
+          # Grab changelog from between version markers, then remove leading / trailing whitespace and print to temp file.
+          awk 'inside && /<!-- previous-version -->/{exit} inside{print} /<!-- next version -->/{inside=1}' CHANGELOG.md \
+          | awk 'NF{content=1} content{buf=buf $0 ORS} END{sub(/\n+$/,"\n",buf); printf "%s",buf}' > "$release_notes_file"
+
+          if [ ! -s "$release_notes_file" ]; then
+              echo "Error: no user-facing changes found between version markers in CHANGELOG.md; aborting release." >&2
+              exit 1
+          fi
+
+          echo "release_notes_file=$release_notes_file" >> "$GITHUB_ENV"
+          echo "Release notes:"
+          cat "$release_notes_file"
+
       - name: Draft Release From Root Config
         id: goreleaser
         uses: goreleaser/goreleaser-action@1a80836c5c9d9e5755a25cb59ec6f45a3b5f41a8 # v7
         with:
           distribution: goreleaser-pro
           version: "2.15.4"
-          args: --clean --timeout 2h
+          args: --clean --timeout 2h --release-notes="${{ env.release_notes_file }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}

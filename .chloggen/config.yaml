@@ -6,8 +6,8 @@ entries_dir: .chloggen
 template_yaml: .chloggen/TEMPLATE.yaml
 summary_template: .chloggen/summary.tmpl
 components:
-    - all
+    - distributions
     - distributions/nrdot-collector
     - distributions/nrdot-collector-experimental
-    - cmd/goreleaser
-    - cmd/nrdot-collector-builder
+    - docs
+    - examples

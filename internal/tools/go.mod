@@ -5,6 +5,7 @@ go 1.25.0
 require (
 	github.com/newrelic/nrdot-collector-components/cmd/nrlicense v0.142.1
 	go.elastic.co/go-licence-detector v0.7.0
+	go.opentelemetry.io/build-tools/chloggen v0.30.0
 )
 
 require (
@@ -14,7 +15,6 @@ require (
 	github.com/sergi/go-diff v1.3.1 // indirect
 	github.com/spf13/cobra v1.10.2 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
-	go.opentelemetry.io/build-tools/chloggen v0.30.0 // indirect
 	golang.org/x/mod v0.22.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
 	golang.org/x/sys v0.29.0 // indirect
