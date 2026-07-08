@@ -1,5 +1,4 @@
 change_logs:
-    api: CHANGELOG-API.md
     user: CHANGELOG.md
 default_change_logs:
     - user
