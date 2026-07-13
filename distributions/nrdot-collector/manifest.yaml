@@ -22,8 +22,8 @@ receivers:
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/rabbitmqreceiver v0.154.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/receivercreator v0.154.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/redisreceiver v0.154.0
-  - gomod: github.com/newrelic-forks/opentelemetry-collector-contrib/receiver/nroracledbreceiver v0.154.4
-  - gomod: github.com/newrelic-forks/opentelemetry-collector-contrib/receiver/nrsqlserverreceiver v0.154.4
+  - gomod: github.com/newrelic-forks/opentelemetry-collector-contrib/receiver/nroracledbreceiver v0.154.6
+  - gomod: github.com/newrelic-forks/opentelemetry-collector-contrib/receiver/nrsqlserverreceiver v0.154.6
 processors:
   - gomod: go.opentelemetry.io/collector/processor/batchprocessor v0.154.0
   - gomod: go.opentelemetry.io/collector/processor/memorylimiterprocessor v0.154.0
