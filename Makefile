@@ -199,20 +199,16 @@ PR_NUMBER?=$(shell gh pr view $(BRANCH_NAME) --json number --jq '.number' 2>/dev
 # The .issues field will be pre-populated with the PR number if one exists.
 .PHONY: chlog-new
 chlog-new: ${CHLOGGEN}
-	@filepath=$$($(CHLOGGEN) new --config $(CHLOGGEN_CONFIG) --filename $(BRANCH_NAME) | sed -n 's/^Changelog entry template copied to: //p'); \
-	if [ -n "$(PR_NUMBER)" ]; then \
-		yq -i '.issues = [$(PR_NUMBER)] | .issues style="flow"' "$$filepath"; \
-	fi; \
-	echo "$$filepath"
+	./scripts/chloggen-wrapper.sh -b $(CHLOGGEN) -n
 
 .PHONY: chlog-validate
 chlog-validate: ${CHLOGGEN}
-	$(CHLOGGEN) validate --config $(CHLOGGEN_CONFIG)
+	./scripts/chloggen-wrapper.sh -b $(CHLOGGEN) -v
 
 .PHONY: chlog-preview
 chlog-preview: ${CHLOGGEN}
-	$(CHLOGGEN) update --config $(CHLOGGEN_CONFIG) --dry
+	./scripts/chloggen-wrapper.sh -b $(CHLOGGEN) -p
 
 .PHONY: chlog-update
 chlog-update: ${CHLOGGEN}
-	$(CHLOGGEN) update --config $(CHLOGGEN_CONFIG) --version $(VERSION)
+	./scripts/chloggen-wrapper.sh -b $(CHLOGGEN) -u

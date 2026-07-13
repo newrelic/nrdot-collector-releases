@@ -9,5 +9,4 @@ components:
     - distributions
     - distributions/nrdot-collector
     - distributions/nrdot-collector-experimental
-    - docs
     - examples
