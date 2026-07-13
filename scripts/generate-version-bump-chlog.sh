@@ -32,9 +32,8 @@ fi
 
 filepath=$(make -s chlog-new)
 
-# The .issues field is automatically populated by the make target if a PR has been created prior
+# The .issues and .change_type fields are automatically populated by the make target if a PR has been created prior
 yq -i "
-  .change_type = \"enhancement\" |
   .component = \"distributions\" |
   .note = \"Bump otel component versions from ${CURRENT_BETA_CORE} to ${NEXT_BETA_CORE}\" |
   ... comments=\"\"

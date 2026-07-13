@@ -15,11 +15,6 @@ on:
 permissions:
   contents: read
 
-env:
-  # Make sure to exit early if cache segment download times out after 2 minutes.
-  # We limit cache download as a whole to 5 minutes.
-  SEGMENT_DOWNLOAD_TIMEOUT_MINS: 2
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref }}
   cancel-in-progress: true

@@ -1,12 +1,12 @@
 # Use this changelog template to create an entry for release notes.
 
-# One of 'breaking', 'deprecation', 'new_component', 'enhancement', 'bug_fix'
+# One of 'feature', 'bug_fix', 'docs'. Inferred from conventional commit tag if PR created before `make chlog-new`.
 change_type:
 
-# Mandatory. One of: distributions, distributions/nrdot-collector, distributions/nrdot-collector-experimental, docs, examples
+# Mandatory. One of: distributions, distributions/nrdot-collector, distributions/nrdot-collector-experimental, examples
 component:
 
-# Mandatory. Put the PR number here. `make chlog-new` will automatically populate this if a PR exists for your branch.
+# Mandatory. Put the PR number here. Inferred from PR number if PR created before `make chlog-new`.
 issues: []
 
 # A brief description of the change.  Surround your text with quotes ("") if it needs to start with a backtick (`).
