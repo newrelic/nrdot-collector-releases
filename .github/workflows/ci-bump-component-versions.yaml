@@ -70,6 +70,31 @@ jobs:
               echo "branch=otel-release/${next_beta_core}" >> $GITHUB_ENV
             fi
 
+        - name: Check NR Forks component drift
+          id: check_nr_forks_drift
+          if: steps.bump_component_versions.outputs.has_changes == 'false'
+          run: |
+            GRACE_PERIOD_DAYS=14
+            output=$(./scripts/check-nr-forks-version-drift.sh)
+            days_drifted=$(echo "${output}" | jq -r '.nrForkContribDaysDrifted')
+            if (( $(echo "$days_drifted > $GRACE_PERIOD_DAYS" | bc -l) )); then
+              echo "nrdot_version=$(echo "${output}" | jq -r '.nrdotVersion')" >> $GITHUB_OUTPUT
+              echo "nr_fork_contrib_latest_version=$(echo "${output}" | jq -r '.nrForkContribVersion')" >> $GITHUB_OUTPUT
+              echo "nr_fork_contrib_days_drifted=${days_drifted}" >> $GITHUB_OUTPUT
+              echo "grace_period_exceeded=true" >> $GITHUB_OUTPUT
+            else
+              echo "grace_period_exceeded=false" >> $GITHUB_OUTPUT
+            fi
+
+        - name: Send fork contrib drift notification to slack channel
+          if: steps.check_nr_forks_drift.outputs.grace_period_exceeded == 'true'
+          uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
+          with:
+            webhook: ${{ secrets.OTELCOMM_BOTS_SLACK_HOOK }}
+            webhook-type: incoming-webhook
+            payload: |
+              text: ":warning: *NR Forks Contrib release is lagging!*\n\nThe <https://github.com/newrelic-forks/opentelemetry-collector-contrib/tags|latest release> is `${{ steps.check_nr_forks_drift.outputs.nr_fork_contrib_latest_version }}`, but `${{ steps.check_nr_forks_drift.outputs.nrdot_version }}` has been available for *${{ steps.check_nr_forks_drift.outputs.nr_fork_contrib_days_drifted }} days*."
+
         - name: Commit Component Version Bump
           if: steps.bump_component_versions.outputs.has_changes == 'true'
           run: |
