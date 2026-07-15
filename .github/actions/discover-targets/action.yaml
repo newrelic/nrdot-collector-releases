@@ -1,0 +1,28 @@
+name: "Discover Targets"
+description: "Find valid GOOS targets for a distribution and FIPS configuration"
+inputs:
+  distribution:
+    description: "The distribution name"
+    required: true
+  fips:
+    description: "Whether this is a FIPS build"
+    required: true
+outputs:
+  goos:
+    description: "JSON array of valid GOOS values"
+    value: ${{ steps.find.outputs.goos }}
+runs:
+  using: "composite"
+  steps:
+    - name: Find Valid Build Targets
+      id: find
+      shell: bash
+      run: |
+        # Extract GOOS values from goreleaser file and extracts to JSON array for use in matrix.
+        fips_suffix=$([[ "${{ inputs.fips }}" == "true" ]] && echo "-fips" || echo "")
+        goreleaser_file="distributions/${{ inputs.distribution }}/.goreleaser${fips_suffix}.yaml"
+
+        goos=$(yq -r '.builds[].goos[]' "$goreleaser_file" | sort -u | jq -R -s -c 'split("\n")[:-1]')
+
+        echo "Found GOOS targets: $goos"
+        echo "goos=$goos" >> $GITHUB_OUTPUT
