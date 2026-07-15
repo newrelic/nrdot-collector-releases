@@ -49,14 +49,14 @@ jobs:
             output=$(./scripts/bump-component-versions.sh)
             echo "output=${output}" >> $GITHUB_OUTPUT
 
-            # Generate third-party licenses
-            make licenses
-
             # Check for unstaged changes
             if git diff --quiet; then
               echo "No unstaged changes found. Exiting."
               echo "has_changes=false" >> $GITHUB_OUTPUT
             else
+              # Generate third-party licenses
+              make licenses
+
               echo "Unstaged changes found. Continuing..."
               echo "has_changes=true" >> $GITHUB_OUTPUT
               next_beta_core=$(echo "${output}" | jq -r '.nextVersions.betaCoreVersion')

@@ -85,7 +85,7 @@ fetch_nrdot_versions() {
         2>/dev/null | tr ' ' '\n' | grep "^${nrdot_minor}\." | sort -V | tail -1)
     
     if [[ -z "$nr_forks_contrib_version" ]]; then
-        echo "No nr-forks contrib version found for minor $nrdot_minor, skipping update" >&2
+        echo "⚠️ No nr-forks contrib version found for minor $nrdot_minor. Skipping update" >&2
     fi
 
     # Output as JSON
