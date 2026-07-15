@@ -88,8 +88,8 @@ fetch_nrdot_versions() {
         2>/dev/null | tr ' ' '\n' | grep "^${nrdot_minor}\." | sort -V | tail -1)
 
     if [[ -z "$nr_forks_contrib_version" ]]; then
-        echo "Warning: No newrelic-forks/opentelemetry-collector-contrib version found for target minor $nrdot_minor" >&2
-        return 1
+        echo "No nr-forks contrib version found for minor $nrdot_minor, skipping update" >&2
+        return 0
     fi
 
     # Output as JSON
