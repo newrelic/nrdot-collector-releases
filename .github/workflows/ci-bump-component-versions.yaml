@@ -93,7 +93,7 @@ jobs:
             webhook: ${{ secrets.OTELCOMM_BOTS_SLACK_HOOK }}
             webhook-type: incoming-webhook
             payload: |
-              text: ":warning: *nrdot-collector-components and newrelic-forks/opentelemetry-collector-contrib verisions have been out-of-sync for over 14 days!*\n\nnrdot-collector-components version: `${{ steps.check_nr_forks_drift.outputs.nrdot_version }}`\nnewrelic-forks/opentelemetry-collector-contrib version: `${{ steps.check_nr_forks_drift.outputs.nr_fork_contrib_latest_version }}`\nDays out-of-sync: *${{ steps.check_nr_forks_drift.outputs.days_drifted }}*"
+              text: ":warning: *nrdot-collector-components and newrelic-forks/opentelemetry-collector-contrib versions have been out-of-sync for over 14 days!*\n\nnrdot-collector-components version: `${{ steps.check_nr_forks_drift.outputs.nrdot_version }}`\nnewrelic-forks/opentelemetry-collector-contrib version: `${{ steps.check_nr_forks_drift.outputs.nr_fork_contrib_latest_version }}`\nDays out-of-sync: *${{ steps.check_nr_forks_drift.outputs.days_drifted }}*"
 
         - name: Commit Component Version Bump
           if: steps.bump_component_versions.outputs.has_changes == 'true'
