@@ -45,7 +45,7 @@ nrdot_minor=$(echo "$nrdot_version" | awk -F'.' '{print $2}')
 nr_forks_minor=$(echo "$nr_forks_version" | awk -F'.' '{print $2}')
 
 # Days drifted are calculated from the earliest minor version released that was out-of-sync.
-# e.g. If forks=v0.120.0 and nrdot=v0.123.4, drift is calculated from time of nrdot v0.121.0 release.
+# e.g. If forks=v0.120.0 and nrdot=v0.123.4, forks is lagging and drift is calculated from time of nrdot v0.121.0 release.
 if [[ "$nrdot_minor" -eq "$nr_forks_minor" ]]; then
     days_drifted="0.00"
 elif [[ "$nrdot_minor" -gt "$nr_forks_minor" ]]; then
