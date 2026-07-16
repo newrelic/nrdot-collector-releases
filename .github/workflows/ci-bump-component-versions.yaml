@@ -95,6 +95,10 @@ jobs:
             payload: |
               text: ":warning: *Components repo and Forks repo versions have been out-of-sync for over 14 days!*\n\nnrdot-collector-components version: `${{ steps.check_nr_forks_drift.outputs.nrdot_version }}`\nnewrelic-forks/opentelemetry-collector-contrib version: `${{ steps.check_nr_forks_drift.outputs.nr_fork_contrib_latest_version }}`\nDays out-of-sync: *${{ steps.check_nr_forks_drift.outputs.days_drifted }}*"
 
+        - name: Fail CI on version drift grace period exceeded
+          if: steps.check_nr_forks_drift.outputs.grace_period_exceeded == 'true'
+          run: exit 1
+
         - name: Commit Component Version Bump
           if: steps.bump_component_versions.outputs.has_changes == 'true'
           run: |
