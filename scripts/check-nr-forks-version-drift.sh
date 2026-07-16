@@ -32,14 +32,16 @@ get_release_time_elapsed_days() {
 get_latest_version() {
     local module=$1
     local version=$(${GO} list -m -versions "$module" 2>/dev/null | tr ' ' '\n' | sort -V | tail -1)
-    if [[ -z "$nrdot_version" ]]; then
-        echo "Warning: No versions found for $nrdot_module" >&2
-        exit 1
+    # Go list can return module name if module not found
+    if [[ -z "$version" || $version == $module ]]; then
+        echo "Warning: No versions found for $module" >&2
+        return 1
     fi
+    echo $version
 }
 
-nrdot_version=$(get_latest_version "github.com/newrelic/nrdot-collector-components/exporter/nopexporter")
-nr_forks_version=$(get_latest_version "github.com/newrelic-forks/opentelemetry-collector-contrib/receiver/nrsqlserverreceiver")
+nrdot_version=$(get_latest_version "github.com/newrelic/nrdot-collector-components/exporter/nopexporter") || exit 1
+nr_forks_version=$(get_latest_version "github.com/newrelic-forks/opentelemetry-collector-contrib/receiver/nrsqlserverreceiver") || exit 1
 
 nrdot_minor=$(echo "$nrdot_version" | awk -F'.' '{print $2}')
 nr_forks_minor=$(echo "$nr_forks_version" | awk -F'.' '{print $2}')

@@ -28,7 +28,8 @@ fetch_nrdot_versions() {
     local latest_version
     latest_version=$(${GO} list -m -versions "$nrdot_module" 2>/dev/null | awk '{print $NF}')
 
-    if [[ -z "$latest_version" ]]; then
+    # go list returns module name if module not found
+    if [[ -z "$latest_version" || "$latest_version" == "$nrdot_module" ]]; then
         echo "Warning: No versions found for $nrdot_module" >&2
         return 1
     fi
