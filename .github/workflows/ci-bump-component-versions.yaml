@@ -62,6 +62,7 @@ jobs:
 
         - name: Bump component versions and generate licenses
           id: bump_component_versions
+          if: steps.fetch_nrdot_versions.outputs.nr_fork_matching != 'none' # Skip update if no version released for nr-forks matching the target minor
           run: |
             # Assemble flags, skipping any unset/none values
             FLAGS=()
@@ -69,7 +70,7 @@ jobs:
             [[ "${{ steps.fetch_nrdot_versions.outputs.core_stable }}" != "none" ]]      && FLAGS+=(--core-stable "${{ steps.fetch_nrdot_versions.outputs.core_stable }}") || true
             [[ "${{ steps.fetch_nrdot_versions.outputs.core_beta }}" != "none" ]]        && FLAGS+=(--core-beta "${{ steps.fetch_nrdot_versions.outputs.core_beta }}") || true
             [[ "${{ steps.fetch_nrdot_versions.outputs.contrib_beta }}" != "none" ]]     && FLAGS+=(--contrib-beta "${{ steps.fetch_nrdot_versions.outputs.contrib_beta }}") || true
-            [[ "${{ steps.fetch_nrdot_versions.outputs.nr_fork_matching }}" != "none" ]] && FLAGS+=(--nr-fork-contrib-version "${{ steps.fetch_nrdot_versions.outputs.nr_fork_matching }}") || true
+            FLAGS+=(--nr-fork-contrib-version "${{ steps.fetch_nrdot_versions.outputs.nr_fork_matching }}")
 
             # Update manifests with nrdot-collector-builder
             pushd cmd/nrdot-collector-builder > /dev/null || exit 1
