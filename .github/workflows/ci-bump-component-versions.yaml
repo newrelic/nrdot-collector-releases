@@ -3,8 +3,8 @@ name: 🔄 CI | Bump Component Versions
 on:
   workflow_dispatch:
   schedule:
-    # Scheduled to run every hour on every day-of-week from Monday through Friday.
-    - cron: '0 * * * 1-5'
+    # Scheduled to run once a day at 15:00 UTC (8:00 AM PDT / 7:00 AM PST) on weekdays.
+    - cron: '0 15 * * 1-5'
 
 permissions:
   contents: write
