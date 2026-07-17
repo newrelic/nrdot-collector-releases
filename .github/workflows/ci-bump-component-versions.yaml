@@ -43,34 +43,34 @@ jobs:
         - name: Tidy go.mod files
           run: go mod tidy
 
-        - name: Fetch nrdot versions
-          id: fetch_nrdot_versions
+        - name: Fetch dependency versions
+          id: fetch_dep_versions
           run: ./scripts/fetch-dep-versions.sh >> $GITHUB_OUTPUT
 
         - name: Send Slack notification for version drift grace period exceeded
-          if: steps.fetch_nrdot_versions.outputs.drift_grace_period_exceeded == 'true'
+          if: steps.fetch_dep_versions.outputs.drift_grace_period_exceeded == 'true'
           uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
           with:
             webhook: ${{ secrets.OTELCOMM_BOTS_SLACK_HOOK }}
             webhook-type: incoming-webhook
             payload: |
-              text: ":warning: *Components repo and Forks repo versions have been out-of-sync for over 14 days!*\n\nnrdot-collector-components version: `${{ steps.fetch_nrdot_versions.outputs.nrdot_latest }}`\nnewrelic-forks/opentelemetry-collector-contrib version: `${{ steps.fetch_nrdot_versions.outputs.nr_fork_latest }}`\nDays out-of-sync: *${{ steps.fetch_nrdot_versions.outputs.days_drifted }}*"
+              text: ":warning: *Components repo and Forks repo versions have been out-of-sync for over 14 days!*\n\nnrdot-collector-components version: `${{ steps.fetch_dep_versions.outputs.nrdot_latest }}`\nnewrelic-forks/opentelemetry-collector-contrib version: `${{ steps.fetch_dep_versions.outputs.nr_fork_latest }}`\nDays out-of-sync: *${{ steps.fetch_dep_versions.outputs.days_drifted }}*"
 
         - name: Fail CI on version drift grace period exceeded
-          if: steps.fetch_nrdot_versions.outputs.drift_grace_period_exceeded == 'true'
+          if: steps.fetch_dep_versions.outputs.drift_grace_period_exceeded == 'true'
           run: exit 1
 
         - name: Bump component versions and generate licenses
           id: bump_component_versions
-          if: steps.fetch_nrdot_versions.outputs.nr_fork_matching != 'none' # Skip update if no version released for nr-forks matching the target minor
+          if: steps.fetch_dep_versions.outputs.nr_fork_matching != 'none' # Skip update if no version released for nr-forks matching the target minor
           run: |
             # Assemble flags, skipping any unset/none values
             FLAGS=()
-            [[ "${{ steps.fetch_nrdot_versions.outputs.nrdot_latest }}" != "none" ]]     && FLAGS+=(--nrdot-version "${{ steps.fetch_nrdot_versions.outputs.nrdot_latest }}") || true
-            [[ "${{ steps.fetch_nrdot_versions.outputs.core_stable }}" != "none" ]]      && FLAGS+=(--core-stable "${{ steps.fetch_nrdot_versions.outputs.core_stable }}") || true
-            [[ "${{ steps.fetch_nrdot_versions.outputs.core_beta }}" != "none" ]]        && FLAGS+=(--core-beta "${{ steps.fetch_nrdot_versions.outputs.core_beta }}") || true
-            [[ "${{ steps.fetch_nrdot_versions.outputs.contrib_beta }}" != "none" ]]     && FLAGS+=(--contrib-beta "${{ steps.fetch_nrdot_versions.outputs.contrib_beta }}") || true
-            FLAGS+=(--nr-fork-contrib-version "${{ steps.fetch_nrdot_versions.outputs.nr_fork_matching }}")
+            [[ "${{ steps.fetch_dep_versions.outputs.nrdot_latest }}" != "none" ]]     && FLAGS+=(--nrdot-version "${{ steps.fetch_dep_versions.outputs.nrdot_latest }}") || true
+            [[ "${{ steps.fetch_dep_versions.outputs.core_stable }}" != "none" ]]      && FLAGS+=(--core-stable "${{ steps.fetch_dep_versions.outputs.core_stable }}") || true
+            [[ "${{ steps.fetch_dep_versions.outputs.core_beta }}" != "none" ]]        && FLAGS+=(--core-beta "${{ steps.fetch_dep_versions.outputs.core_beta }}") || true
+            [[ "${{ steps.fetch_dep_versions.outputs.contrib_beta }}" != "none" ]]     && FLAGS+=(--contrib-beta "${{ steps.fetch_dep_versions.outputs.contrib_beta }}") || true
+            FLAGS+=(--nr-fork-contrib-version "${{ steps.fetch_dep_versions.outputs.nr_fork_matching }}")
 
             # Update manifests with nrdot-collector-builder
             pushd cmd/nrdot-collector-builder > /dev/null || exit 1
