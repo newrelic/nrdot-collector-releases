@@ -45,7 +45,7 @@ jobs:
 
         - name: Fetch nrdot versions
           id: fetch_nrdot_versions
-          run: ./scripts/fetch-nrdot-versions.sh >> $GITHUB_OUTPUT
+          run: ./scripts/fetch-dep-versions.sh >> $GITHUB_OUTPUT
 
         - name: Send Slack notification for version drift grace period exceeded
           if: steps.fetch_nrdot_versions.outputs.drift_grace_period_exceeded == 'true'
