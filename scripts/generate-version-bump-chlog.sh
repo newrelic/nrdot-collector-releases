@@ -11,7 +11,7 @@
 #   -c  current otel beta core version (e.g. v0.147.0)
 #   -n  next otel beta core version    (e.g. v0.148.0)
 
-set -e
+set -euo pipefail
 
 CURRENT_BETA_CORE=''
 NEXT_BETA_CORE=''
