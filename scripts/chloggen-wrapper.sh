@@ -6,6 +6,7 @@
 # Chloggen's default change types are "breaking", "deprecation", "bug_fix", "new_component", and "enhancement".
 # These values are hard-coded and not configurable, necessitating a wrapper if we want to use our own custom types.
 
+set -euo pipefail
 REPO_DIR="$( cd "$(dirname "$( dirname "${BASH_SOURCE[0]}" )")" &> /dev/null && pwd )"
 CHLOGGEN_DIR="$REPO_DIR/.chloggen"
 
