@@ -2,7 +2,7 @@
 # Copyright New Relic, Inc. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-set -e
+set -euo pipefail
 
 # From all workflows, extract every unique action-hash pair.
 repo_pins=$(grep -rhoE 'uses: +[^ /]+/[^@ ]+@[a-f0-9]{40}' .github/workflows/ \
