@@ -110,19 +110,6 @@ jobs:
             echo "current_beta_contrib=${current_beta_contrib}" >> $GITHUB_ENV
             echo "branch=otel-release/${next_beta_core}" >> $GITHUB_ENV
             
-        - name: Add changelog entry
-          id: add_changelog_entry
-          run: |
-            output=$(./scripts/bump-component-versions.sh)
-            filepath=$(make -s chlog-new)
-            yq -i '
-              .change_type = "enhancement" |
-              .component = "distribution/nrdot-collector" |
-              .note = "Bump otel component versions from ${{ env.current_beta_core }} to ${{ env.next_beta_core }}"
-            ' "$filepath"
-            echo "Changelog:"
-            cat "$filepath"
-
         - name: Commit Component Version Bump
           if: ${{ !env.ACT && steps.bump_component_versions.outputs.has_changes == 'true' }}
           run: |
