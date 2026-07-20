@@ -1,6 +1,6 @@
 ### Changelog folder
 
-This repo uses `chloggen` to manage its changelog files. You can find the source code for the tool [here](https://github.com/open-telemetry/opentelemetry-go-build-tools/tree/main/chloggen).
+This repo uses `chloggen` to manage its changelog files. You can find the source code for the tool [here](https://github.com/open-telemetry/opentelemetry-go-build-tools/tree/main/chloggen). We use a wrapper `scripts/chloggen-wrapper.sh` to facilitate additional NRDOT-specific changelog customization. For instructions on its use, refer to [CONTRIBUTING.md](../CONTRIBUTING.md#changelog).
 
 Here is a quick explanation of the `config.yaml` file for chloggen:
 
