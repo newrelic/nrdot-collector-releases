@@ -11,6 +11,7 @@ REPO_DIR="$( cd "$(dirname "$( dirname "${BASH_SOURCE[0]}" )")" &> /dev/null && 
 CHLOGGEN_DIR="$REPO_DIR/.chloggen"
 
 CHLOGGEN=''
+COMMAND=''
 
 set_command() {
     if [ -n "$COMMAND" ]; then
