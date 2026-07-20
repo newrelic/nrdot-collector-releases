@@ -8,6 +8,7 @@ Generated assets are available in the corresponding Github [release page](https:
 
 ## Current list of distributions:
 
+
 - [nrdot-collector](./distributions/nrdot-collector/README.md): Comprehensive distribution supporting all [use cases](./distributions/nrdot-collector/README.md#use-cases) offered by New Relic. 
 - [nrdot-collector-experimental](./distributions/nrdot-collector-experimental/README.md): Experimental integrations
 
