@@ -5,6 +5,17 @@ This repo uses `chloggen` to manage its changelog files. You can find the source
 Here is a quick explanation of the `config.yaml` file for chloggen:
 
 ```yaml
+# The CHANGELOG file or files to which 'chloggen update' will write new entries
+# (Optional) Default filename: CHANGELOG.md
+change_logs:
+    user: CHANGELOG.md
+
+# The default change_log or change_logs to which an entry should be added.
+# If 'change_logs' is specified in this file, and no value is specified for 'default_change_logs',
+# then 'change_logs' MUST be specified in every entry file.
+default_change_logs:
+    - user
+
 # The directory that stores individual changelog entries.
 # Each entry is stored in a dedicated yaml file.
 # - 'chloggen new' will copy the 'template_yaml' to this directory as a new entry file.
@@ -20,14 +31,4 @@ entries_dir: .chloggen
 template_yaml: .chloggen/TEMPLATE.yaml
 
 summary_template: .chloggen/summary.tmpl
-
-# The CHANGELOG file or files to which 'chloggen update' will write new entries
-# (Optional) Default filename: CHANGELOG.md
-change_logs:
-  user: CHANGELOG.md
-
-# The default change_log or change_logs to which an entry should be added.
-# If 'change_logs' is specified in this file, and no value is specified for 'default_change_logs',
-# then 'change_logs' MUST be specified in every entry file.
-default_change_logs: [user]
 ```
