@@ -6,8 +6,8 @@
 
 ### Features
 
-- `distributions`: feat: Bump otel component versions from v0.154.0 to v0.156.0 (#616)
-- `distributions`: feat: Bump `nroracledbreceiver` and `nrsqlserverreceiver` to v0.156.1 (#616)
+- feat: Bump otel component versions from v0.154.0 to v0.156.0 (#620)
+- feat: Bump `nroracledbreceiver` and `nrsqlserverreceiver` to v0.156.1 (#620)
 
 <!-- previous-version -->
 

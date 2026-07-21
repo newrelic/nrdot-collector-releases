@@ -3,9 +3,6 @@
 # One of 'feature', 'bug_fix', 'docs'. Inferred from conventional commit tag if PR created before `make chlog-new`.
 change_type:
 
-# Mandatory. One of: distributions, distributions/nrdot-collector, distributions/nrdot-collector-experimental, examples
-component:
-
 # Mandatory. Put the PR number here. Inferred from PR number if PR created before `make chlog-new`.
 issues: []
 

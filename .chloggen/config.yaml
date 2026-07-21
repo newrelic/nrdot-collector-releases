@@ -24,9 +24,3 @@ entries_dir: .chloggen
 template_yaml: .chloggen/TEMPLATE.yaml
 
 summary_template: .chloggen/summary.tmpl
-
-components:
-    - distributions
-    - distributions/nrdot-collector
-    - distributions/nrdot-collector-experimental
-    - examples

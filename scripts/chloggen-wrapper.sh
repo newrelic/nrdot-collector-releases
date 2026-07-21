@@ -98,7 +98,8 @@ else
     yq -i ".entries_dir = \"$dir\"" "$CONFIG"
 fi
 
-# Translate each entry's change_type into a chloggen-native type (in $dir)
+# Translate each entry's change_type into a chloggen-native type (in $dir).
+# Also adds component=nrdot to each translated entry (we don't use this value, but chloggen mandates it)
 for entry in "$CHLOGGEN_DIR"/*.yaml; do
     base=$(basename "$entry")
     
@@ -111,10 +112,10 @@ for entry in "$CHLOGGEN_DIR"/*.yaml; do
 
     if [ "$COMMAND" = update ]; then
         # In-place edit of the real entry ($entry and $dir/$base are the same file)
-        yq -i ".change_type = \"$new_type\"" "$entry"
+        yq -i ".change_type = \"$new_type\" | .component = \"nrdot\"" "$entry"
     else
         # Read the real entry, write the translated copy into the temp dir
-        yq ".change_type = \"$new_type\"" "$entry" > "$dir/$base"
+        yq ".change_type = \"$new_type\" | .component = \"nrdot\"" "$entry" > "$dir/$base"
     fi
 done
 

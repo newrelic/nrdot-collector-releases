@@ -1,5 +1,5 @@
 {{- define "entry" -}}
-- `{{ .Component }}`: {{ .Note }} (
+- {{ .Note }} (
 {{- range $i, $issue := .Issues }}
 {{- if $i }}, {{ end -}}
 #{{ $issue }}
