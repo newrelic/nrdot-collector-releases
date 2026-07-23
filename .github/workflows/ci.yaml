@@ -39,6 +39,10 @@ jobs:
         id: discover
         uses: ./.github/actions/discover-distributions
 
+  nothing:
+    name: Test step that does nothing
+    run: echo "TEST"
+
   build:
     name: Build & Validate (${{ matrix.distribution }}${{ matrix.fips && ' - FIPS' || '' }})
     needs: setup
