@@ -1,0 +1,49 @@
+name: 🔄 CI | OTEL Library Drift
+
+on:
+  pull_request:
+    # PRs should maintain this invariant
+    branches: [main]
+  push:
+    # if it gets merged into main by accident, we can escalate via slack notifications
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  otel-library-drift:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Assert OTel library invariants
+        run: ./scripts/assert-otel-library-allowlist.sh
+
+
+  notify-drift:
+    needs: otel-library-drift
+    # notify if drift made it into the main branch
+    if: ${{ failure() && github.event_name == 'push' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify OTELCOMM slack of drift
+        uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
+        with:
+          webhook: ${{ secrets.OTELCOMM_BOTS_SLACK_HOOK }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": ":rotating_light: NRDOT distribution manifests on 'main' contain gomod libraries not covered by the OTel library allowlist, check workflow logs of '${{github.workflow}}'. Needs to be addressed before next release!"
+            }
+
+      - name: Notify Agent Control slack of drift
+        uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
+        with:
+          webhook: ${{ secrets.AC_SLACK_WEBHOOK }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": ":rotating_light: NRDOT distribution manifests on 'main' contain gomod libraries not covered by the OTel library allowlist, check workflow logs of '${{github.workflow}}'. Needs to be addressed before next release!"
+            }
