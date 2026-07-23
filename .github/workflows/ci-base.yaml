@@ -100,7 +100,8 @@ jobs:
             'Makefile',
             'fips/fips.go'
           ) }}"
-          echo "sources_key=sources-${{ inputs.distribution }}-${SOURCES_HASH}" >> $GITHUB_OUTPUT
+          FIPS="${{ inputs.fips == true && '-fips' || '' }}"
+          echo "sources_key=sources-${{ inputs.distribution }}${FIPS}-${SOURCES_HASH}" >> $GITHUB_OUTPUT
 
       - name: Cache sources
         id: cache-sources
