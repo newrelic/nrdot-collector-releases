@@ -41,7 +41,9 @@ jobs:
 
   nothing:
     name: Test step that does nothing
-    run: echo "TEST"
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "TEST"
 
   build:
     name: Build & Validate (${{ matrix.distribution }}${{ matrix.fips && ' - FIPS' || '' }})
