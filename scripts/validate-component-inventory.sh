@@ -19,8 +19,8 @@ if [[ $# -ne 1 ]]; then
 fi
 
 DISTRO="$1"
-SRC_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
-DIR="${SRC_ROOT}/distributions/${DISTRO}"
+REPO_DIR="$( cd "$(dirname "$( dirname "${BASH_SOURCE[0]}" )")" &> /dev/null && pwd )"
+DIR="${REPO_DIR}/distributions/${DISTRO}"
 MANIFEST="${DIR}/manifest.yaml"
 INVENTORY="${DIR}/component-inventory.yaml"
 
