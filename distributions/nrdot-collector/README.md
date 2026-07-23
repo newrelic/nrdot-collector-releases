@@ -90,3 +90,7 @@ Gateway mode includes additional components beyond host monitoring capabilities 
 ## Troubleshooting
 
 Refer to the [troubleshooting guide](./TROUBLESHOOTING.md).
+
+## Random Test Addition
+
+This is a test to see CI caching behavior on a docs change. DO NOT MERGE.
