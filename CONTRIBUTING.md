@@ -39,17 +39,30 @@ apply to specific distros.
 
 The type must be one of the following:
 
-| Type         | Description                                                   |
-|--------------|---------------------------------------------------------------|
-| **build**    | Changes that affect the build system or external dependencies |
-| **ci**       | Changes to CI configs and scripts                             |
-| **docs**     | Documentation changes                                         |
-| **feat**     | A new feature                                                 |
-| **fix**      | A bug fix related to one of the distros                       |
-| **perf**     | A performance enhancement                                     |
-| **refactor** | A code change that neither fixes a bug nor adds a feature     |
-| **style**    | Changes that effect only code style                           |
-| **test**     | Adding or updating tests                                      |
+| Type         | Description                                                   | Changelog Required |
+|--------------|---------------------------------------------------------------|--------------------|
+| **build**    | Changes that affect the build system or external dependencies | no                 |
+| **ci**       | Changes to CI configs and scripts                             | no                 |
+| **docs**     | Documentation changes                                         | yes                |
+| **feat**     | A new feature                                                 | yes                |
+| **fix**      | A bug fix related to one of the distros                       | yes                |
+| **perf**     | A performance enhancement                                     | yes                |
+| **refactor** | A code change that neither fixes a bug nor adds a feature     | no                 |
+| **style**    | Changes that effect only code style                           | no                 |
+| **test**     | Adding or updating tests                                      | no                 |
+
+### Changelog
+
+This repository uses OpenTelemetry's `chloggen` tool to manage changelog entries. To make a changelog entry:
+
+1. Create an entry file using `make chlog-new`
+2. Fill in the empty fields in the new file
+3. Run `make chlog-validate` to validate the new file
+4. Commit the file with your changes
+
+Pull requests which include user-facing changes must be accompanied by a changelog entry. If a changelog entry is not required, you may prefix your PR title with any of the conventional commit tags marked "no" in the table above, or add the `Skip Changelog` label.
+
+During the release process, all changelog entries are added to [NRDOT's release notes](https://docs.newrelic.com/docs/release-notes/nrdot-release-notes/).
 
 ## Contributor License Agreement
 

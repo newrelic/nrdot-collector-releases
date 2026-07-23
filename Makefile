@@ -45,6 +45,9 @@ ensure-goreleaser-up-to-date: generate-goreleaser
 validate-components:
 	@./scripts/validate-components.sh
 
+validate-actions-hashes:
+	@./scripts/validate-actions-hashes.sh
+
 .PHONY: ocb
 ocb:
 ifeq (, $(shell command -v ocb 2>/dev/null))
@@ -186,3 +189,26 @@ manifests-check:
 		echo "$${diff}"; \
 		exit 1; \
 	} || exit 0
+
+CHLOGGEN := $(TOOLS_BIN_DIR)/chloggen
+CHLOGGEN_CONFIG := "${SRC_ROOT}/.chloggen/config.yaml"
+BRANCH_NAME?=$(shell git branch --show-current)
+PR_NUMBER?=$(shell gh pr view $(BRANCH_NAME) --json number --jq '.number' 2>/dev/null)
+
+# Generate a new changelog entry.
+# The .issues field will be pre-populated with the PR number if one exists.
+.PHONY: chlog-new
+chlog-new: ${CHLOGGEN}
+	./scripts/chloggen-wrapper.sh -b $(CHLOGGEN) -n
+
+.PHONY: chlog-validate
+chlog-validate: ${CHLOGGEN}
+	./scripts/chloggen-wrapper.sh -b $(CHLOGGEN) -v
+
+.PHONY: chlog-preview
+chlog-preview: ${CHLOGGEN}
+	./scripts/chloggen-wrapper.sh -b $(CHLOGGEN) -p
+
+.PHONY: chlog-update
+chlog-update: ${CHLOGGEN}
+	./scripts/chloggen-wrapper.sh -b $(CHLOGGEN) -u

@@ -22,6 +22,7 @@ jobs:
             token: ${{ secrets.RELEASE_TOKEN }}
 
         - name: Import GPG key
+          if: ${{ !env.ACT }}
           uses: crazy-max/ghaction-import-gpg@2dc316deee8e90f13e1a351ab510b4d5bc0c82cd # v7
           with:
             gpg_private_key: ${{ secrets.OTELCOMM_BOT_GPG_PRIVATE_KEY_BASE64 }}
@@ -108,9 +109,9 @@ jobs:
             echo "next_beta_contrib=${next_beta_contrib}" >> $GITHUB_ENV
             echo "current_beta_contrib=${current_beta_contrib}" >> $GITHUB_ENV
             echo "branch=otel-release/${next_beta_core}" >> $GITHUB_ENV
-
+            
         - name: Commit Component Version Bump
-          if: steps.bump_component_versions.outputs.has_changes == 'true'
+          if: ${{ !env.ACT && steps.bump_component_versions.outputs.has_changes == 'true' }}
           run: |
             # Check if branch exists remotely
             if git ls-remote --heads origin ${{ env.branch }} | grep -q ${{ env.branch }}; then
@@ -173,11 +174,31 @@ jobs:
               
               echo "Updated PR #$pr_number"
             else
-              echo "Creating new PR..."
+              echo "Creating new draft PR..."
               gh pr create \
+                --draft \
                 --title "$pr_title" \
                 --body "$pr_body" \
                 --repo "${{ github.repository }}" \
                 --base main \
                 --head "${{ env.branch }}"
             fi
+
+        # Changelog entry must be added after PR is created, so that its PR number may be added
+        - name: Add changelog entry
+          id: add_changelog_entry
+          if: ${{ steps.bump_component_versions.outputs.has_changes == 'true' }}
+          env:
+            GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          run: |
+            ./scripts/generate-version-bump-chlog.sh -c "${{ env.current_beta_core }}" -n "${{ env.next_beta_core }}"
+
+        - name: Commit changelog entry
+          if: ${{ !env.ACT && steps.bump_component_versions.outputs.has_changes == 'true' }}
+          env:
+            GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          run: |
+            git add .chloggen/
+            git commit -S -m "chore: add changelog entry for otel component version bump"
+            git push origin ${{ env.branch }}
+            gh pr ready "${{ env.branch }}" --repo "${{ github.repository }}"

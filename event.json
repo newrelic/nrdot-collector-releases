@@ -1,5 +1,9 @@
 {
   "act": true,
+  "inputs": {
+    "_description": "used to test workflow_dispatch of release workflows",
+    "new_version": "1.90.0"
+  },
   "pull_request": {
     "_description": "pull request event - needs to be used with 'act pull_request'",
     "head": {
