@@ -80,7 +80,7 @@ For linux packages, you can follow the instructions below to install them.
 ##### DEB Installation
 ```bash
 export collector_distro="nrdot-collector"
-export collector_version="1.18.0"
+export collector_version="1.21.0"
 export collector_arch="amd64" # or arm64
 export license_key="YOUR_LICENSE_KEY"
 
@@ -93,7 +93,7 @@ sudo systemctl reload-or-restart "${collector_distro}.service"
 ##### RPM Installation
 ```bash
 export collector_distro="nrdot-collector"
-export collector_version="1.18.0"
+export collector_version="1.21.0"
 export collector_arch="x86_64" # or arm64
 export license_key="YOUR_LICENSE_KEY"
 
@@ -107,7 +107,7 @@ sudo systemctl reload-or-restart "${collector_distro}.service"
 Archives contain the binary and the default configuration.
 ```bash
 export collector_distro="nrdot-collector"
-export collector_version="1.18.0"
+export collector_version="1.21.0"
 export collector_arch="amd64" # or arm64
 export license_key="YOUR_LICENSE_KEY"
 curl "https://github.com/newrelic/nrdot-collector-releases/releases/download/${collector_version}/${collector_distro}_${collector_version}_linux_${collector_arch}.tar.gz" --location --output collector.tar.gz
@@ -125,7 +125,7 @@ NRDOT must be installed from an Administrator account, and will run as an automa
 
 ```powershell
 $collector_distro = "nrdot-collector"
-$collector_version = "1.18.0"
+$collector_version = "1.21.0"
 $license_key = "YOUR_LICENSE_KEY"
 Invoke-WebRequest -Uri "https://github.com/newrelic/nrdot-collector-releases/releases/download/${collector_version}/${collector_distro}_${collector_version}_windows_x64.msi" -OutFile "nrdot-collector.msi"
 Start-Process -Wait -PassThru msiexec.exe -ArgumentList "/i nrdot-collector.msi /qn"
@@ -148,7 +148,7 @@ Zipped archives contain the .exe and default configuration. The collector will r
 
 ```powershell
 $collector_distro = "nrdot-collector"
-$collector_version = "1.18.0"
+$collector_version = "1.21.0"
 $license_key = "YOUR_LICENSE_KEY"
 Invoke-WebRequest -Uri "https://github.com/newrelic/nrdot-collector-releases/releases/download/$collector_version/${collector_distro}_${collector_version}_windows_amd64.zip" -OutFile "nrdot-collector.zip"
 Expand-Archive -Path "nrdot-collector.zip" -DestinationPath "."

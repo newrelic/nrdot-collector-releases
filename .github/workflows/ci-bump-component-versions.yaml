@@ -3,8 +3,8 @@ name: 🔄 CI | Bump Component Versions
 on:
   workflow_dispatch:
   schedule:
-    # Scheduled to run every hour on every day-of-week from Monday through Friday.
-    - cron: '0 * * * 1-5'
+    # Scheduled to run once a day at 15:00 UTC (8:00 AM PDT / 7:00 AM PST) on weekdays.
+    - cron: '0 15 * * 1-5'
 
 permissions:
   contents: write
@@ -43,32 +43,71 @@ jobs:
         - name: Tidy go.mod files
           run: go mod tidy
 
+        - name: Fetch dependency versions
+          id: fetch_dep_versions
+          run: ./scripts/fetch-dep-versions.sh >> $GITHUB_OUTPUT
+
+        - name: Send Slack notification for version drift grace period exceeded
+          if: steps.fetch_dep_versions.outputs.drift_grace_period_exceeded == 'true'
+          uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
+          with:
+            webhook: ${{ secrets.OTELCOMM_BOTS_SLACK_HOOK }}
+            webhook-type: incoming-webhook
+            payload: |
+              text: ":warning: *Components repo and Forks repo versions have been out-of-sync for over 14 days!*\n\nnrdot-collector-components version: `${{ steps.fetch_dep_versions.outputs.nrdot_latest }}`\nnewrelic-forks/opentelemetry-collector-contrib version: `${{ steps.fetch_dep_versions.outputs.nr_fork_latest }}`\nDays out-of-sync: *${{ steps.fetch_dep_versions.outputs.days_drifted }}*"
+
+        - name: Fail CI on version drift grace period exceeded
+          if: steps.fetch_dep_versions.outputs.drift_grace_period_exceeded == 'true'
+          run: exit 1
+
         - name: Bump component versions and generate licenses
           id: bump_component_versions
+          if: steps.fetch_dep_versions.outputs.nr_fork_matching != 'none' # Skip update if no version released for nr-forks matching the target minor
           run: |
-            output=$(./scripts/bump-component-versions.sh)
-            echo "output=${output}" >> $GITHUB_OUTPUT
+            # Assemble flags, skipping any unset/none values
+            FLAGS=()
+            [[ "${{ steps.fetch_dep_versions.outputs.nrdot_latest }}" != "none" ]]     && FLAGS+=(--nrdot-version "${{ steps.fetch_dep_versions.outputs.nrdot_latest }}") || true
+            [[ "${{ steps.fetch_dep_versions.outputs.core_stable }}" != "none" ]]      && FLAGS+=(--core-stable "${{ steps.fetch_dep_versions.outputs.core_stable }}") || true
+            [[ "${{ steps.fetch_dep_versions.outputs.core_beta }}" != "none" ]]        && FLAGS+=(--core-beta "${{ steps.fetch_dep_versions.outputs.core_beta }}") || true
+            [[ "${{ steps.fetch_dep_versions.outputs.contrib_beta }}" != "none" ]]     && FLAGS+=(--contrib-beta "${{ steps.fetch_dep_versions.outputs.contrib_beta }}") || true
+            FLAGS+=(--nr-fork-contrib-version "${{ steps.fetch_dep_versions.outputs.nr_fork_matching }}")
 
-            # Generate third-party licenses
-            make licenses
+            # Update manifests with nrdot-collector-builder
+            pushd cmd/nrdot-collector-builder > /dev/null || exit 1
+            output=$(go run main.go manifest update --json --config "../../distributions/*/manifest.yaml" "${FLAGS[@]}")
+            popd > /dev/null || exit 1
 
             # Check for unstaged changes
             if git diff --quiet; then
               echo "No unstaged changes found. Exiting."
               echo "has_changes=false" >> $GITHUB_OUTPUT
+              exit 0
             else
               echo "Unstaged changes found. Continuing..."
               echo "has_changes=true" >> $GITHUB_OUTPUT
-              next_beta_core=$(echo "${output}" | jq -r '.nextVersions.betaCoreVersion')
-              current_beta_core=$(echo "${output}" | jq -r '.currentVersions.betaCoreVersion')
-              next_beta_contrib=$(echo "${output}" | jq -r '.nextVersions.betaContribVersion')
-              current_beta_contrib=$(echo "${output}" | jq -r '.currentVersions.betaContribVersion')
-              echo "next_beta_core=${next_beta_core}" >> $GITHUB_ENV
-              echo "current_beta_core=${current_beta_core}" >> $GITHUB_ENV
-              echo "next_beta_contrib=${next_beta_contrib}" >> $GITHUB_ENV
-              echo "current_beta_contrib=${current_beta_contrib}" >> $GITHUB_ENV
-              echo "branch=otel-release/${next_beta_core}" >> $GITHUB_ENV
             fi
+
+            # Extract nrdot-collector-builder outputs
+            next_beta_core=$(echo "${output}" | jq -r '.nextVersions.betaCoreVersion')
+            current_beta_core=$(echo "${output}" | jq -r '.currentVersions.betaCoreVersion')
+            next_beta_contrib=$(echo "${output}" | jq -r '.nextVersions.betaContribVersion')
+            current_beta_contrib=$(echo "${output}" | jq -r '.currentVersions.betaContribVersion')
+
+            # If the current beta core version is not equal to the next beta core version, update makefile OCB version
+            if [[ "$current_beta_core" != "$next_beta_core" ]]; then
+              escaped_current="${current_beta_core#v}"
+              escaped_current="${escaped_current//./\\.}"
+              sed -i "s/OTELCOL_BUILDER_VERSION ?= $escaped_current/OTELCOL_BUILDER_VERSION ?= ${next_beta_core#v}/" Makefile
+            fi
+
+            # Generate third-party licenses
+            make licenses
+
+            echo "next_beta_core=${next_beta_core}" >> $GITHUB_ENV
+            echo "current_beta_core=${current_beta_core}" >> $GITHUB_ENV
+            echo "next_beta_contrib=${next_beta_contrib}" >> $GITHUB_ENV
+            echo "current_beta_contrib=${current_beta_contrib}" >> $GITHUB_ENV
+            echo "branch=otel-release/${next_beta_core}" >> $GITHUB_ENV
 
         - name: Commit Component Version Bump
           if: steps.bump_component_versions.outputs.has_changes == 'true'
