@@ -8,6 +8,9 @@ on:
     # if it gets merged into main by accident, we can escalate via slack notifications
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   otel-library-drift:
     runs-on: ubuntu-latest
