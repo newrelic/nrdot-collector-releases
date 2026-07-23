@@ -46,6 +46,7 @@ jobs:
       - run: |
           echo "TEST"
           echo "TEST AGAIN"
+          echo "TEST THRICE"
 
   build:
     name: Build & Validate (${{ matrix.distribution }}${{ matrix.fips && ' - FIPS' || '' }})
