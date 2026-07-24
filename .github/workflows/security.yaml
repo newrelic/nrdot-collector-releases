@@ -22,7 +22,7 @@ jobs:
           - nrdot-collector-experimental
     steps:
       - name: Checkout .trivyignore
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           sparse-checkout: .trivyignore
           sparse-checkout-cone-mode: false
@@ -62,7 +62,7 @@ jobs:
             echo "No sarif file found"
           fi
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@9e0d7b8d25671d64c341c19c0152d693099fb5ba # v4
+        uses: github/codeql-action/upload-sarif@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4
         # Upload sarif only for latest
         if: ${{ (success() || failure()) && env.tag_to_scan == 'latest' }}
         with:
@@ -72,7 +72,7 @@ jobs:
 
       - name: Send notification to Slack Workflow
         if: ${{ failure() && env.tag_to_scan == 'latest' }}
-        uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
+        uses: slackapi/slack-github-action@0d95c9a7becc1e6e297d76df9bc735c44f4cbcbc # v3.0.5
         with:
           webhook: ${{ secrets.OTELCOMM_BOTS_SLACK_HOOK }}
           webhook-type: incoming-webhook
