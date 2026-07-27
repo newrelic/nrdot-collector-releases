@@ -76,7 +76,7 @@ jobs:
         run: go mod tidy
 
       - name: Validate GitHub Actions hashes match
-        run: ./scripts/validate-actions-hashes.sh
+        run: ./scripts/misc/validate-actions-hashes.sh
 
       - name: Ensure goreleaser up to date
         run: make check
@@ -220,7 +220,7 @@ jobs:
 
       - name: Force artifact version via git tag
         run: |
-          version=$(./scripts/misc/get-version.sh)
+          version=$(./scripts/release/get-version.sh)
           echo "Manifest version: $version"
           
           if git rev-parse "$version" >/dev/null 2>&1; then

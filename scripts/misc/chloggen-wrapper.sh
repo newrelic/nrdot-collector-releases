@@ -123,5 +123,5 @@ done
 case "$COMMAND" in
     validate) "$CHLOGGEN" validate --config "$CONFIG";;
     preview)  "$CHLOGGEN" update --config "$CONFIG" --dry;;
-    update)   "$CHLOGGEN" update --config "$CONFIG" --version "$("$REPO_DIR/scripts/misc/get-version.sh")";;
+    update)   "$CHLOGGEN" update --config "$CONFIG" --version "$("$REPO_DIR/scripts/release/get-version.sh")";;
 esac

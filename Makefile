@@ -124,7 +124,7 @@ goreleaser:
 		fi \
 	}
 
-VERSION := $(shell ./scripts/misc/get-version.sh)
+VERSION := $(shell ./scripts/release/get-version.sh)
 
 .PHONY: version-check
 version-check:
