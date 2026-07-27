@@ -257,7 +257,7 @@ jobs:
         run: echo "✅ GoReleaser build skipped - using cached binaries"
 
       - name: Validate GoReleaser build
-        run: ./scripts/validate-goreleaser-build.sh -d ${{ inputs.distribution }}
+        run: ./scripts/build/validate-goreleaser-build.sh -d ${{ inputs.distribution }}
           
       - name: Extract relevant metadata
         run: |
