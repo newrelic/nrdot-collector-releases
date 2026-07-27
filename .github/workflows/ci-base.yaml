@@ -201,6 +201,7 @@ jobs:
       - name: Generate binary cache key
         id: generate_binary_key
         run: |
+          # NOTE: A source cache miss always results in a GoReleaser cache miss because OCB generates a timestamped _build/build.log.
           BINARY_HASH="${{ hashFiles(
             format('distributions/{0}/.goreleaser*.yaml', inputs.distribution),
             format('distributions/{0}/windows/*', inputs.distribution),
