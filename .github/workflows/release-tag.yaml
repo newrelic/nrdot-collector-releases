@@ -24,7 +24,7 @@ jobs:
       - name: Set Outputs
         id: set-outputs
         run: |
-          version=$(./scripts/get-version.sh)
+          version=$(./scripts/misc/get-version.sh)
           if git rev-parse "$version" >/dev/null 2>&1; then
             echo "Tag already exists."
             echo "exists=true" >> $GITHUB_OUTPUT
