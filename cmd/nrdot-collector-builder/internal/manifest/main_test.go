@@ -116,11 +116,107 @@ func TestCopyAndUpdateConfigModules_Nrdot(t *testing.T) {
 		{GoMod: "github.com/newrelic/nrdot-collector-components/processor/adaptivetelemetryprocessor v0.142.2"},
 	}
 	updates := map[string]VersionUpdate{
-		"github.com/newrelic/nrdot-collector-components": {BetaVersion: "v0.147.0"},
+		"go.opentelemetry.io/collector":                             {BetaVersion: "v0.147.0", StableVersion: "v1.53.0"},
+		"github.com/open-telemetry/opentelemetry-collector-contrib": {BetaVersion: "v0.147.0"},
+		"github.com/newrelic/nrdot-collector-components":            {BetaVersion: "v0.147.0"},
 	}
 	result, err := CopyAndUpdateConfigModules(cfg, updates)
 	assert.NoError(t, err)
 	assert.Equal(t, "github.com/newrelic/nrdot-collector-components/processor/adaptivetelemetryprocessor v0.147.0", result.Processors[0].GoMod)
+}
+
+func TestCopyAndUpdateConfigModules_NrdotWithoutUpstream(t *testing.T) {
+	cfg := newTestCfg()
+	cfg.Processors = []Module{
+		{GoMod: "github.com/newrelic/nrdot-collector-components/processor/adaptivetelemetryprocessor v0.142.2"},
+	}
+	// Expect failure if only nrdot is advanced without upstream components
+	updates := map[string]VersionUpdate{
+		"github.com/newrelic/nrdot-collector-components": {BetaVersion: "v0.147.0"},
+	}
+	_, err := CopyAndUpdateConfigModules(cfg, updates)
+	assert.Error(t, err)
+}
+
+func TestCopyAndUpdateConfigModules_UpstreamWithoutNrdot(t *testing.T) {
+	cfg := newTestCfg()
+	cfg.Processors = []Module{
+		{GoMod: "github.com/newrelic/nrdot-collector-components/processor/adaptivetelemetryprocessor v0.142.2"},
+	}
+	// Expect failure if upstream components are advanced without nrdot
+	updates := map[string]VersionUpdate{
+		"go.opentelemetry.io/collector":                             {BetaVersion: "v0.147.0", StableVersion: "v1.53.0"},
+		"github.com/open-telemetry/opentelemetry-collector-contrib": {BetaVersion: "v0.147.0"},
+	}
+	_, err := CopyAndUpdateConfigModules(cfg, updates)
+	assert.Error(t, err)
+}
+
+func TestCopyAndUpdateConfigModules_NrForkContrib(t *testing.T) {
+	cfg := newTestCfg()
+	cfg.Receivers = []Module{
+		{GoMod: "github.com/newrelic-forks/opentelemetry-collector-contrib/receiver/nrsqlserverreceiver v0.142.4"},
+	}
+	updates := map[string]VersionUpdate{
+		"go.opentelemetry.io/collector":                             {BetaVersion: "v0.155.0", StableVersion: "v1.61.0"},
+		"github.com/open-telemetry/opentelemetry-collector-contrib": {BetaVersion: "v0.155.0"},
+		"github.com/newrelic-forks/opentelemetry-collector-contrib": {BetaVersion: "v0.155.0"},
+	}
+	result, err := CopyAndUpdateConfigModules(cfg, updates)
+	assert.NoError(t, err)
+	assert.Equal(t, "github.com/newrelic-forks/opentelemetry-collector-contrib/receiver/nrsqlserverreceiver v0.155.0", result.Receivers[0].GoMod)
+}
+
+func TestCopyAndUpdateConfigModules_NrForkContribWithoutUpstream(t *testing.T) {
+	cfg := newTestCfg()
+	cfg.Receivers = []Module{
+		{GoMod: "github.com/newrelic-forks/opentelemetry-collector-contrib/receiver/nrsqlserverreceiver v0.154.4"},
+	}
+	// Expect failure if only fork components are advanced without upstream
+	updates := map[string]VersionUpdate{
+		"github.com/newrelic-forks/opentelemetry-collector-contrib": {BetaVersion: "v0.155.0"},
+	}
+	_, err := CopyAndUpdateConfigModules(cfg, updates)
+	assert.Error(t, err)
+}
+
+func TestCopyAndUpdateConfigModules_NrdotAndNrFork(t *testing.T) {
+	cfg := newTestCfg()
+	cfg.Processors = []Module{
+		{GoMod: "github.com/newrelic/nrdot-collector-components/processor/adaptivetelemetryprocessor v0.142.0"},
+	}
+	cfg.Receivers = []Module{
+		{GoMod: "github.com/newrelic-forks/opentelemetry-collector-contrib/receiver/nrsqlserverreceiver v0.142.2"},
+	}
+	updates := map[string]VersionUpdate{
+		"go.opentelemetry.io/collector":                             {BetaVersion: "v0.155.0", StableVersion: "v1.53.0"},
+		"github.com/open-telemetry/opentelemetry-collector-contrib": {BetaVersion: "v0.155.0"},
+		"github.com/newrelic/nrdot-collector-components":            {BetaVersion: "v0.155.0"},
+		"github.com/newrelic-forks/opentelemetry-collector-contrib": {BetaVersion: "v0.155.0"},
+	}
+	result, err := CopyAndUpdateConfigModules(cfg, updates)
+	assert.NoError(t, err)
+	assert.Equal(t, "github.com/newrelic/nrdot-collector-components/processor/adaptivetelemetryprocessor v0.155.0", result.Processors[0].GoMod)
+	assert.Equal(t, "github.com/newrelic-forks/opentelemetry-collector-contrib/receiver/nrsqlserverreceiver v0.155.0", result.Receivers[0].GoMod)
+}
+
+func TestCopyAndUpdateConfigModules_NrdotAndNrForkMisaligned(t *testing.T) {
+	cfg := newTestCfg()
+	cfg.Processors = []Module{
+		{GoMod: "github.com/newrelic/nrdot-collector-components/processor/adaptivetelemetryprocessor v0.142.0"},
+	}
+	cfg.Receivers = []Module{
+		{GoMod: "github.com/newrelic-forks/opentelemetry-collector-contrib/receiver/nrsqlserverreceiver v0.142.2"},
+	}
+	// Updating one component to incorrect minor should
+	updates := map[string]VersionUpdate{
+		"go.opentelemetry.io/collector":                             {BetaVersion: "v0.155.0", StableVersion: "v1.53.0"},
+		"github.com/open-telemetry/opentelemetry-collector-contrib": {BetaVersion: "v0.155.0"},
+		"github.com/newrelic/nrdot-collector-components":            {BetaVersion: "v0.155.0"},
+		"github.com/newrelic-forks/opentelemetry-collector-contrib": {BetaVersion: "v0.156.4"},
+	}
+	_, err := CopyAndUpdateConfigModules(cfg, updates)
+	assert.Error(t, err)
 }
 
 func TestCopyAndUpdateConfigModules_NoMatchUnchanged(t *testing.T) {

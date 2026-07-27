@@ -93,7 +93,36 @@ func TestConfig_IsNrdotComponent(t *testing.T) {
 	assert.False(t, isNrdotComponent(Module{GoMod: "github.com/some/other/module"}))
 }
 
+func TestConfig_IsNrForkContribComponent(t *testing.T) {
+	assert.True(t, isNrForkContribComponent(Module{GoMod: "github.com/newrelic-forks/opentelemetry-collector-contrib v1.0.0"}))
+	assert.True(t, isNrForkContribComponent(Module{GoMod: "github.com/newrelic-forks/opentelemetry-collector-contrib"}))
+	assert.False(t, isNrForkContribComponent(Module{GoMod: "github.com/some/other/module"}))
+}
+
 func TestConfig_SetVersions(t *testing.T) {
+	cfg := &Config{
+		Extensions: []Module{
+			{GoMod: "github.com/open-telemetry/opentelemetry-collector-contrib/component v0.1.0"},
+			{GoMod: "github.com/newrelic/nrdot-collector-components/component v0.1.0"},
+			{GoMod: "github.com/newrelic-forks/opentelemetry-collector-contrib/component v0.1.0"},
+		},
+		Receivers: []Module{
+			{GoMod: "go.opentelemetry.io/collector v1.0.0"},
+			{GoMod: "go.opentelemetry.io/collector/component v0.1.0"},
+		},
+	}
+
+	err := cfg.SetVersions()
+	assert.NoError(t, err)
+
+	assert.Equal(t, "v1.0.0", cfg.Versions.StableCoreVersion)
+	assert.Equal(t, "v0.1.0", cfg.Versions.BetaCoreVersion)
+	assert.Equal(t, "v0.1.0", cfg.Versions.BetaContribVersion)
+	assert.Equal(t, "v0.1.0", cfg.Versions.NrdotVersion)
+	assert.Equal(t, "v0.1.0", cfg.Versions.NrForkContribVersion)
+}
+
+func TestConfig_SetVersions_MissingFork(t *testing.T) {
 	cfg := &Config{
 		Extensions: []Module{
 			{GoMod: "github.com/open-telemetry/opentelemetry-collector-contrib/component v0.1.0"},
@@ -112,6 +141,7 @@ func TestConfig_SetVersions(t *testing.T) {
 	assert.Equal(t, "v0.1.0", cfg.Versions.BetaCoreVersion)
 	assert.Equal(t, "v0.1.0", cfg.Versions.BetaContribVersion)
 	assert.Equal(t, "v0.1.0", cfg.Versions.NrdotVersion)
+	assert.Empty(t, cfg.Versions.NrForkContribVersion)
 }
 
 func TestConfig_SetVersions_MissingCore(t *testing.T) {
@@ -130,7 +160,7 @@ func TestConfig_SetVersions_MissingCore(t *testing.T) {
 
 }
 
-func TestIsCompatibleWithNrdotComponent(t *testing.T) {
+func TestIsCompatibleWithNrComponent(t *testing.T) {
 	tests := []struct {
 		name          string
 		nrdotVersion  string
@@ -147,12 +177,12 @@ func TestIsCompatibleWithNrdotComponent(t *testing.T) {
 			name:          "different minor versions - nrdot higher",
 			nrdotVersion:  "v0.143.0",
 			betaVersion:   "v0.142.5",
-			expectedMatch: true,
+			expectedMatch: false,
 		},
 		{
 			name:          "different minor versions - beta higher",
 			nrdotVersion:  "v0.142.0",
-			betaVersion:   "v0.142.1",
+			betaVersion:   "v0.143.0",
 			expectedMatch: false,
 		},
 		{
@@ -165,7 +195,7 @@ func TestIsCompatibleWithNrdotComponent(t *testing.T) {
 			name:          "different patch versions - beta higher",
 			nrdotVersion:  "v0.142.3",
 			betaVersion:   "v0.142.5",
-			expectedMatch: false,
+			expectedMatch: true,
 		},
 		{
 			name:          "edge case - large version numbers",
@@ -177,10 +207,100 @@ func TestIsCompatibleWithNrdotComponent(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := isCompatibleWithNrdotComponent(tt.nrdotVersion, tt.betaVersion)
+			result := isCompatibleWithNrComponent(tt.nrdotVersion, tt.betaVersion)
 			assert.Equal(t, tt.expectedMatch, result,
 				"isCompatibleWithNrdotComponent(%s, %s) = %v, want %v",
 				tt.nrdotVersion, tt.betaVersion, result, tt.expectedMatch)
+		})
+	}
+}
+
+func TestIsCompatibleWithNrVersions(t *testing.T) {
+	tests := []struct {
+		name                 string
+		nrdotVersion         string
+		nrForkContribVersion string
+		betaVersion          string
+		expectedMatch        bool
+	}{
+		{
+			name:                 "all versions populated and equal",
+			nrdotVersion:         "v0.142.0",
+			nrForkContribVersion: "v0.142.0",
+			betaVersion:          "v0.142.0",
+			expectedMatch:        true,
+		},
+		{
+			name:                 "all versions populated, beta minor version higher than one",
+			nrdotVersion:         "v0.141.0",
+			nrForkContribVersion: "v0.142.0",
+			betaVersion:          "v0.142.0",
+			expectedMatch:        false,
+		},
+		{
+			name:                 "nrdotVersion empty, beta equal",
+			nrdotVersion:         "",
+			nrForkContribVersion: "v0.142.0",
+			betaVersion:          "v0.142.0",
+			expectedMatch:        true,
+		},
+		{
+			name:                 "nrdotVersion empty, beta minor version higher",
+			nrdotVersion:         "",
+			nrForkContribVersion: "v0.141.0",
+			betaVersion:          "v0.142.0",
+			expectedMatch:        false,
+		},
+		{
+			name:                 "nrForkContribVersion empty, beta equal",
+			nrdotVersion:         "v0.142.0",
+			nrForkContribVersion: "",
+			betaVersion:          "v0.142.0",
+			expectedMatch:        true,
+		},
+		{
+			name:                 "nrForkContribVersion empty, beta higher",
+			nrdotVersion:         "v0.141.0",
+			nrForkContribVersion: "",
+			betaVersion:          "v0.142.0",
+			expectedMatch:        false,
+		},
+		{
+			name:                 "both nr versions empty",
+			nrdotVersion:         "",
+			nrForkContribVersion: "",
+			betaVersion:          "v0.142.0",
+			expectedMatch:        true,
+		},
+		{
+			name:                 "nrdot patch version higher",
+			nrdotVersion:         "v0.142.3",
+			nrForkContribVersion: "v0.142.0",
+			betaVersion:          "v0.142.0",
+			expectedMatch:        true,
+		},
+		{
+			name:                 "fork patch version higher",
+			nrdotVersion:         "v0.142.0",
+			nrForkContribVersion: "v0.142.4",
+			betaVersion:          "v0.142.0",
+			expectedMatch:        true,
+		},
+		{
+			name:                 "beta patch version higher",
+			nrdotVersion:         "v0.142.0",
+			nrForkContribVersion: "v0.142.0",
+			betaVersion:          "v0.142.5",
+			expectedMatch:        true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := isCompatibleWithNrVersions(tt.nrdotVersion, tt.nrForkContribVersion, tt.betaVersion)
+			assert.Equal(t, tt.expectedMatch, result,
+				"isCompatibleWithNrVersions(%s, %s, %s) = %v, want %v",
+				tt.nrdotVersion, tt.nrForkContribVersion, tt.betaVersion, result, tt.expectedMatch)
 		})
 	}
 }

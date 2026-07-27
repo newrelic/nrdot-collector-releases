@@ -8,4 +8,5 @@ package tools // import "github.com/newrelic/opentelemetry-collector-components/
 import (
 	_ "github.com/newrelic/nrdot-collector-components/cmd/nrlicense"
 	_ "go.elastic.co/go-licence-detector"
+	_ "go.opentelemetry.io/build-tools/chloggen"
 )
