@@ -2,7 +2,7 @@
 # Copyright New Relic, Inc. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-REPO_DIR="$( cd "$(dirname "$( dirname "${BASH_SOURCE[0]}" )")" &> /dev/null && pwd )"
+REPO_DIR="$(git rev-parse --show-toplevel)"
 
 GO_LICENCE_DETECTOR=''
 NOTICE_FILE=''

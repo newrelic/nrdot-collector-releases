@@ -31,7 +31,7 @@ build-fips: go ocb
 generate: generate-sources generate-goreleaser
 
 generate-goreleaser: go
-	@./scripts/generate-goreleaser.sh -d "${DISTRIBUTIONS}" -g ${GO}
+	@./scripts/misc/generate-goreleaser.sh -d "${DISTRIBUTIONS}" -g ${GO}
 
 generate-sources: go ocb
 	@./scripts/build/build.sh -d "${DISTRIBUTIONS}" -s true -b ${OTELCOL_BUILDER}
@@ -43,10 +43,10 @@ ensure-goreleaser-up-to-date: generate-goreleaser
 	@git diff -s --exit-code distributions/*/.goreleaser*.yaml || (echo "Check failed: The goreleaser templates have changed but the .goreleaser.yamls haven't. Run 'make generate-goreleaser' and update your PR." && exit 1)
 
 validate-components:
-	@./scripts/validate-components.sh
+	@./scripts/build/validate-component-inventory.sh
 
 validate-actions-hashes:
-	@./scripts/validate-actions-hashes.sh
+	@./scripts/misc/validate-actions-hashes.sh
 
 .PHONY: ocb
 ocb:
@@ -124,7 +124,7 @@ goreleaser:
 		fi \
 	}
 
-VERSION := $(shell ./scripts/get-version.sh)
+VERSION := $(shell ./scripts/misc/get-version.sh)
 
 .PHONY: version-check
 version-check:
@@ -159,7 +159,7 @@ FIRST_COMMIT_HASH=6451f322bfe1e62962d3d87b50d785de8048e865
 
 .PHONY: licenses
 licenses: go generate-sources $(GO_LICENCE_DETECTOR) $(NRLICENSE)
-	@./scripts/licenses.sh -d "${DISTRIBUTIONS}" -b ${GO_LICENCE_DETECTOR} -n ${NOTICE_OUTPUT} -g ${GO}
+	@./scripts/misc/licenses.sh -d "${DISTRIBUTIONS}" -b ${GO_LICENCE_DETECTOR} -n ${NOTICE_OUTPUT} -g ${GO}
 	@$(NRLICENSE) --fix --fork-commit ${FIRST_COMMIT_HASH} ${HEADER_GEN_FILES}
 
 .PHONY: headers-check
@@ -199,19 +199,19 @@ PR_NUMBER?=$(shell gh pr view $(BRANCH_NAME) --json number --jq '.number' 2>/dev
 # The .issues field will be pre-populated with the PR number if one exists.
 .PHONY: chlog-new
 chlog-new: ${CHLOGGEN}
-	./scripts/chloggen-wrapper.sh -b $(CHLOGGEN) -n
+	./scripts/misc/chloggen-wrapper.sh -b $(CHLOGGEN) -n
 
 .PHONY: chlog-validate
 chlog-validate: ${CHLOGGEN}
-	./scripts/chloggen-wrapper.sh -b $(CHLOGGEN) -v
+	./scripts/misc/chloggen-wrapper.sh -b $(CHLOGGEN) -v
 
 .PHONY: chlog-preview
 chlog-preview: ${CHLOGGEN}
-	./scripts/chloggen-wrapper.sh -b $(CHLOGGEN) -p
+	./scripts/misc/chloggen-wrapper.sh -b $(CHLOGGEN) -p
 
 .PHONY: chlog-update
 chlog-update: ${CHLOGGEN}
-	./scripts/chloggen-wrapper.sh -b $(CHLOGGEN) -u
+	./scripts/misc/chloggen-wrapper.sh -b $(CHLOGGEN) -u
 
 # Check that each distro's component-inventory.yaml (if present) matches its manifest.yaml
 .PHONY: component-inventory-check

@@ -225,7 +225,7 @@ scenarios:
         --from-literal="serviceName=nrdot-collector-e2e-host" --from-literal="scenarioTag=${SCENARIO_TAG}"
       - "helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts || echo 'skipping repo add: open-telemetry repo already exists'"
       - |
-        chart_version=$(../../../scripts/get-otel-collector-chart-version.sh)
+        chart_version=$(../../../scripts/misc/get-otel-collector-chart-version.sh)
         helm upgrade --install ${SCENARIO_TAG} open-telemetry/opentelemetry-collector \
         --namespace nr-${SCENARIO_TAG} --version ${chart_version} \
         --values ./host-collector-values.yaml \
@@ -255,7 +255,7 @@ scenarios:
         --from-literal="serviceName=nrdot-collector-e2e-internal" --from-literal="scenarioTag=${SCENARIO_TAG}"
       - "helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts || echo 'skipping repo add: open-telemetry repo already exists'"
       - |
-        chart_version=$(../../../scripts/get-otel-collector-chart-version.sh)
+        chart_version=$(../../../scripts/misc/get-otel-collector-chart-version.sh)
         helm upgrade --install ${SCENARIO_TAG} open-telemetry/opentelemetry-collector \
         --namespace nr-${SCENARIO_TAG} --version ${chart_version} \
         --values ./internal-collector-values.yaml \
