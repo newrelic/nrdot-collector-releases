@@ -5,7 +5,7 @@
 # Simple script to bump versions for new release to document all places that need to be updated
 set -e
 
-REPO_DIR="$( cd "$(dirname "$( dirname "${BASH_SOURCE[0]}" )")" &> /dev/null && pwd )"
+REPO_DIR="$(git rev-parse --show-toplevel)"
 old_version=$(yq ".dist.version" "${REPO_DIR}/distributions/nrdot-collector/manifest.yaml")
 
 if [ -z "${1}" ]; then
