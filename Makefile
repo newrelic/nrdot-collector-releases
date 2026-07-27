@@ -19,7 +19,7 @@ NRLICENSE := $(TOOLS_BIN_DIR)/nrlicense
 
 DISTRIBUTIONS ?= "nrdot-collector,nrdot-collector-experimental"
 
-ci: check manifests-check build build-fips version-check licenses-check
+ci: check manifests-check component-inventory-check build build-fips version-check licenses-check
 check: ensure-goreleaser-up-to-date
 
 build: go ocb
@@ -212,3 +212,10 @@ chlog-preview: ${CHLOGGEN}
 .PHONY: chlog-update
 chlog-update: ${CHLOGGEN}
 	./scripts/chloggen-wrapper.sh -b $(CHLOGGEN) -u
+
+# Check that each distro's component-inventory.yaml (if present) matches its manifest.yaml
+.PHONY: component-inventory-check
+component-inventory-check:
+	@for distro in $$(echo ${DISTRIBUTIONS} | tr ',' ' ' | tr -d '"'); do \
+		./scripts/validate-component-inventory.sh "$$distro" || exit 1; \
+	done
