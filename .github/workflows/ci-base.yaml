@@ -122,7 +122,7 @@ jobs:
         run: echo "✅ Source generation skipped - no source changes detected"
 
       - name: Verify source files exist
-        run: ./scripts/validate-source-files.sh -d ${{ inputs.distribution }} -f ${{ inputs.fips }}
+        run: ./scripts/build/validate-source-files.sh -d ${{ inputs.distribution }} -f ${{ inputs.fips }}
       
       - name: Configure AWS Credentials
         if: ${{ inputs.publish }}
