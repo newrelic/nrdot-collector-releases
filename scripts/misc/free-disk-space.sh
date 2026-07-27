@@ -3,6 +3,8 @@
 # Copyright The OpenTelemetry Authors
 # SPDX-License-Identifier: Apache-2.0
 
+echo "non cache invalidating change"
+
 echo "Available disk space before:"
 df -h /
 
