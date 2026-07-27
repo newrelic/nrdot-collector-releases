@@ -96,7 +96,7 @@ jobs:
         run: |
           SOURCES_HASH="${{ hashFiles(
             format('distributions/{0}/manifest.yaml', inputs.distribution),
-            'scripts/build.sh',
+            'scripts/build/**',
             'Makefile',
             'fips/fips.go'
           ) }}"

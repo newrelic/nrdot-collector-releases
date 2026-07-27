@@ -23,10 +23,10 @@ ci: check manifests-check component-inventory-check build build-fips version-che
 check: ensure-goreleaser-up-to-date
 
 build: go ocb
-	@./scripts/build.sh -d "${DISTRIBUTIONS}" -b ${OTELCOL_BUILDER}
+	@./scripts/build/build.sh -d "${DISTRIBUTIONS}" -b ${OTELCOL_BUILDER}
 
 build-fips: go ocb
-	@./scripts/build.sh -d "${DISTRIBUTIONS}" -b ${OTELCOL_BUILDER} -f true
+	@./scripts/build/build.sh -d "${DISTRIBUTIONS}" -b ${OTELCOL_BUILDER} -f true
 
 generate: generate-sources generate-goreleaser
 
@@ -34,7 +34,7 @@ generate-goreleaser: go
 	@./scripts/generate-goreleaser.sh -d "${DISTRIBUTIONS}" -g ${GO}
 
 generate-sources: go ocb
-	@./scripts/build.sh -d "${DISTRIBUTIONS}" -s true -b ${OTELCOL_BUILDER}
+	@./scripts/build/build.sh -d "${DISTRIBUTIONS}" -s true -b ${OTELCOL_BUILDER}
 
 goreleaser-verify: goreleaser
 	@${GORELEASER} release --snapshot --clean
