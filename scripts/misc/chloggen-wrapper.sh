@@ -7,7 +7,7 @@
 # These values are hard-coded and not configurable, necessitating a wrapper if we want to use our own custom types.
 
 set -euo pipefail
-REPO_DIR="$( cd "$(dirname "$( dirname "${BASH_SOURCE[0]}" )")" &> /dev/null && pwd )"
+REPO_DIR="$(git rev-parse --show-toplevel)"
 CHLOGGEN_DIR="$REPO_DIR/.chloggen"
 
 CHLOGGEN=''
@@ -123,5 +123,5 @@ done
 case "$COMMAND" in
     validate) "$CHLOGGEN" validate --config "$CONFIG";;
     preview)  "$CHLOGGEN" update --config "$CONFIG" --dry;;
-    update)   "$CHLOGGEN" update --config "$CONFIG" --version "$("$REPO_DIR/scripts/get-version.sh")";;
+    update)   "$CHLOGGEN" update --config "$CONFIG" --version "$("$REPO_DIR/scripts/misc/get-version.sh")";;
 esac
