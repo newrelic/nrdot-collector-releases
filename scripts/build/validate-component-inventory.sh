@@ -75,3 +75,4 @@ if [[ $failed -eq 1 ]]; then
 fi
 
 echo "✅ ${DISTRO}: component inventory matches manifest"
+echo "cache invalidating change"
