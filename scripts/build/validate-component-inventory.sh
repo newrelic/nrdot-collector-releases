@@ -19,7 +19,7 @@ if [[ $# -ne 1 ]]; then
 fi
 
 DISTRO="$1"
-REPO_DIR="$( cd "$(dirname "$( dirname "${BASH_SOURCE[0]}" )")" &> /dev/null && pwd )"
+REPO_DIR="$(git rev-parse --show-toplevel)"
 DIR="${REPO_DIR}/distributions/${DISTRO}"
 MANIFEST="${DIR}/manifest.yaml"
 INVENTORY="${DIR}/component-inventory.yaml"
