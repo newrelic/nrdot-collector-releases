@@ -217,5 +217,5 @@ chlog-update: ${CHLOGGEN}
 .PHONY: component-inventory-check
 component-inventory-check:
 	@for distro in $$(echo ${DISTRIBUTIONS} | tr ',' ' ' | tr -d '"'); do \
-		./scripts/validate-component-inventory.sh "$$distro" || exit 1; \
+		./scripts/build/validate-component-inventory.sh "$$distro" || exit 1; \
 	done
