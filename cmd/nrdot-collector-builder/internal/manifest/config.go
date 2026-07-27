@@ -22,16 +22,18 @@ import (
 var errMissingGoMod = errors.New("missing gomod specification for module")
 
 const (
-	CoreModule    = "go.opentelemetry.io/collector"
-	ContribModule = "github.com/open-telemetry/opentelemetry-collector-contrib"
-	NrModule      = "github.com/newrelic/nrdot-collector-components"
+	CoreModule          = "go.opentelemetry.io/collector"
+	ContribModule       = "github.com/open-telemetry/opentelemetry-collector-contrib"
+	NrModule            = "github.com/newrelic/nrdot-collector-components"
+	NrForkContribModule = "github.com/newrelic-forks/opentelemetry-collector-contrib"
 )
 
 type Versions struct {
-	BetaCoreVersion    string `json:"betaCoreVersion"`
-	BetaContribVersion string `json:"betaContribVersion"`
-	StableCoreVersion  string `json:"stableCoreVersion"`
-	NrdotVersion       string `json:"nrdotVersion"`
+	BetaCoreVersion      string `json:"betaCoreVersion"`
+	BetaContribVersion   string `json:"betaContribVersion"`
+	StableCoreVersion    string `json:"stableCoreVersion"`
+	NrdotVersion         string `json:"nrdotVersion"`
+	NrForkContribVersion string `json:"nrForkContribVersion"`
 }
 
 // Config holds the builder's configuration
@@ -95,6 +97,10 @@ func isNrdotComponent(component Module) bool {
 	return strings.HasPrefix(component.GoMod, NrModule)
 }
 
+func isNrForkContribComponent(component Module) bool {
+	return strings.HasPrefix(component.GoMod, NrForkContribModule)
+}
+
 func isOtelComponent(component Module) bool {
 	return isOtelCoreComponent(component.GoMod) || isOtelContribComponent(component.GoMod)
 }
@@ -103,8 +109,13 @@ func isStableVersion(version string) bool {
 	return semver.Compare(version, "v1.0.0") >= 0
 }
 
-func isCompatibleWithNrdotComponent(nrdotVersion, betaVersion string) bool {
-	return semver.Compare(nrdotVersion, betaVersion) >= 0
+func isCompatibleWithNrComponent(nrComponentVersion, betaVersion string) bool {
+	return semver.MajorMinor(nrComponentVersion) == semver.MajorMinor(betaVersion)
+}
+
+func isCompatibleWithNrVersions(nrdotVersion, nrForkContribVersion, betaVersion string) bool {
+	return (nrdotVersion == "" || isCompatibleWithNrComponent(nrdotVersion, betaVersion)) &&
+		(nrForkContribVersion == "" || isCompatibleWithNrComponent(nrForkContribVersion, betaVersion))
 }
 
 func (c *Config) SetVersions() error {
@@ -122,18 +133,35 @@ func (c *Config) SetVersions() error {
 		}
 	}
 
+	for _, component := range c.allNrForkContribComponents() {
+		if isNrForkContribComponent(component) {
+			componentVersion := strings.Split(component.GoMod, " ")[1]
+			versions.NrForkContribVersion = componentVersion
+		}
+
+		if versions.NrForkContribVersion != "" {
+			break
+		}
+	}
+
 	for _, component := range c.allOtelComponents() {
 		if isOtelComponent(component) {
 			componentVersion := strings.Split(component.GoMod, " ")[1]
 			if isOtelCoreComponent(component.GoMod) {
 				if isStableVersion(componentVersion) {
 					versions.StableCoreVersion = componentVersion
-				} else if versions.NrdotVersion == "" || isCompatibleWithNrdotComponent(versions.NrdotVersion, componentVersion) {
+				} else {
+					if !isCompatibleWithNrVersions(versions.NrdotVersion, versions.NrForkContribVersion, componentVersion) {
+						return fmt.Errorf("beta core version %s incompatible with nrdot %s or nr-fork %s", componentVersion, versions.NrdotVersion, versions.NrForkContribVersion)
+					}
 					versions.BetaCoreVersion = componentVersion
 				}
 			}
 
-			if isOtelContribComponent(component.GoMod) && !isStableVersion(componentVersion) && (versions.NrdotVersion == "" || isCompatibleWithNrdotComponent(versions.NrdotVersion, componentVersion)) {
+			if isOtelContribComponent(component.GoMod) && !isStableVersion(componentVersion) {
+				if !isCompatibleWithNrVersions(versions.NrdotVersion, versions.NrForkContribVersion, componentVersion) {
+					return fmt.Errorf("contrib version %s incompatible with nrdot %s or nr-fork %s", componentVersion, versions.NrdotVersion, versions.NrForkContribVersion)
+				}
 				versions.BetaContribVersion = componentVersion
 			}
 
@@ -243,6 +271,16 @@ func (cfg *Config) allNrdotComponents() []Module {
 		}
 	}
 	return allNrdotComponents
+}
+
+func (cfg *Config) allNrForkContribComponents() []Module {
+	allNrForkContribComponents := []Module{}
+	for _, component := range cfg.allComponents() {
+		if isNrForkContribComponent(component) {
+			allNrForkContribComponents = append(allNrForkContribComponents, component)
+		}
+	}
+	return allNrForkContribComponents
 }
 
 func validateModules(name string, mods []Module) error {

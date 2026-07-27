@@ -25,3 +25,9 @@ ci_nightly_fips_custom_matrix:
 
 ci_check_links:
 	act push -W .github/workflows/check-links.yaml
+
+ci_bump_component_version:
+	act workflow_dispatch -W .github/workflows/ci-bump-component-versions.yaml
+
+ci_bump_nrdot_version:
+	act workflow_dispatch -W .github/workflows/release-bump-version-pr.yaml

@@ -3,7 +3,7 @@ GORELEASER ?= goreleaser
 
 # SRC_ROOT is the top of the source tree.
 SRC_ROOT := $(shell git rev-parse --show-toplevel)
-OTELCOL_BUILDER_VERSION ?= 0.154.0
+OTELCOL_BUILDER_VERSION ?= 0.156.0
 OTELCOL_BUILDER_DIR ?= ${HOME}/bin
 OTELCOL_BUILDER ?= ${OTELCOL_BUILDER_DIR}/ocb
 
@@ -19,7 +19,8 @@ NRLICENSE := $(TOOLS_BIN_DIR)/nrlicense
 
 DISTRIBUTIONS ?= "nrdot-collector,nrdot-collector-experimental"
 
-ci: check manifests-check build build-fips version-check licenses-check otel-library-nrql-check
+ci: check manifests-check component-inventory-check build build-fips version-check licenses-check otel-library-nrql-check
+
 check: ensure-goreleaser-up-to-date
 
 build: go ocb
@@ -44,6 +45,9 @@ ensure-goreleaser-up-to-date: generate-goreleaser
 
 validate-components:
 	@./scripts/validate-components.sh
+
+validate-actions-hashes:
+	@./scripts/validate-actions-hashes.sh
 
 .PHONY: ocb
 ocb:
@@ -195,3 +199,33 @@ manifests-check:
 		echo "$${diff}"; \
 		exit 1; \
 	} || exit 0
+
+CHLOGGEN := $(TOOLS_BIN_DIR)/chloggen
+CHLOGGEN_CONFIG := "${SRC_ROOT}/.chloggen/config.yaml"
+BRANCH_NAME?=$(shell git branch --show-current)
+PR_NUMBER?=$(shell gh pr view $(BRANCH_NAME) --json number --jq '.number' 2>/dev/null)
+
+# Generate a new changelog entry.
+# The .issues field will be pre-populated with the PR number if one exists.
+.PHONY: chlog-new
+chlog-new: ${CHLOGGEN}
+	./scripts/chloggen-wrapper.sh -b $(CHLOGGEN) -n
+
+.PHONY: chlog-validate
+chlog-validate: ${CHLOGGEN}
+	./scripts/chloggen-wrapper.sh -b $(CHLOGGEN) -v
+
+.PHONY: chlog-preview
+chlog-preview: ${CHLOGGEN}
+	./scripts/chloggen-wrapper.sh -b $(CHLOGGEN) -p
+
+.PHONY: chlog-update
+chlog-update: ${CHLOGGEN}
+	./scripts/chloggen-wrapper.sh -b $(CHLOGGEN) -u
+
+# Check that each distro's component-inventory.yaml (if present) matches its manifest.yaml
+.PHONY: component-inventory-check
+component-inventory-check:
+	@for distro in $$(echo ${DISTRIBUTIONS} | tr ',' ' ' | tr -d '"'); do \
+		./scripts/validate-component-inventory.sh "$$distro" || exit 1; \
+	done
