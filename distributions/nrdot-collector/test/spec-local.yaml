@@ -214,6 +214,11 @@ description: nrdot-collector E2E Test
     expected_results:
      - key: batch_processor
        lowerBoundedValue: 1
+  # Non-collector library scope check (generated from internal/assets/license/otel-library-allowlist.json, run `make generate-otel-library-nrql` after editing the allowlist)
+  - query: FROM Metric SELECT filter(uniqueCount(otel.library.name), WHERE otel.library.name IS NOT NULL AND otel.library.name NOT LIKE "go.opentelemetry.io/collector/%" AND otel.library.name NOT LIKE "github.com/open-telemetry/opentelemetry-collector%" AND otel.library.name NOT LIKE "go.opentelemetry.io/contrib/instrumentation/%" AND otel.library.name NOT LIKE "OtelHttp%" AND otel.library.name NOT LIKE "OtelRpc%") as c2_non_allowlist
+    expected_results:
+      - key: c2_non_allowlist
+        value: 0
 
 scenarios:
   - description: host telemetry

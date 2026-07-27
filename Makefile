@@ -19,7 +19,7 @@ NRLICENSE := $(TOOLS_BIN_DIR)/nrlicense
 
 DISTRIBUTIONS ?= "nrdot-collector,nrdot-collector-experimental"
 
-ci: check manifests-check build build-fips version-check licenses-check
+ci: check manifests-check build build-fips version-check licenses-check otel-library-nrql-check
 check: ensure-goreleaser-up-to-date
 
 build: go ocb
@@ -173,6 +173,15 @@ licenses-check: headers-check licenses
 			exit 1;\
 		} \
 		|| exit 0
+
+.PHONY: generate-otel-library-nrql
+generate-otel-library-nrql:
+	@./scripts/generate-otel-library-nrql.sh
+
+.PHONY: otel-library-nrql-check
+otel-library-nrql-check: generate-otel-library-nrql
+	@git diff -s --exit-code distributions/nrdot-collector/test/spec-local.yaml distributions/nrdot-collector/test/spec-nightly-kind.yaml || \
+		(echo "otel-library-allowlist.json changed but the spec files weren't regenerated. Run 'make generate-otel-library-nrql' and commit the changes." && exit 1)
 
 # Check if all core components are present in experimental manifest
 CORE_MANIFEST="${SRC_ROOT}/distributions/nrdot-collector/manifest.yaml"

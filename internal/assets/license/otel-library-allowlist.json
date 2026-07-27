@@ -1,0 +1,9 @@
+{
+  "allowlist": [
+    "go.opentelemetry.io/collector/%",
+    "github.com/open-telemetry/opentelemetry-collector%",
+    "go.opentelemetry.io/contrib/instrumentation/%",
+    "OtelHttp%",
+    "OtelRpc%"
+  ]
+}
