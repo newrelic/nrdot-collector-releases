@@ -4,7 +4,7 @@
 change_type: feature
 
 # Mandatory. Put the PR number here. Inferred from PR number if PR created before `make chlog-new`.
-issues: []
+issues: [632]
 
 # A brief description of the change.  Surround your text with quotes ("") if it needs to start with a backtick (`).
 note: Add the `sqlqueryreceiver` to the `nrdot-collector-experimental` distribution.
