@@ -119,7 +119,7 @@ jobs:
         run: echo "✅ Source generation skipped - no source changes detected"
 
       - name: Validate source files, versions, and licenses
-        run: make check-sources
+        run: make check-sources DISTRIBUTIONS=${{ inputs.distribution }} FIPS=${{ inputs.fips }}
       
       - name: Configure AWS Credentials
         if: ${{ inputs.publish }}
