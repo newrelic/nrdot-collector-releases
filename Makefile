@@ -24,7 +24,7 @@ ci: generate-sources version-check
 check: goreleaser-file-check manifests-check component-inventory-check actions-hashes-check licenses-check
 
 generate-sources: go ocb
-	@./scripts/build/build.sh -d "${DISTRIBUTIONS}" -f ${FIPS}
+	@./scripts/build/build.sh -d "${DISTRIBUTIONS}" -b ${OTELCOL_BUILDER} -f ${FIPS}
 
 generate: generate-sources generate-goreleaser
 
