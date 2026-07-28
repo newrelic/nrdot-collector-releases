@@ -214,6 +214,11 @@ description: nrdot-collector E2E Nightly Test - Kind (K8s)
     expected_results:
      - key: batch_processor
        lowerBoundedValue: 1
+  # This test failing indicates that UI otelcol detection heuristic might be inaccurate and need to be updated
+  - query: FROM Metric SELECT filter(uniqueCount(otel.library.name), WHERE otel.library.name IS NOT NULL AND otel.library.name NOT LIKE 'go.opentelemetry.io/collector/%' AND otel.library.name NOT LIKE 'github.com/open-telemetry/opentelemetry-collector%' AND otel.library.name NOT LIKE 'go.opentelemetry.io/contrib/instrumentation/%' AND otel.library.name NOT LIKE 'OtelHttp%' AND otel.library.name NOT LIKE 'OtelRpc%') as count_of_libs_not_in_otelcol_detection_heuristic
+    expected_results:
+      - key: count_of_libs_not_in_otelcol_detection_heuristic
+        value: 0
 
 scenarios:
   - description: host telemetry
