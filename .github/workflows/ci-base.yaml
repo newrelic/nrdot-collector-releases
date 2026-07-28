@@ -74,10 +74,7 @@ jobs:
 
       - name: Tidy go.mod files
         run: go mod tidy
-
-      - name: Check actions hashes, component inventory and GoReleaser files
-        run: make check
-
+      
       - name: Validate GoReleaser license
         uses: goreleaser/goreleaser-action@1a80836c5c9d9e5755a25cb59ec6f45a3b5f41a8 # v7
         env:
@@ -87,39 +84,8 @@ jobs:
           version: "2.15.4"
           args: license-verify
 
-      - name: Generate sources cache key
-        id: sources-cache-key
-        if: env.caching_enabled == 'true'
-        run: |
-          SOURCES_HASH="${{ hashFiles(
-            format('distributions/{0}/manifest.yaml', inputs.distribution),
-            'scripts/build/**',
-            'Makefile',
-            'fips/fips.go'
-          ) }}"
-          FIPS="${{ inputs.fips == true && '-fips' || '' }}"
-          echo "sources_key=sources-${{ inputs.distribution }}${FIPS}-${SOURCES_HASH}" >> $GITHUB_OUTPUT
-
-      - name: Cache sources
-        id: cache-sources
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
-        if: env.caching_enabled == 'true'
-        with:
-          path: |
-            distributions/${{ inputs.distribution }}/_build
-            distributions/${{ inputs.distribution }}/_build-fips
-          key: ${{ steps.sources-cache-key.outputs.sources_key }}
-
-      - name: Generate sources
-        if: steps.cache-sources.outputs.cache-hit != 'true'
-        run: make generate-sources DISTRIBUTIONS=${{ inputs.distribution }} FIPS=${{ inputs.fips }}
-
-      - name: Skip source generation (cached)
-        if: steps.cache-sources.outputs.cache-hit == 'true'
-        run: echo "✅ Source generation skipped - no source changes detected"
-
-      - name: Validate source files, versions, and licenses
-        run: make check-sources DISTRIBUTIONS=${{ inputs.distribution }} FIPS=${{ inputs.fips }}
+      - name: Generate sources and run checks
+        run: make ci DISTRIBUTIONS=${{ inputs.distribution }} FIPS=${{ inputs.fips }}
       
       - name: Configure AWS Credentials
         if: ${{ inputs.publish }}
@@ -198,7 +164,6 @@ jobs:
       - name: Generate binary cache key
         id: generate_binary_key
         run: |
-          # NOTE: A source cache miss always results in a GoReleaser cache miss because OCB generates a timestamped _build/build.log.
           BINARY_HASH="${{ hashFiles(
             format('distributions/{0}/.goreleaser*.yaml', inputs.distribution),
             format('distributions/{0}/windows/*', inputs.distribution),

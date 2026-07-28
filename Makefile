@@ -17,15 +17,17 @@ GO_LICENCE_DETECTOR        := $(TOOLS_BIN_DIR)/go-licence-detector
 GO_LICENCE_DETECTOR_CONFIG   := $(SRC_ROOT)/internal/assets/license/rules.json
 NRLICENSE := $(TOOLS_BIN_DIR)/nrlicense
 
-DISTRIBUTIONS ?= "nrdot-collector,nrdot-collector-experimental"
+DISTRIBUTIONS ?= "nrdot-collector"
 FIPS ?= false
 
-check: goreleaser-file-check manifests-check component-inventory-check actions-hashes-check
+ci: pre-check generate-sources post-check
+
+pre-check: goreleaser-file-check manifests-check component-inventory-check actions-hashes-check
 
 generate-sources: go ocb
 	@./scripts/build/build.sh -d "${DISTRIBUTIONS}" -b ${OTELCOL_BUILDER} -f ${FIPS}
 
-check-sources: version-check source-file-check licenses-check
+post-check: version-check source-file-check licenses-check
 
 generate: generate-sources generate-goreleaser
 
