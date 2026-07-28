@@ -226,4 +226,4 @@ actions-hashes-check:
 
 .PHONY: source-file-check
 source-file-check:
-	@./scripts/misc/validate-source-files.sh
+	@./scripts/misc/validate-source-files.sh -d "${DISTRIBUTIONS}" -f ${FIPS}
