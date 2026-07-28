@@ -20,16 +20,16 @@ NRLICENSE := $(TOOLS_BIN_DIR)/nrlicense
 DISTRIBUTIONS ?= "nrdot-collector,nrdot-collector-experimental"
 FIPS ?= false
 
-ci: pre-check generate-sources post-check
+ci: pre-check build post-check
 
 pre-check: goreleaser-file-check manifests-check component-inventory-check actions-hashes-check
 
-generate-sources: go ocb
+build: go ocb
 	@./scripts/build/build.sh -d "${DISTRIBUTIONS}" -b ${OTELCOL_BUILDER} -f ${FIPS}
 
 post-check: version-check source-file-check licenses-check
 
-generate: generate-sources generate-goreleaser
+generate: build generate-goreleaser
 
 generate-goreleaser: go
 	@./scripts/misc/generate-goreleaser.sh -d "${DISTRIBUTIONS}" -g ${GO}
