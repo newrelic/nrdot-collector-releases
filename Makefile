@@ -20,7 +20,6 @@ NRLICENSE := $(TOOLS_BIN_DIR)/nrlicense
 DISTRIBUTIONS ?= "nrdot-collector,nrdot-collector-experimental"
 
 ci: check manifests-check component-inventory-check build build-fips version-check licenses-check
-
 check: ensure-goreleaser-up-to-date
 
 build: go ocb
