@@ -81,5 +81,8 @@ do
         exit 1
     fi
 
+    # The build log contain timestamps which change every run, resulting in volatile GHA cache keys unless removed.
+    rm -f "$build_folder/build.log"
+
     popd > /dev/null || exit
 done
