@@ -19,8 +19,8 @@ NRLICENSE := $(TOOLS_BIN_DIR)/nrlicense
 
 DISTRIBUTIONS ?= "nrdot-collector,nrdot-collector-experimental"
 
-ci: check manifests-check component-inventory-check build build-fips version-check licenses-check
-check: ensure-goreleaser-up-to-date component-inventory-check actions-hashes-check
+ci: check manifests-check build build-fips version-check
+check: ensure-goreleaser-up-to-date component-inventory-check actions-hashes-check licenses-check
 
 build: go ocb
 	@./scripts/build/build.sh -d "${DISTRIBUTIONS}" -b ${OTELCOL_BUILDER}
