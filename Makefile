@@ -20,7 +20,7 @@ NRLICENSE := $(TOOLS_BIN_DIR)/nrlicense
 DISTRIBUTIONS ?= "nrdot-collector,nrdot-collector-experimental"
 
 ci: check manifests-check component-inventory-check build build-fips version-check licenses-check
-check: ensure-goreleaser-up-to-date
+check: ensure-goreleaser-up-to-date component-inventory-check actions-hashes-check
 
 build: go ocb
 	@./scripts/build/build.sh -d "${DISTRIBUTIONS}" -b ${OTELCOL_BUILDER}
@@ -43,7 +43,7 @@ ensure-goreleaser-up-to-date: generate-goreleaser
 	@git diff -s --exit-code distributions/*/.goreleaser*.yaml || (echo "Check failed: The goreleaser templates have changed but the .goreleaser.yamls haven't. Run 'make generate-goreleaser' and update your PR." && exit 1)
 
 validate-components:
-	@./scripts/build/validate-component-inventory.sh
+	@./scripts/misc/validate-component-inventory.sh
 
 validate-actions-hashes:
 	@./scripts/misc/validate-actions-hashes.sh
@@ -217,5 +217,9 @@ chlog-update: ${CHLOGGEN}
 .PHONY: component-inventory-check
 component-inventory-check:
 	@for distro in $$(echo ${DISTRIBUTIONS} | tr ',' ' ' | tr -d '"'); do \
-		./scripts/build/validate-component-inventory.sh "$$distro" || exit 1; \
+		./scripts/misc/validate-component-inventory.sh "$$distro" || exit 1; \
 	done
+
+.PHONY: actions-hashes-check
+actions-hashes-check:
+	@./scripts/misc/validate-actions-hashes.sh

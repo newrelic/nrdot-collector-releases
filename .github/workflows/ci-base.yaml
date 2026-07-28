@@ -75,10 +75,7 @@ jobs:
       - name: Tidy go.mod files
         run: go mod tidy
 
-      - name: Validate GitHub Actions hashes match
-        run: ./scripts/misc/validate-actions-hashes.sh
-
-      - name: Ensure goreleaser up to date
+      - name: Check actions hashes, component inventory and GoReleaser files
         run: make check
 
       - name: Validate GoReleaser license
