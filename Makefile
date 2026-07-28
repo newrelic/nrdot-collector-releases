@@ -158,7 +158,7 @@ generate-license-sources: go ocb
 	@./scripts/build/build.sh -d "${DISTRIBUTIONS}" -s true -b ${OTELCOL_BUILDER} -f false
 
 .PHONY: licenses
-licenses: go generate-sources $(GO_LICENCE_DETECTOR) $(NRLICENSE)
+licenses: go generate-license-sources $(GO_LICENCE_DETECTOR) $(NRLICENSE)
 	@./scripts/misc/licenses.sh -d "${DISTRIBUTIONS}" -b ${GO_LICENCE_DETECTOR} -n ${NOTICE_OUTPUT} -g ${GO}
 	@$(NRLICENSE) --fix --fork-commit ${FIRST_COMMIT_HASH} ${HEADER_GEN_FILES}
 
