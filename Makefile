@@ -18,28 +18,23 @@ GO_LICENCE_DETECTOR_CONFIG   := $(SRC_ROOT)/internal/assets/license/rules.json
 NRLICENSE := $(TOOLS_BIN_DIR)/nrlicense
 
 DISTRIBUTIONS ?= "nrdot-collector,nrdot-collector-experimental"
+FIPS ?= false
 
-ci: check manifests-check build build-fips version-check
-check: ensure-goreleaser-up-to-date component-inventory-check actions-hashes-check licenses-check
+ci: generate-sources version-check
+check: goreleaser-file-check manifests-check component-inventory-check actions-hashes-check licenses-check
 
-build: go ocb
-	@./scripts/build/build.sh -d "${DISTRIBUTIONS}" -b ${OTELCOL_BUILDER}
-
-build-fips: go ocb
-	@./scripts/build/build.sh -d "${DISTRIBUTIONS}" -b ${OTELCOL_BUILDER} -f true
+generate-sources: go ocb
+	@./scripts/build/build.sh -d "${DISTRIBUTIONS}" -f ${FIPS}
 
 generate: generate-sources generate-goreleaser
 
 generate-goreleaser: go
 	@./scripts/misc/generate-goreleaser.sh -d "${DISTRIBUTIONS}" -g ${GO}
 
-generate-sources: go ocb
-	@./scripts/build/build.sh -d "${DISTRIBUTIONS}" -s true -b ${OTELCOL_BUILDER}
-
 goreleaser-verify: goreleaser
 	@${GORELEASER} release --snapshot --clean
 
-ensure-goreleaser-up-to-date: generate-goreleaser
+goreleaser-file-check: generate-goreleaser
 	@git diff -s --exit-code distributions/*/.goreleaser*.yaml || (echo "Check failed: The goreleaser templates have changed but the .goreleaser.yamls haven't. Run 'make generate-goreleaser' and update your PR." && exit 1)
 
 validate-components:
@@ -156,6 +151,10 @@ HEADER_GEN_FILES=$(shell find $(SRC_ROOT)/. \
 	! -name 'free-disk-space.sh')
 NOTICE_OUTPUT?=THIRD_PARTY_NOTICES.md
 FIRST_COMMIT_HASH=6451f322bfe1e62962d3d87b50d785de8048e865
+
+# Third-party notice generation and validation requires built sources
+generate-license-sources: go ocb
+	@./scripts/build/build.sh -d "${DISTRIBUTIONS}" -s true -b ${OTELCOL_BUILDER} -f false
 
 .PHONY: licenses
 licenses: go generate-sources $(GO_LICENCE_DETECTOR) $(NRLICENSE)
