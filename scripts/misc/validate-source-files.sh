@@ -33,8 +33,8 @@ fi
 cd "$path"
 
 files=(
-    "build.log" "components.go" "go.mod" "go.sum"
-    "main_others.go" "main_windows.go" "main.go"
+    "components.go" "go.mod" "go.sum" "main_others.go"
+    "main_windows.go" "main.go" # build.log excluded as it is not cached
 )
 if [ ${fips} = true ]; then
     files+=("fips.go")
