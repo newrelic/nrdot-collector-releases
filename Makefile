@@ -17,7 +17,7 @@ GO_LICENCE_DETECTOR        := $(TOOLS_BIN_DIR)/go-licence-detector
 GO_LICENCE_DETECTOR_CONFIG   := $(SRC_ROOT)/internal/assets/license/rules.json
 NRLICENSE := $(TOOLS_BIN_DIR)/nrlicense
 
-DISTRIBUTIONS ?= "nrdot-collector"
+DISTRIBUTIONS ?= "nrdot-collector,nrdot-collector-experimental"
 FIPS ?= false
 
 ci: pre-check generate-sources post-check
