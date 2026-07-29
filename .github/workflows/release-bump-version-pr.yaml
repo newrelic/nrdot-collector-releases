@@ -41,8 +41,8 @@ jobs:
       - name: Bump NRDOT version
         id: bump
         run: |
-          old_version=$(./scripts/get-version.sh)
-          ./scripts/bump-nrdot-version.sh "${{ inputs.new_version }}"
+          old_version=$(./scripts/release/get-version.sh)
+          ./scripts/release/bump-nrdot-version.sh "${{ inputs.new_version }}"
           echo "old_version=${old_version}" >> $GITHUB_OUTPUT
           echo "branch=nrdot-release/${{ inputs.new_version }}" >> $GITHUB_OUTPUT
 

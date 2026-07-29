@@ -18,35 +18,33 @@ GO_LICENCE_DETECTOR_CONFIG   := $(SRC_ROOT)/internal/assets/license/rules.json
 NRLICENSE := $(TOOLS_BIN_DIR)/nrlicense
 
 DISTRIBUTIONS ?= "nrdot-collector,nrdot-collector-experimental"
+FIPS ?= false
 
-ci: check manifests-check component-inventory-check build build-fips version-check licenses-check
-check: ensure-goreleaser-up-to-date
+ci: pre-check build post-check
+
+pre-check: goreleaser-file-check manifests-check component-inventory-check actions-hashes-check
 
 build: go ocb
-	@./scripts/build.sh -d "${DISTRIBUTIONS}" -b ${OTELCOL_BUILDER}
+	@./scripts/build/build.sh -d "${DISTRIBUTIONS}" -b ${OTELCOL_BUILDER} -f ${FIPS}
 
-build-fips: go ocb
-	@./scripts/build.sh -d "${DISTRIBUTIONS}" -b ${OTELCOL_BUILDER} -f true
+post-check: version-check source-file-check licenses-check
 
-generate: generate-sources generate-goreleaser
+generate: build generate-goreleaser
 
 generate-goreleaser: go
-	@./scripts/generate-goreleaser.sh -d "${DISTRIBUTIONS}" -g ${GO}
-
-generate-sources: go ocb
-	@./scripts/build.sh -d "${DISTRIBUTIONS}" -s true -b ${OTELCOL_BUILDER}
+	@./scripts/misc/generate-goreleaser.sh -d "${DISTRIBUTIONS}" -g ${GO}
 
 goreleaser-verify: goreleaser
 	@${GORELEASER} release --snapshot --clean
 
-ensure-goreleaser-up-to-date: generate-goreleaser
+goreleaser-file-check: generate-goreleaser
 	@git diff -s --exit-code distributions/*/.goreleaser*.yaml || (echo "Check failed: The goreleaser templates have changed but the .goreleaser.yamls haven't. Run 'make generate-goreleaser' and update your PR." && exit 1)
 
 validate-components:
-	@./scripts/validate-components.sh
+	@./scripts/misc/validate-component-inventory.sh
 
 validate-actions-hashes:
-	@./scripts/validate-actions-hashes.sh
+	@./scripts/misc/validate-actions-hashes.sh
 
 .PHONY: ocb
 ocb:
@@ -124,7 +122,7 @@ goreleaser:
 		fi \
 	}
 
-VERSION := $(shell ./scripts/get-version.sh)
+VERSION := $(shell ./scripts/release/get-version.sh)
 
 .PHONY: version-check
 version-check:
@@ -157,9 +155,13 @@ HEADER_GEN_FILES=$(shell find $(SRC_ROOT)/. \
 NOTICE_OUTPUT?=THIRD_PARTY_NOTICES.md
 FIRST_COMMIT_HASH=6451f322bfe1e62962d3d87b50d785de8048e865
 
+# Third-party notice generation and validation requires built sources
+generate-license-sources: go ocb
+	@./scripts/build/build.sh -d "${DISTRIBUTIONS}" -s true -b ${OTELCOL_BUILDER} -f false
+
 .PHONY: licenses
-licenses: go generate-sources $(GO_LICENCE_DETECTOR) $(NRLICENSE)
-	@./scripts/licenses.sh -d "${DISTRIBUTIONS}" -b ${GO_LICENCE_DETECTOR} -n ${NOTICE_OUTPUT} -g ${GO}
+licenses: go generate-license-sources $(GO_LICENCE_DETECTOR) $(NRLICENSE)
+	@./scripts/misc/licenses.sh -d "${DISTRIBUTIONS}" -b ${GO_LICENCE_DETECTOR} -n ${NOTICE_OUTPUT} -g ${GO}
 	@$(NRLICENSE) --fix --fork-commit ${FIRST_COMMIT_HASH} ${HEADER_GEN_FILES}
 
 .PHONY: headers-check
@@ -199,23 +201,31 @@ PR_NUMBER?=$(shell gh pr view $(BRANCH_NAME) --json number --jq '.number' 2>/dev
 # The .issues field will be pre-populated with the PR number if one exists.
 .PHONY: chlog-new
 chlog-new: ${CHLOGGEN}
-	./scripts/chloggen-wrapper.sh -b $(CHLOGGEN) -n
+	./scripts/misc/chloggen-wrapper.sh -b $(CHLOGGEN) -n
 
 .PHONY: chlog-validate
 chlog-validate: ${CHLOGGEN}
-	./scripts/chloggen-wrapper.sh -b $(CHLOGGEN) -v
+	./scripts/misc/chloggen-wrapper.sh -b $(CHLOGGEN) -v
 
 .PHONY: chlog-preview
 chlog-preview: ${CHLOGGEN}
-	./scripts/chloggen-wrapper.sh -b $(CHLOGGEN) -p
+	./scripts/misc/chloggen-wrapper.sh -b $(CHLOGGEN) -p
 
 .PHONY: chlog-update
 chlog-update: ${CHLOGGEN}
-	./scripts/chloggen-wrapper.sh -b $(CHLOGGEN) -u
+	./scripts/misc/chloggen-wrapper.sh -b $(CHLOGGEN) -u
 
 # Check that each distro's component-inventory.yaml (if present) matches its manifest.yaml
 .PHONY: component-inventory-check
 component-inventory-check:
 	@for distro in $$(echo ${DISTRIBUTIONS} | tr ',' ' ' | tr -d '"'); do \
-		./scripts/validate-component-inventory.sh "$$distro" || exit 1; \
+		./scripts/misc/validate-component-inventory.sh "$$distro" || exit 1; \
 	done
+
+.PHONY: actions-hashes-check
+actions-hashes-check:
+	@./scripts/misc/validate-actions-hashes.sh
+
+.PHONY: source-file-check
+source-file-check:
+	@./scripts/build/validate-source-files.sh -d "${DISTRIBUTIONS}" -f ${FIPS}

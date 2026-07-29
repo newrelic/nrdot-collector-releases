@@ -10,8 +10,7 @@ When making changes to any distribution manifest (`distributions/*/manifest.yaml
 
 ## Build Commands
 
-- `make licenses` - Update THIRD_PARTY_NOTICES.md (also runs generate-sources as dependency)
-- `make generate-sources` - Generate collector sources from manifest files only
+- `make licenses` - Update THIRD_PARTY_NOTICES.md (also runs `generate-license-sources` as dependency)
 - `make build` - Build all distributions
 - `make ci` - Run full CI checks (manifests-check, build, licenses-check, etc.)
 

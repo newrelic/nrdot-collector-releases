@@ -6,7 +6,7 @@
 # it's not meant to be authoritative — it's best-effort context for maintainers.
 #
 # This file is validated against manifest.yaml by
-# scripts/validate-component-inventory.sh (run as part of `make ci`). Component
+# scripts/misc/validate-component-inventory.sh (run as part of `make ci`). Component
 # names must match the path suffix after /<category>/ in the manifest's gomod
 # value (e.g. `extension/observer/dockerobserver` -> `observer/dockerobserver`).
 #

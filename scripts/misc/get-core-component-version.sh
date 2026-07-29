@@ -8,7 +8,7 @@
 
 set -e
 
-REPO_DIR="$( cd "$(dirname "$( dirname "${BASH_SOURCE[0]}" )")" &> /dev/null && pwd )"
+REPO_DIR="$(git rev-parse --show-toplevel)"
 
 version=""
 

@@ -2,7 +2,7 @@
 # Copyright New Relic, Inc. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-REPO_DIR="$( cd "$(dirname "$( dirname "${BASH_SOURCE[0]}" )")" &> /dev/null && pwd )"
+REPO_DIR="$(git rev-parse --show-toplevel)"
 BUILDER=''
 
 # default values
@@ -80,6 +80,9 @@ do
         echo "----------------------"
         exit 1
     fi
+
+    # The build log contain timestamps which change every run, resulting in volatile GHA cache keys unless removed.
+    rm -f "$build_folder/build.log"
 
     popd > /dev/null || exit
 done

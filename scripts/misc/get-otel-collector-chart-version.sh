@@ -2,9 +2,9 @@
 # Copyright New Relic, Inc. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-REPO_DIR="$( cd "$(dirname "$( dirname "${BASH_SOURCE[0]}" )")" &> /dev/null && pwd )"
+REPO_DIR="$(git rev-parse --show-toplevel)"
 
-collector_component_version=$(${REPO_DIR}/scripts/get-core-component-version.sh)
+collector_component_version=$(${REPO_DIR}/scripts/misc/get-core-component-version.sh)
 
 helm repo list | grep -q open-telemetry || helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts >&2
 

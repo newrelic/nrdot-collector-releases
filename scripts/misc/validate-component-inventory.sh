@@ -5,7 +5,7 @@
 # Validate that distributions/<distro>/component-inventory.yaml lists exactly
 # the components present in distributions/<distro>/manifest.yaml.
 #
-# Usage: scripts/validate-component-inventory.sh <distribution>
+# Usage: scripts/misc/validate-component-inventory.sh <distribution>
 #
 # Exits 0 if the inventory file does not exist (the check is opt-in per distro).
 # Exits 0 if every component category matches in both directions.
@@ -19,7 +19,7 @@ if [[ $# -ne 1 ]]; then
 fi
 
 DISTRO="$1"
-REPO_DIR="$( cd "$(dirname "$( dirname "${BASH_SOURCE[0]}" )")" &> /dev/null && pwd )"
+REPO_DIR="$(git rev-parse --show-toplevel)"
 DIR="${REPO_DIR}/distributions/${DISTRO}"
 MANIFEST="${DIR}/manifest.yaml"
 INVENTORY="${DIR}/component-inventory.yaml"
