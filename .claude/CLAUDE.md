@@ -14,3 +14,19 @@ When making changes to any distribution manifest (`distributions/*/manifest.yaml
 - `make generate-sources` - Generate collector sources from manifest files only
 - `make build` - Build all distributions
 - `make ci` - Run full CI checks (manifests-check, build, licenses-check, etc.)
+
+## Pushing Branches
+
+Follow the project git conventions:
+
+- Branch: `$developer\<tbranch-name>` `$developer` is the current git user (e.g., `$(git config user.email | cut -d@ -f1))`)
+- Message: Single line with conventional commit prefix (`feat`, `fix` etc.)
+
+```bash
+developer="$(git config user.email | cut -d@ -f1)"
+branch="$developer/<title>"
+git checkout -b "$branch"
+git add <files>
+git commit -m "<prefix>: <message>"
+git push -u origin "$branch"
+```
