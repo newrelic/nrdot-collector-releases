@@ -70,3 +70,5 @@ replaces:
   - github.com/prometheus/prometheus v0.311.2-0.20260409145810-72293ff1d2e0 => github.com/prometheus/prometheus v0.311.4-0.20260507094802-91c184a899b8
   # Why: Fixes GHSA-hrxh-6v49-42gf
   - google.golang.org/grpc v1.82.0 => google.golang.org/grpc v1.82.1
+  # Why: Fixes CVE-2026-56852; can be removed when upstream components pull in >= v0.39.0
+  - golang.org/x/text v0.38.0 => golang.org/x/text v0.39.0
