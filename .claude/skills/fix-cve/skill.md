@@ -134,39 +134,20 @@ This also regenerates sources as a prerequisite. Wait for it to complete success
 
 ### 7. Commit and push a branch
 
-Follow project git conventions:
-- Branch: `$developer/fix-<cve_id_lowercase>` where `$developer` is the current git user (e.g., `$(git config user.email | cut -d@ -f1)/fix-cve-2026-42154`)
-- Message: `fix: <CVE_ID>` (conventional commit, single line)
-- Stage: both manifest files and per-distribution `THIRD_PARTY_NOTICES.md`
+Create a branch:
+  * Branch title: `$developer/fix-<CVE_ID>`
+  * Stage: `distributions/*/manifest.yaml distributions/*/THIRD_PARTY_NOTICES.md`
+  * Message: `"fix: <CVE_ID>".`
+
+### 8. Create and push a changelog entry
+
+Use the /chloggen skill to create a changelog entry:
+
+* When making the draft PR, leave the description body empty.
+* In the changelog entry, simply set `note` to the CVE ID:
 
 ```bash
-branch="$(git config user.email | cut -d@ -f1)/fix-<cve_id_lowercase>"
-git checkout -b "$branch"
-git add distributions/*/manifest.yaml distributions/*/THIRD_PARTY_NOTICES.md
-git commit -m "fix: <CVE_ID>"
-git push -u origin "$branch"
-```
-
-### 8. Create a draft PR
-
-Create a draft PR without a description body:
-
-```bash
-gh pr create --draft \
-  --title "fix: <CVE_ID>" \
-  --body ""
-```
-
-### 9. Create and push a changelog entry
-
-Make a `chloggen` changelog entry. The `make chlog-new` target auto-populates `change_type` and `issues` from the PR. Set `note` to the CVE ID:
-
-```bash
-entry=$(make chlog-new)
-yq -i ".note = \"<CVE_ID>\"" "$entry"
-git add .chloggen/
-git commit -m "chore: add changelog entry for <CVE_ID>"
-git push origin "$branch"
+yq -i ".note = \"<CVE_ID>\"" "<chlog-filepath>"
 ```
 
 ## Notes
