@@ -33,8 +33,8 @@ fi
 
 overall_exit=0
 
-for distro in $(echo "$distributions" | tr "," "\n"); do
-    path="distributions/${distro}/_build"
+for distribution in $(echo "$distributions" | tr "," "\n"); do
+    path="distributions/${distribution}/_build"
     if [ ${fips} = true ]; then
         path="${path}-fips"
     fi
@@ -54,9 +54,9 @@ for distro in $(echo "$distributions" | tr "," "\n"); do
     done
 
     if [ ${#missing_files[@]} -eq 0 ]; then
-        echo "✅ ${distro}: All source files found!"
+        echo "✅ ${distribution}: All source files found!"
     else
-        echo "❌ ${distro}: files not found: ${missing_files[*]}"
+        echo "❌ ${distribution}: files not found: ${missing_files[*]}"
         overall_exit=1
     fi
 done
