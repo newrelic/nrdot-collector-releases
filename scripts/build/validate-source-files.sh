@@ -7,30 +7,21 @@ set -e
 
 # default values
 fips=false
+distributions=""
 
 while getopts d:f: flag
 do
     case "${flag}" in
-        d) distro=${OPTARG};;
+        d) distributions=${OPTARG};;
         f) fips=${OPTARG};;
         *) exit 1;;
     esac
 done
 
-if [ -z ${distro} ]; then
+if [ -z "${distributions}" ]; then
     echo "Distribution not provided. Please provide a distribution with -d."
     exit 1
 fi
-
-path="distributions/${distro}/_build"
-if [ ${fips} = true ]; then
-    path="${path}-fips"
-fi
-if [ ! -d "$path" ]; then
-    echo "❌ $path not found!"
-    exit 1
-fi
-cd "$path"
 
 files=(
     "components.go" "go.mod" "go.sum" "main_others.go"
@@ -39,19 +30,35 @@ files=(
 if [ ${fips} = true ]; then
     files+=("fips.go")
 fi
-missing_files=()
 
-for file in "${files[@]}"; do
-    if [ ! -f "$file" ]; then
-        missing_files+=("$file")
+overall_exit=0
+
+for distro in $(echo "$distributions" | tr "," "\n"); do
+    path="distributions/${distro}/_build"
+    if [ ${fips} = true ]; then
+        path="${path}-fips"
+    fi
+    if [ ! -d "$path" ]; then
+        echo "❌ $path not found!"
+        overall_exit=1
+        continue
+    fi
+
+    missing_files=()
+    for file in "${files[@]}"; do
+        if [ ! -f "${path}/${file}" ]; then
+            missing_files+=("$file")
+        else
+            echo "Found: ${path}/${file}"
+        fi
+    done
+
+    if [ ${#missing_files[@]} -eq 0 ]; then
+        echo "✅ ${distro}: All source files found!"
     else
-        echo "Found: $file"
+        echo "❌ ${distro}: files not found: ${missing_files[*]}"
+        overall_exit=1
     fi
 done
 
-if [ ${#missing_files[@]} -eq 0 ]; then
-    echo "✅ All source files found!"
-else
-    echo "❌ files not found: ${missing_files[*]}"
-    exit 1
-fi
+exit ${overall_exit}
