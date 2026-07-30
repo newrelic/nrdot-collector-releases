@@ -122,24 +122,14 @@ replaces:
   - github.com/prometheus/prometheus v0.311.2-0.20260409145810-72293ff1d2e0 => github.com/prometheus/prometheus v0.311.3
 ```
 
-### 6. Regenerate licenses
-
-Per project instructions, always run this after editing any manifest:
-
-```bash
-make licenses
-```
-
-This also regenerates sources as a prerequisite. Wait for it to complete successfully.
-
-### 7. Commit and push a branch
+### 6. Commit and push a branch
 
 Create a branch:
   * Branch title: `$developer/fix-<CVE_ID>`
   * Stage: `distributions/*/manifest.yaml distributions/*/THIRD_PARTY_NOTICES.md`
   * Message: `"fix: <CVE_ID>".`
 
-### 8. Create and push a changelog entry
+### 7. Create and push a changelog entry
 
 Use the /chloggen skill to create a changelog entry:
 
