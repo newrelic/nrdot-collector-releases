@@ -55,3 +55,5 @@ else
     echo "❌ files not found: ${missing_files[*]}"
     exit 1
 fi
+
+echo "nothing'
