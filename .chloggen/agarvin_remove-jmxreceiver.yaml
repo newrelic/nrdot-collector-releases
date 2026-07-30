@@ -1,7 +1,7 @@
 # Use this changelog template to create an entry for release notes.
 
 # One of 'feature', 'bug_fix', 'docs'. Inferred from conventional commit tag if PR created before `make chlog-new`.
-change_type: feature
+change_type: bug_fix
 # Mandatory. Put the PR number here. Inferred from PR number if PR created before `make chlog-new`.
 issues: [635]
 # A brief description of the change.  Surround your text with quotes ("") if it needs to start with a backtick (`).
