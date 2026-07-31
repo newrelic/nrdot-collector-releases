@@ -141,7 +141,7 @@ processors:
       - key: type
         action: delete
 
-  cumulativetodelta:
+  cumulative_to_delta:
 
   transform/host:
     metric_statements:
@@ -215,7 +215,7 @@ service:
         - resource_detection
         - resource_detection/cloud
         - resource_detection/env
-        - cumulativetodelta
+        - cumulative_to_delta
         - batch
       exporters: [otlphttp]
     logs/host:
