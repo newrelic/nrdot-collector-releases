@@ -12,6 +12,7 @@ CHLOGGEN_DIR="$REPO_DIR/.chloggen"
 
 CHLOGGEN=''
 COMMAND=''
+FILENAME=''
 
 set_command() {
     if [ -n "$COMMAND" ]; then
@@ -21,10 +22,11 @@ set_command() {
     COMMAND=$1
 }
 
-while getopts nvpub: flag
+while getopts nvpub:f: flag
 do
     case "${flag}" in
         b) CHLOGGEN=${OPTARG};;
+        f) FILENAME=${OPTARG};;
         n) set_command new;;
         v) set_command validate;;
         p) set_command preview;;
@@ -42,14 +44,19 @@ if [ -z "$COMMAND" ]; then
     exit 1
 fi
 
+if [ -n "$FILENAME" ] && [ "$COMMAND" != "new" ]; then
+    echo "⚠️ Warning: -f is only used with -n; ignoring filename '$FILENAME'." >&2
+fi
+
 # --new command (no need for translation)
 if [ "$COMMAND" = new ]; then
     BRANCH_NAME=$(git branch --show-current)
-    filepath=$("$CHLOGGEN" new --config "$CHLOGGEN_DIR/config.yaml" --filename "$BRANCH_NAME" | sed -n 's/^Changelog entry template copied to: //p')
+    ENTRY_FILENAME="${FILENAME:-$BRANCH_NAME}"
+    filepath=$("$CHLOGGEN" new --config "$CHLOGGEN_DIR/config.yaml" --filename "$ENTRY_FILENAME" | sed -n 's/^Changelog entry template copied to: //p')
 
     # Pre-populate the issues field with the PR number if one exists for this branch
     if gh auth status >/dev/null 2>&1; then
-        PR_NUMBER=$(gh pr view "$BRANCH_NAME" --json number --jq '.number' 2>/dev/null)
+        PR_NUMBER=$(gh pr view "$BRANCH_NAME" --json number --jq '.number' 2>/dev/null || true)
         if [ -n "$PR_NUMBER" ]; then
             yq -i ".issues = [$PR_NUMBER] | .issues style=\"flow\"" "$filepath"
         else
@@ -57,7 +64,7 @@ if [ "$COMMAND" = new ]; then
         fi
 
         # Infer change_type from the conventional commit prefix of the PR title
-        PR_TITLE=$(gh pr view "$BRANCH_NAME" --json title --jq '.title' 2>/dev/null)
+        PR_TITLE=$(gh pr view "$BRANCH_NAME" --json title --jq '.title' 2>/dev/null || true)
         case "$PR_TITLE" in
             feat*) yq -i '.change_type = "feature"' "$filepath";;
             perf*) yq -i '.change_type = "feature"' "$filepath";;

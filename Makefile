@@ -197,11 +197,14 @@ CHLOGGEN_CONFIG := "${SRC_ROOT}/.chloggen/config.yaml"
 BRANCH_NAME?=$(shell git branch --show-current)
 PR_NUMBER?=$(shell gh pr view $(BRANCH_NAME) --json number --jq '.number' 2>/dev/null)
 
+CHLOG_FILE?=
+
 # Generate a new changelog entry.
 # The .issues field will be pre-populated with the PR number if one exists.
+# Override CHLOG_FILE to set a custom filename: make chlog-new CHLOG_FILE=my-entry
 .PHONY: chlog-new
 chlog-new: ${CHLOGGEN}
-	./scripts/misc/chloggen-wrapper.sh -b $(CHLOGGEN) -n
+	./scripts/misc/chloggen-wrapper.sh -b $(CHLOGGEN) -n $(if $(CHLOG_FILE),-f $(CHLOG_FILE))
 
 .PHONY: chlog-validate
 chlog-validate: ${CHLOGGEN}
