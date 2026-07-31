@@ -91,7 +91,7 @@ This script efficiently fetches and extracts only the relevant version section u
      - `providers:` section
    - Extract component names from gomod paths (e.g., `receiver/filelogreceiver` → `receiver/filelog`)
    - Build a set of all unique component names used across all distributions
-   - Component names in CHANGELOG use format: `receiver/filelog`, `processor/cumulativetodelta`, etc.
+   - Component names in CHANGELOG use format: `receiver/filelog`, `processor/cumulative_to_delta`, etc.
 
 2. **Extract version information from the PR**:
    - Use `gh pr view <pr_number> --json body --jq .body` to fetch the PR description
