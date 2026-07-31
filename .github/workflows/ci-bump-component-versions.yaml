@@ -191,7 +191,7 @@ jobs:
           env:
             GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
           run: |
-            ./scripts/release/generate-version-bump-chlog.sh -c "${{ env.current_beta_core }}" -n "${{ env.next_beta_core }}"
+            ./scripts/release/generate-version-bump-chlog.sh -c "${{ env.current_beta_core }}" -n "${{ env.next_beta_core }}" -f "${{ steps.fetch_dep_versions.outputs.nr_fork_matching }}"
 
         - name: Commit changelog entry
           if: ${{ !env.ACT && steps.bump_component_versions.outputs.has_changes == 'true' }}
