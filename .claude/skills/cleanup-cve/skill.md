@@ -3,7 +3,7 @@ name: cleanup-cve
 description: |
   Cleans up irrelevant CVE fixes by seeking replace directives in distribution manifest.yaml
   files, finding the current version of the modules in the generated go.sum files,
-  and removing replace directives where the go mod version exceeds the replacing (fixed)
+  and removing replace directives where the go mod version exceeds or equals the replacing (fixed)
   versions.
 ---
 
