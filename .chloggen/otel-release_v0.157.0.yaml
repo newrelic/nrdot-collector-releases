@@ -1,0 +1,4 @@
+change_type: feature
+issues: [639]
+note: Bump otel component versions from v0.156.0 to v0.157.0
+subtext:
