@@ -1,8 +1,8 @@
 # Contributing
 
 To contribute,
-[fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) this repository, commit your changes,
-and [send a Pull Request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests).
+[fork](https://docs.github.com/en/pull-requests/how-tos/work-with-forks/fork-a-repo) this repository, commit your changes,
+and [send a Pull Request](https://docs.github.com/en/pull-requests/reference/pull-requests).
 
 Note that our [code of conduct](https://github.com/newrelic/.github/blob/main/CODE_OF_CONDUCT.md)
 applies to all platforms and venues related to this project; please follow it in all your
