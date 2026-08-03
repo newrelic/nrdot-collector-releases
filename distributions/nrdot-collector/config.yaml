@@ -68,12 +68,6 @@ processors:
   # group system.cpu metrics by cpu
   metrics_transform:
     transforms:
-      - include: system.cpu.utilization
-        action: update
-        operations:
-          - action: aggregate_labels
-            label_set: [ state ]
-            aggregation_type: mean
       - include: system.paging.operations
         action: update
         operations:
