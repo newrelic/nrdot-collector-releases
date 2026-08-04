@@ -2,6 +2,30 @@
 
 <!-- next version -->
 
+## 2.0.0
+
+### Features
+
+- Bump otel component versions from v0.156.0 to v0.157.0 (#643)
+- Bump `nroracledbreceiver` and `nrsqlserverreceiver` to v0.157.2 (#643)
+  - For the list of changes to these components, refer to [their changelog](https://github.com/newrelic-forks/opentelemetry-collector-contrib/blob/receiver/nrsqlserverreceiver/v0.157.2/NR_CHANGELOG.md).
+- Add the `sqlqueryreceiver` to the `nrdot-collector-experimental` distribution. (#632)
+
+### Bug Fixes
+
+- Rename configuration nodes `cumulativetodelta` to `cumulative_to_delta` following the component rename in `v0.157.0`` (#644)
+  - The original name `cumulativetodelta` remains available as a deprecated alias.
+- Disable `system.cpu.logical.count` in host config (#647)
+  - The `v0.157.0` update to `receiver/host_metrics` enabled this metric by default. This change restores the previous behavior.
+- CVE-2026-56852 (#634)
+- Remove `receiver/jmxreceiver` from `nrdot-collector` and `nrdot-collector-experimental`. (#635)
+  - This component was removed upstream in `v0.157.0` following its deprecation in `v0.145.0`.
+  
+- Remove `system.cpu.utilization` mean aggregation rule from host config (#646)
+  - The `v0.157.0` update to `receiver/host_metrics` changed its default behavior to aggregate `system.cpu.utilization` by mean, rendering the removed rule redundant.
+
+<!-- previous-version -->
+
 ## 1.21.0
 
 ### Features

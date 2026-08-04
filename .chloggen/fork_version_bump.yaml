@@ -1,4 +1,0 @@
-change_type: feature
-issues: [643]
-note: Bump `nroracledbreceiver` and `nrsqlserverreceiver` to v0.157.2
-subtext: '- For the list of changes to these components, refer to [their changelog](https://github.com/newrelic-forks/opentelemetry-collector-contrib/blob/receiver/nrsqlserverreceiver/v0.157.2/NR_CHANGELOG.md).'
