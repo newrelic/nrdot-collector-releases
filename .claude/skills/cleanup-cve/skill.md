@@ -46,4 +46,4 @@ done
 
 ### 3. Remove replace directives
 
-For any modules whose current versions equal or exceed the fixed versions in the replace directive, remove those replace directives and their comments.
+For any modules whose current versions exceed the fixed versions in the replace directive, remove those replace directives and their comments.
