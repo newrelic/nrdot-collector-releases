@@ -21,7 +21,7 @@ make build
 
 ### 2. Seek replace directives and find current versions
 
-We need to determine which replace directives are stale in the current version of NRDOT. Find all replaced modules and, determine if the current go.sum version exceeds or equals the fixed version (e.g. right side of =>).
+We need to determine which replace directives are stale in the current version of NRDOT. Find all replaced modules and, determine if the current go.sum version exceeds the fixed version (e.g. right side of =>).
 
 ```bash
 SRC_ROOT=$(git rev-parse --show-toplevel)
