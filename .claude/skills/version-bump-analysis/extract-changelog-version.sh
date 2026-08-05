@@ -19,12 +19,13 @@ VERSION="$2"
 
 # Fetch changelog and extract the specific version section
 # The version appears in headers like "## v1.50.0/v0.144.0"
-# We extract from that header until the next "## " header or "<!-- previous-version -->"
-OUTPUT=$(curl -s "$CHANGELOG_URL" | awk -v version="$VERSION" \
+# We extract from that header until the next "## " header or "<!-- previous-version -->".
+CHANGELOG=$(curl -s "$CHANGELOG_URL")
+OUTPUT=$(awk -v version="$VERSION" \
 'BEGIN { found=0; printing=0 } \
 /^## / { if (found) { exit } if ($0 ~ version) { found=1; printing=1; print $0; next } } \
 /^<!-- previous-version -->/ { if (printing) { exit } } \
-printing { print $0 }')
+printing { print $0 }' <<< "$CHANGELOG")
 
 # Check if version was found
 if [ -z "$OUTPUT" ]; then
