@@ -82,7 +82,7 @@ jobs:
               exit 1
           fi
 
-          # Replace version header "Changelog" heading to match release notes
+          # Replace default chloggen release note header with "Changelog" to match prior pattern
           sed -i 's/^## .*/## Changelog/' "$release_notes_file"
 
           echo "release_notes_file=$release_notes_file" >> "$GITHUB_ENV"
