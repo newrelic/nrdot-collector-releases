@@ -2,6 +2,14 @@
 
 <!-- next version -->
 
+## 2.2.0
+
+### Features
+
+- Add `nrpostgresqlreceiver` and `nrmysqlreceiver` to `nrdot-collector-experimental`. (#652)
+
+<!-- previous-version -->
+
 ## 2.1.0
 
 ### Features
