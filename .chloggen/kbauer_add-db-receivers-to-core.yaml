@@ -3,7 +3,7 @@
 # One of 'feature', 'bug_fix', 'docs'. Inferred from conventional commit tag if PR created before `make chlog-new`.
 change_type: feature
 # Mandatory. Put the PR number here. Inferred from PR number if PR created before `make chlog-new`.
-issues: []
+issues: [655]
 # A brief description of the change.  Surround your text with quotes ("") if it needs to start with a backtick (`).
 note: Add `nrpostgresqlreceiver`, `nrmysqlreceiver`, and `sqlqueryreceiver` to `nrdot-collector`.
 # (Optional) One or more lines of additional information to render under the primary note.
