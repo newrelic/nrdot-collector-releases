@@ -34,6 +34,8 @@ Generate a markdown comment that can be pasted directly into the PR, following t
 ```markdown
 ### Potentially Relevant changes
 
+> This list does not include changes related to the forked db receivers as they do their own analysis before bumping/publishing a new minor version.
+
 #### Contrib v[VERSION]
 
 ##### 🛑 Breaking changes 🛑
@@ -92,6 +94,7 @@ This script efficiently fetches and extracts only the relevant version section u
    - Extract component names from gomod paths (e.g., `receiver/filelogreceiver` → `receiver/filelog`)
    - Build a set of all unique component names used across all distributions
    - Component names in CHANGELOG use format: `receiver/filelog`, `processor/cumulative_to_delta`, etc.
+   - **Exclude any component whose gomod path starts with `github.com/newrelic-forks/opentelemetry-collector-contrib/`** from this set — these are forked receivers (e.g. `nroracledbreceiver`, `nrsqlserverreceiver`) maintained outside upstream `opentelemetry-collector-contrib` and must never be matched against the upstream CHANGELOG
 
 2. **Extract version information from the PR**:
    - Use `gh pr view <pr_number> --json body --jq .body` to fetch the PR description
@@ -144,6 +147,7 @@ This script efficiently fetches and extracts only the relevant version section u
 - Always include the version number in section headers (e.g., "Contrib v0.144.0")
 - If bumping multiple versions, combine changes from all versions into a single output
 - **CRITICAL**: Only include changes for components that are listed in the manifest.yaml files
+- **CRITICAL**: Never include changes for any receiver forked into `github.com/newrelic-forks/opentelemetry-collector-contrib` — their maintaining teams already release and analyze changes independently, so surfacing them here just adds noise
 
 ## Component Name Mapping
 
