@@ -12,7 +12,23 @@ can be found at https://github.com/newrelic/nrdot-collector-releases.
 
 
 
+## [github.com/newrelic-forks/opentelemetry-collector-contrib/receiver/nrmysqlreceiver](https://github.com/newrelic-forks/opentelemetry-collector-contrib)
+
+Distributed under the following license(s):
+
+* Apache-2.0
+
+
+
 ## [github.com/newrelic-forks/opentelemetry-collector-contrib/receiver/nroracledbreceiver](https://github.com/newrelic-forks/opentelemetry-collector-contrib)
+
+Distributed under the following license(s):
+
+* Apache-2.0
+
+
+
+## [github.com/newrelic-forks/opentelemetry-collector-contrib/receiver/nrpostgresqlreceiver](https://github.com/newrelic-forks/opentelemetry-collector-contrib)
 
 Distributed under the following license(s):
 
@@ -309,6 +325,14 @@ Distributed under the following license(s):
 
 
 ## [github.com/open-telemetry/opentelemetry-collector-contrib/receiver/redisreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib)
+
+Distributed under the following license(s):
+
+* Apache-2.0
+
+
+
+## [github.com/open-telemetry/opentelemetry-collector-contrib/receiver/sqlqueryreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib)
 
 Distributed under the following license(s):
 

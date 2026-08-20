@@ -18,6 +18,7 @@
 #   Gateway    - Gateway Mode
 #   OHI        - On-Host Integrations (shared infrastructure used across multiple integrations)
 #   OHI-<name> - On-Host Integration specific to a product (e.g. OHI-kafka for Kafka monitoring)
+#   DB         - Database Monitoring (shared infrastructure used across multiple database products)
 #   DB-<name>  - Database Monitoring specific to a database product (e.g. DB-sqlserver for SQL Server monitoring)
 
 receivers:
@@ -32,13 +33,16 @@ receivers:
   kafkareceiver: [OHI-kafka]
   kubeletstatsreceiver: [OHI, k8s]
   nginxreceiver: [OHI-nginx]
+  nrmysqlreceiver: [DB-mysql]
   nroracledbreceiver: [DB-oracle]
+  nrpostgresqlreceiver: [DB-postgresql]
   nrsqlserverreceiver: [DB-sqlserver]
   otlpreceiver: [Core]
   prometheusreceiver: [Gateway, k8s]
   rabbitmqreceiver: [OHI-rabbitmq]
   receivercreator: [OHI]
   redisreceiver: [OHI-redis]
+  sqlqueryreceiver: [DB]
 
 processors:
   adaptivetelemetryprocessor: [ATP]
