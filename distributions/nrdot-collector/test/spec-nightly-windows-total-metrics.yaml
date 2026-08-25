@@ -9,4 +9,4 @@ scenarios:
         - query: FROM Metric SELECT uniqueCount(metricName) AS metrics_count
           expected_results:
             - key: metrics_count
-              value: 17
+              value: 18

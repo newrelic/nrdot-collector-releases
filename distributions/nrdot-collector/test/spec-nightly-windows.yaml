@@ -108,4 +108,9 @@ description: nrdot-collector E2E Test (Windows)
 scenarios:
   - description: windows - ec2 host metrics
     tests:
+      # Tests for existence of metrics
+      metrics:
+        - source: "host-expected-metrics-common.yaml"
+        - source: "host-expected-metrics-windows.yaml"
+      # Tests for existence of signal + specific attributes
       nrqls: *host_metrics_nrqls
