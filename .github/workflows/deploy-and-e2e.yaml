@@ -285,13 +285,14 @@ jobs:
       
       # Validate no unexpected host metrics have been added. This test runs as a follow-up against
       # the previous entity's scenario tag to to guarantee presence of all expected host metrics.
+      # Linux host metrics are a superset of windows metrics, so no need to check windows.
       - name: Validate no unexpected host metrics have been added
         uses: newrelic/newrelic-integration-e2e-action@d0c7c2b8f9af227365d71c6b7fddbc024c9e331a # v1
         with:
           retry_seconds: 15
           retry_attempts: 5
           agent_enabled: false
-          spec_path: distributions/${{ inputs.distro }}/test/spec-nightly-ubuntu.yaml
+          spec_path: distributions/${{ inputs.distro }}/test/spec-nightly-ubuntu-total-metrics.yaml
           account_id: ${{ secrets.nr_account_id }}
           api_key: ${{ secrets.nr_api_key }}
           license_key: ${{ secrets.nr_ingest_key }}

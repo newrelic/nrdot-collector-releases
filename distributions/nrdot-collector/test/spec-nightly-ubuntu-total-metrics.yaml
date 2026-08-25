@@ -1,5 +1,5 @@
 description: | 
-  nrdot-collector E2E Nightly regression test to validate no unexpected host metrics have been added.
+  nrdot-collector E2E Nightly regression test to validate no additional host metrics have been added.
   Expected to run as a followup to spec-nightly-ubuntu to guarantee presence of expected host metrics.
 
 scenarios:
