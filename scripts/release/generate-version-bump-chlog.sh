@@ -54,8 +54,15 @@ fi
 if [[ "$CURRENT_BETA_FORK" != "$NEXT_BETA_FORK" ]]; then
     fork_filepath=$(make -s chlog-new CHLOG_FILE=fork_version_bump)
 
+    # Collect fork component basenames from the manifest, sorted, formatted as `a`, `b` and `c`
+    fork_list=$(
+        grep -oE 'github.com/newrelic-forks/opentelemetry-collector-contrib/[^ ]+' distributions/nrdot-collector/manifest.yaml \
+          | sed 's|.*/||' | sort -u \
+          | awk '{c[NR]=$0} END{for(i=1;i<=NR;i++){if(i==1)s="`"c[i]"`";else if(i==NR)s=s" and `"c[i]"`";else s=s", `"c[i]"`"}print s}'
+    )
+
     yq -i "
-      .note = \"Bump \`nroracledbreceiver\` and \`nrsqlserverreceiver\` to ${NEXT_BETA_FORK}\" |
+      .note = \"Bump ${fork_list} to ${NEXT_BETA_FORK}\" |
       .subtext = \"- For the list of changes to these components, refer to [their changelog](https://github.com/newrelic-forks/opentelemetry-collector-contrib/blob/receiver/nrsqlserverreceiver/${NEXT_BETA_FORK}/NR_CHANGELOG.md).\" |
       ... comments=\"\"
     " "$fork_filepath"
