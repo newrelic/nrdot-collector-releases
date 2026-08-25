@@ -284,8 +284,8 @@ jobs:
           scenario_tag: ${{ env.SCENARIO_TAG }}
       
       # Validate no unexpected host metrics have been added. This test runs as a follow-up against
-      # the previous entity'sscenario tag to to guarantee presence of all expected host metrics.
-      - name: Validate no unexpected host metrics have been added
+      # the previous entity's scenario tag to to guarantee presence of all expected host metrics.
+      - name: Validate Total Number of Host Metrics
         uses: newrelic/newrelic-integration-e2e-action@d0c7c2b8f9af227365d71c6b7fddbc024c9e331a # v1
         with:
           retry_seconds: 15
@@ -373,7 +373,7 @@ jobs:
 
       # Validate no unexpected host metrics have been added. This test runs as a follow-up against
       # the previous entity's scenario tag to guarantee presence of all expected host metrics.
-      - name: Validate no unexpected host metrics have been added
+      - name: Validate Total Number of Host Metrics
         uses: newrelic/newrelic-integration-e2e-action@d0c7c2b8f9af227365d71c6b7fddbc024c9e331a # v1
         with:
           retry_seconds: 15
