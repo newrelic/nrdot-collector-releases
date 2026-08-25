@@ -283,9 +283,8 @@ jobs:
           region: ${{ vars.NR_REGION }}
           scenario_tag: ${{ env.SCENARIO_TAG }}
       
-      # Validate no unexpected host metrics have been added. This test runs as a follow-up against
-      # the previous entity's scenario tag to to guarantee presence of all expected host metrics.
-      # Linux host metrics are a superset of windows metrics, so no need to check windows.
+      # Validate no unexpected host metrics have been added. Only need to check Linux as its host metrics are a superset of windows.
+      # This test runs as a follow-up against the previous entity's scenario tag to to guarantee presence of all expected host metrics.
       - name: Validate no unexpected host metrics have been added
         uses: newrelic/newrelic-integration-e2e-action@d0c7c2b8f9af227365d71c6b7fddbc024c9e331a # v1
         with:
