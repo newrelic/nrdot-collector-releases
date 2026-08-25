@@ -135,11 +135,16 @@ jobs:
           env:
             GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
           run: |
-            pr_title="feat: Bump OTEL beta core to ${{ env.next_beta_core }}"
+            if [[ "${{ env.current_beta_core }}" == "${{ env.next_beta_core }}" ]]; then
+              pr_title="feat: Bump nr-prefixed components to ${{ steps.fetch_dep_versions.outputs.nr_fork_matching }}"
+            else
+              pr_title="feat: Bump OTEL beta core to ${{ env.next_beta_core }}"
+            fi
             pr_body="Updates the version of the otel beta core from ${{ env.current_beta_core }} to ${{ env.next_beta_core }}
             ## Changes
               - Beta Core: [${{ env.current_beta_core}}...${{ env.next_beta_core}}](https://github.com/open-telemetry/opentelemetry-collector-contrib/compare/${{ env.current_beta_core}}...${{ env.next_beta_core}})
               - Beta Contrib: [${{ env.current_beta_contrib}}...${{ env.next_beta_contrib}}](https://github.com/open-telemetry/opentelemetry-collector/compare/${{ env.current_beta_contrib}}...${{ env.next_beta_contrib}})
+              - nr-prefixed components: [${{ env.current_beta_fork }}...${{ steps.fetch_dep_versions.outputs.nr_fork_matching }}](https://github.com/newrelic-forks/opentelemetry-collector-contrib/compare/receiver/nrsqlserverreceiver/${{ env.current_beta_fork }}...receiver/nrsqlserverreceiver/${{ steps.fetch_dep_versions.outputs.nr_fork_matching }})
             "
             
             # Find all open PRs with branches matching the pattern 'otel-release/v0*'
