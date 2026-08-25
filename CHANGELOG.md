@@ -6,7 +6,7 @@
 
 ### Features
 
-- Bump `nroracledbreceiver` and `nrsqlserverreceiver` to v0.158.3 (#658)
+- Bump `nrmysqlserverreceiver`, `nroracledbreceiver`, `nrpostgresqlreceiver` and `nrsqlserverreceiver` to v0.158.3 (#658)
   - For the list of changes to these components, refer to [their changelog](https://github.com/newrelic-forks/opentelemetry-collector-contrib/blob/receiver/nrsqlserverreceiver/v0.158.3/NR_CHANGELOG.md).
 
 <!-- previous-version -->
