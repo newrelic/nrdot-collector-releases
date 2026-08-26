@@ -27,7 +27,7 @@ receivers:
       paging:
         metrics:
           system.paging.utilization:
-            enabled: true
+            enabled: false
           system.paging.faults:
             enabled: false
       filesystem:
