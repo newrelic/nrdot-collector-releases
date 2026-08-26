@@ -16,7 +16,7 @@ receivers:
           system.cpu.logical.count:
             enabled: false
           system.cpu.time:
-            enabled: false
+            enabled: true
           system.cpu.utilization:
             enabled: true
       load:
