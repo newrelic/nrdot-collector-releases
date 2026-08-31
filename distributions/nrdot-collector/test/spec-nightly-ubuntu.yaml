@@ -136,4 +136,6 @@ description: nrdot-collector E2E Nightly Test - Ubuntu EC2
 scenarios:
   - description: ubuntu - ec2 host metrics and resource detection
     tests:
+      metrics:
+        - source: "host-expected-metrics-common.yaml"
       nrqls: *host_metrics_nrqls
