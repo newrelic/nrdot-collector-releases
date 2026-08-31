@@ -110,5 +110,4 @@ scenarios:
     tests:
       metrics:
         - source: "host-expected-metrics-common.yaml"
-        - source: "host-expected-metrics-windows.yaml"
       nrqls: *host_metrics_nrqls

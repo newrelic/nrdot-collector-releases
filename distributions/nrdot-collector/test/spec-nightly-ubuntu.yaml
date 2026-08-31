@@ -138,4 +138,5 @@ scenarios:
     tests:
       metrics:
         - source: "host-expected-metrics-common.yaml"
+        - source: "host-expected-metrics-linux.yaml"
       nrqls: *host_metrics_nrqls
