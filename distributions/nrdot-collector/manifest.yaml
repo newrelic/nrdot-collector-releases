@@ -67,3 +67,5 @@ providers:
 replaces:
   # Why: Fixes GHSA-hrxh-6v49-42gf
   - google.golang.org/grpc v1.82.0 => google.golang.org/grpc v1.82.1
+  # Why: Fixes CVE-2026-56854
+  - golang.org/x/crypto v0.54.0 => golang.org/x/crypto v0.55.0
