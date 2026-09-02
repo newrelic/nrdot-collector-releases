@@ -107,9 +107,11 @@ jobs:
         run: |
           version="${{ github.event.release.tag_name }}"
           release_date=$(date -u -d "${{ github.event.release.published_at }}" +"%Y-%m-%d")
+          version_slug=$(echo "${version}" | tr '.' '-')
           gh_username=$(gh api user | jq -r '.login')
           echo "release_date=${release_date}" >> $GITHUB_ENV
           echo "version=${version}" >> $GITHUB_ENV
+          echo "version_slug=${version_slug}" >> $GITHUB_ENV
           echo "branch=nrdot-release-notes-${version}-${release_date}" >> $GITHUB_ENV
           echo "gh_username=${gh_username}" >> $GITHUB_ENV
 
@@ -118,7 +120,7 @@ jobs:
           cd docs-website/src/content/docs/release-notes
           git switch -c ${{ env.branch }}
          
-          release_notes_file="nrdot-release-notes/nrdot-${{ env.release_date }}.mdx"
+          release_notes_file="nrdot-release-notes/nrdot-${{ env.version_slug }}.mdx"
 
           echo "---" > $release_notes_file
           echo "subject: NRDOT" >> $release_notes_file

@@ -2,7 +2,7 @@ dist:
   module: github.com/newrelic/nrdot-collector-releases/nrdot-collector
   name: nrdot-collector
   description: NRDOT Collector
-  version: 2.4.0
+  version: 2.4.1
   output_path: ./_build
 receivers:
   - gomod: go.opentelemetry.io/collector/receiver/otlpreceiver v0.158.0
@@ -65,5 +65,7 @@ providers:
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/confmap/provider/secretsmanagerprovider v0.158.0
 # When adding a replace, add a comment before it to document why it's needed and when it can be removed
 replaces:
-  # Why: Fixes GHSA-hrxh-6v49-42gf
-  - google.golang.org/grpc v1.82.0 => google.golang.org/grpc v1.82.1
+  # Why: Fixes CVE-2026-84304; can be removed when contrib components pull in >= v1.83.1
+  - google.golang.org/grpc v1.83.0 => google.golang.org/grpc v1.83.1
+  # Why: Fixes CVE-2026-56854
+  - golang.org/x/crypto v0.54.0 => golang.org/x/crypto v0.55.0
