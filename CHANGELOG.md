@@ -2,6 +2,14 @@
 
 <!-- next version -->
 
+## 2.4.3
+
+### Bug Fixes
+
+- CVE-2026-84445 (#668)
+
+<!-- previous-version -->
+
 ## 2.4.2
 
 ### Bug Fixes
