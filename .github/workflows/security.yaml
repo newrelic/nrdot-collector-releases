@@ -22,7 +22,7 @@ jobs:
           - nrdot-collector-experimental
     steps:
       - name: Checkout .trivyignore
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           sparse-checkout: .trivyignore
           sparse-checkout-cone-mode: false
@@ -72,7 +72,7 @@ jobs:
 
       - name: Send notification to Slack Workflow
         if: ${{ failure() && env.tag_to_scan == 'latest' }}
-        uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
+        uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
         with:
           webhook: ${{ secrets.OTELCOMM_BOTS_SLACK_HOOK }}
           webhook-type: incoming-webhook
