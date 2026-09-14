@@ -1,4 +1,0 @@
-change_type: feature
-issues: [670]
-note: Bump `nrmysqlreceiver`, `nroracledbreceiver`, `nrpostgresqlreceiver` and `nrsqlserverreceiver` to v0.160.0
-subtext: '- For the list of changes to these components, refer to [their changelog](https://github.com/newrelic-forks/opentelemetry-collector-contrib/blob/receiver/nrsqlserverreceiver/v0.160.0/NR_CHANGELOG.md).'
