@@ -5,6 +5,9 @@ on:
     types:
       - completed
     branches: [main]
+permissions:
+  contents: read
+  id-token: write
 jobs:
   setup-e2e:
     name: Setup E2E Gating
