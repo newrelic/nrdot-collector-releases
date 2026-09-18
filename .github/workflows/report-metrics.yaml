@@ -6,6 +6,9 @@ on:
     # Scheduled to run every 2 hours
     - cron: '0 */2 * * *'
 
+permissions:
+  contents: read
+
 jobs:
   downloads:
     name: Report GH Metrics

@@ -5,6 +5,10 @@ on:
     types:
       - completed
     branches: [main]
+
+permissions:
+  contents: read
+
 jobs:
   setup-e2e:
     name: Setup E2E Gating
@@ -42,6 +46,9 @@ jobs:
     # Only run if upstream CI succeeded
     if: ${{ needs.setup-e2e.outputs.exists == 'false' && github.event.workflow_run.conclusion == 'success' }}
     needs: setup-e2e
+    permissions:
+      contents: read
+      id-token: write # deploy-and-e2e.yaml authenticates to AWS via OIDC
     strategy:
       fail-fast: false
       matrix:
