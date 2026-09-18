@@ -22,7 +22,6 @@ concurrency:
 
 permissions:
   contents: read
-  id-token: write
 
 jobs:
   setup:
@@ -46,6 +45,9 @@ jobs:
   build:
     name: Build & Validate (${{ matrix.distribution }}${{ matrix.fips && ' - FIPS' || '' }})
     needs: setup
+    permissions:
+      contents: read
+      id-token: write # ci-base.yaml authenticates to AWS via OIDC
     strategy:
       matrix:
         fips: [false, true]

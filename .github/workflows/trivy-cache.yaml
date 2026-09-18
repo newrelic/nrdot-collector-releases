@@ -6,7 +6,7 @@ on:
   workflow_dispatch:  # Allow manual triggering
 
 permissions:
-  actions: write
+  contents: read
 
 jobs:
   update-trivy-db:
