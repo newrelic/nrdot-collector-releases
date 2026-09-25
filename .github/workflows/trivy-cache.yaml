@@ -5,6 +5,9 @@ on:
     - cron: '0 12 * * *' # Update daily - before scheduled trivy scan
   workflow_dispatch:  # Allow manual triggering
 
+permissions:
+  contents: read
+
 jobs:
   update-trivy-db:
     runs-on: ubuntu-24.04

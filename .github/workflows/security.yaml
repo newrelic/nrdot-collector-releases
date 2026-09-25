@@ -10,6 +10,10 @@ on:
         required: false
         default: 'latest'
 
+permissions:
+  contents: read
+  security-events: write
+
 jobs:
   docker-trivy:
     name: Trivy scanner for docker
