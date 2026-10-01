@@ -38,7 +38,7 @@ runs:
           SHAS="${{ inputs.sha }}"
         else
           echo "Finding last successful CI workflow run on ${{ inputs.branch }}..."
-          SHAS=$(gh api "/repos/${{ github.repository }}/commits?sha=${{ inputs.branch }}&per_page=20" --jq '.[].sha')
+          SHAS=$(gh api "/repos/${{ github.repository }}/commits?sha=${{ inputs.branch }}&per_page=100" --jq '.[].sha')
         fi
 
         # First candidate with a successful push CI run wins (exact head_sha lookup)
