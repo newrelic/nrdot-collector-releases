@@ -46,7 +46,7 @@ runs:
         for s in $SHAS; do
           workflow_data=$(gh api "/repos/${{ github.repository }}/actions/workflows/ci.yaml/runs" \
             -X GET --field head_sha="$s" --field event="push" --field status="success" \
-            --jq 'first(.workflow_runs[] | {id, head_sha, conclusion})')
+            --jq 'first(.workflow_runs[] | select(.conclusion == "success") | {id, head_sha, conclusion})')
           [[ -n "$workflow_data" ]] && break
           echo "No successful CI run for ${s:0:7}, trying previous commit"
         done
