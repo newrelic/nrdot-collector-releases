@@ -2,6 +2,16 @@
 
 <!-- next version -->
 
+## 2.6.0
+
+### Features
+
+- Bump otel component versions from v0.160.0 to v0.162.0 (#675)
+- Bump `nrmysqlreceiver`, `nroracledbreceiver`, `nrpostgresqlreceiver` and `nrsqlserverreceiver` to v0.162.0 (#675)
+  - For the list of changes to these components, refer to [their changelog](https://github.com/newrelic-forks/opentelemetry-collector-contrib/blob/receiver/nrsqlserverreceiver/v0.162.0/NR_CHANGELOG.md).
+
+<!-- previous-version -->
+
 ## 2.5.0
 
 ### Features
