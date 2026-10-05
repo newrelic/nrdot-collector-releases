@@ -36,21 +36,22 @@ var UpdateCmd = &cobra.Command{
 		nrForkContribVersion := persistentFlag(cmd, "nr-fork-contrib-version")
 		coreStable := persistentFlag(cmd, "core-stable")
 		coreBeta := persistentFlag(cmd, "core-beta")
+		contribStable := persistentFlag(cmd, "contrib-stable")
 		contribBeta := persistentFlag(cmd, "contrib-beta")
 
-		// Build module prefix -> VersionUpdate map used by CopyAndUpdateConfigModules.
-		nrdotUpdates := make(map[string]manifest.VersionUpdate)
+		// Build module prefix -> VersionUpdate map used by UpdateConfigModulesSpecifiedVersions.
+		specifiedVersions := make(map[string]manifest.VersionUpdate)
 		if nrdotVersion != "" {
-			nrdotUpdates[manifest.NrModule] = manifest.VersionUpdate{BetaVersion: nrdotVersion}
+			specifiedVersions[manifest.NrModule] = manifest.VersionUpdate{BetaVersion: nrdotVersion}
 		}
 		if nrForkContribVersion != "" {
-			nrdotUpdates[manifest.NrForkContribModule] = manifest.VersionUpdate{BetaVersion: nrForkContribVersion}
+			specifiedVersions[manifest.NrForkContribModule] = manifest.VersionUpdate{BetaVersion: nrForkContribVersion}
 		}
 		if coreStable != "" || coreBeta != "" {
-			nrdotUpdates[manifest.CoreModule] = manifest.VersionUpdate{StableVersion: coreStable, BetaVersion: coreBeta}
+			specifiedVersions[manifest.CoreModule] = manifest.VersionUpdate{StableVersion: coreStable, BetaVersion: coreBeta}
 		}
-		if contribBeta != "" {
-			nrdotUpdates[manifest.ContribModule] = manifest.VersionUpdate{BetaVersion: contribBeta}
+		if contribStable != "" || contribBeta != "" {
+			specifiedVersions[manifest.ContribModule] = manifest.VersionUpdate{StableVersion: contribStable, BetaVersion: contribBeta}
 		}
 
 		matches, _ := filepath.Glob(configPath)
@@ -74,13 +75,13 @@ var UpdateCmd = &cobra.Command{
 			}
 
 			var updatedCfg *manifest.Config
-			if len(nrdotUpdates) > 0 {
-				updatedCfg, err = manifest.CopyAndUpdateConfigModules(cfg, nrdotUpdates)
+			if len(specifiedVersions) > 0 {
+				updatedCfg, err = manifest.UpdateConfigModulesSpecifiedVersions(cfg, specifiedVersions)
 				if err != nil {
-					return fmt.Errorf("failed to update configuration with nrdot versions: %w", err)
+					return fmt.Errorf("failed to update configuration with specified versions: %w", err)
 				}
 			} else {
-				updatedCfg, err = manifest.UpdateConfigModules(cfg)
+				updatedCfg, err = manifest.UpdateConfigModulesLatest(cfg)
 				if err != nil {
 					return fmt.Errorf("failed to update configuration: %w", err)
 				}

@@ -170,7 +170,8 @@ jobs:
             format('distributions/{0}/_build*/*', inputs.distribution)
           ) }}"
           ARGS_HASH=$(echo "${{ env.goreleaser_args }}" | sha256sum | cut -d' ' -f1)
-          echo binary_key=goreleaser-build-${{ inputs.distribution }}-${ARGS_HASH}-${BINARY_HASH} >> $GITHUB_OUTPUT
+          GO_VERSION=$(go env GOVERSION)
+          echo binary_key=goreleaser-build-${{ inputs.distribution }}-${GO_VERSION}-${ARGS_HASH}-${BINARY_HASH} >> $GITHUB_OUTPUT
 
       - name: Cache goreleaser build
         id: cache-goreleaser

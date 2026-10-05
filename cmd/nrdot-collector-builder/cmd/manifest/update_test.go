@@ -129,3 +129,52 @@ func TestUpdateCmd_RunE_NrdotComponents(t *testing.T) {
 		assert.Contains(t, updated, module+" "+targetBeta)
 	}
 }
+
+func TestUpdateCmd_RunE_OtelComponents(t *testing.T) {
+	// Load the test-config-otel.yaml file
+	testConfigPath := "testdata/test-config-otel.yaml"
+	yamlData, err := os.ReadFile(testConfigPath)
+	assert.NoError(t, err)
+
+	// Create a temporary file to simulate writing to a file
+	tempFile, err := os.CreateTemp("", "test-config-*.yaml")
+	assert.NoError(t, err)
+	defer os.Remove(tempFile.Name()) // Clean up the file after the test
+
+	// Write the loaded YAML data to the temporary file
+	_, err = tempFile.Write(yamlData)
+	assert.NoError(t, err)
+	tempFile.Close() // Close the file to ensure the changes are flushed
+
+	coreStable := "v1.67.0"
+	coreBeta := "v0.161.0"
+	contribStable := "v1.0.0"
+	contribBeta := "v0.161.0"
+
+	cmd := &cobra.Command{}
+	cmd.Flags().String("config", tempFile.Name(), "")
+
+	// Version overrides are read from the root command's persistent flags.
+	cmd.PersistentFlags().String("core-stable", coreStable, "")
+	cmd.PersistentFlags().String("core-beta", coreBeta, "")
+	cmd.PersistentFlags().String("contrib-stable", contribStable, "")
+	cmd.PersistentFlags().String("contrib-beta", contribBeta, "")
+
+	err = UpdateCmd.RunE(cmd, []string{})
+	assert.NoError(t, err)
+
+	updatedYamlData, err := os.ReadFile(tempFile.Name())
+	assert.NoError(t, err)
+	updated := string(updatedYamlData)
+
+	expected := map[string]string{
+		"go.opentelemetry.io/collector/receiver/nopreceiver":                                         coreBeta,
+		"go.opentelemetry.io/collector/exporter/nopexporter":                                         coreBeta,
+		"go.opentelemetry.io/collector/confmap/provider/envprovider":                                 coreStable,
+		"github.com/open-telemetry/opentelemetry-collector-contrib/receiver/filelogreceiver":         contribBeta,
+		"github.com/open-telemetry/opentelemetry-collector-contrib/processor/k8sattributesprocessor": contribStable,
+	}
+	for module, version := range expected {
+		assert.Contains(t, updated, module+" "+version)
+	}
+}
