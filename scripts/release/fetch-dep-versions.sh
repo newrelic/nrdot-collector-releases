@@ -111,14 +111,30 @@ core_beta=$(${GO} list -m all 2>/dev/null | \
 popd > /dev/null || exit 1
 
 # Find the highest contrib patch whose minor version matches core_beta.
-# Contrib modules track the same minor as core beta (e.g., v0.147.x).
+# Contrib beta modules track the same minor as core beta (e.g., v0.147.x).
 contrib_beta=""
+contrib_beta_release_date=""
 if [[ -n "$core_beta" ]]; then
     core_minor=$(echo "$core_beta" | awk -F'.' '{print $1"."$2}')
     contrib_beta=$(${GO} list -m -versions \
         "github.com/open-telemetry/opentelemetry-collector-contrib/receiver/filelogreceiver" \
         2>/dev/null | tr ' ' '\n' | grep "^${core_minor}\." | sort -V | tail -1)
 fi
+
+# Utilize contrib's versions.yaml to determine the stable version associated with the desired beta version.
+# Contrib stable modules do NOT track the same minor as core stable. Furethermore, there is no guarantee
+# that stable and beta versions are bumped at the same time as evidenced by core's release history.
+contrib_stable=""
+if [[ -n "$contrib_beta" ]]; then
+    contrib_stable_declared=$(curl -sfL "https://raw.githubusercontent.com/open-telemetry/opentelemetry-collector-contrib/${contrib_beta}/versions.yaml" \
+        | yq -r '.module-sets.stable-base.version')
+    # Validate declared version is actually published in a module
+    contrib_stable=$(${GO} list -m -versions \
+        "github.com/open-telemetry/opentelemetry-collector-contrib/processor/k8sattributesprocessor" \
+        2>/dev/null | tr ' ' '\n' | grep "^${candidate_stable}$") \
+        || echo "⚠️ Warning: k8sattributesprocessor ${candidate_stable} not published." >&2
+fi
+
 
 # Output as $GITHUB_OUTPUT-friendly text
 if [[ -n "$core_stable" ]] || [[ -n "$core_beta" ]]; then
@@ -130,6 +146,7 @@ if [[ -n "$core_stable" ]] || [[ -n "$core_beta" ]]; then
     echo "core_stable=${core_stable:-none}"
     echo "core_beta=${core_beta:-none}"
     echo "contrib_beta=${contrib_beta:-none}"
+    echo "contrib_stable=${contrib_stable:-none}"
 else
     echo "⚠️ Warning: Could not extract collector versions from nrdot dependencies" >&2
     exit 1
