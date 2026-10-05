@@ -32,22 +32,35 @@ runs:
       run: |
         echo "Repository: ${{ github.repository }}"
 
-        # Build API parameters based on search mode
         if [[ -n "${{ inputs.sha }}" ]]; then
           echo "Finding CI workflow run for specific SHA: ${{ inputs.sha }}"
-          API_PARAMS=(--field head_sha="${{ inputs.sha }}" --field event="push")
+          shas="${{ inputs.sha }}"
         else
           echo "Finding last successful CI workflow run on ${{ inputs.branch }}..."
-          API_PARAMS=(--field branch="${{ inputs.branch }}" --field event="push")
+          shas=$(gh api "/repos/${{ github.repository }}/commits" \
+            -X GET \
+            --field sha="${{ inputs.branch }}" \
+            --field per_page="50" \
+            --jq '.[].sha')
         fi
 
-        # Single API call with dynamic parameters
-        workflow_data=$(gh api "/repos/${{ github.repository }}/actions/runs" \
-          -X GET \
-          "${API_PARAMS[@]}" \
-          --field status="success" \
-          --field per_page="50" \
-          --jq 'first(.workflow_runs[] | select(.name == "🔄 CI | PR / Merge") | {id, head_sha, conclusion})' 2>&1)
+        if [[ -z "$shas" ]]; then
+          echo "❌ No commit shas found."
+          exit 1
+        fi
+
+        workflow_data=""
+        for s in $shas; do
+          # Seek successful runs of ci.yaml (where artifacts are uploaded for nightly)
+          workflow_data=$(gh api "/repos/${{ github.repository }}/actions/workflows/ci.yaml/runs" \
+            -X GET \
+            --field head_sha="$s" \
+            --field event="push" \
+            --field status="success" \
+            --jq 'first(.workflow_runs[] | {id, head_sha, conclusion})')
+          [[ -n "$workflow_data" ]] && break
+          echo "No successful CI run for ${s:0:7}, trying previous commit..."
+        done
 
         echo "Raw workflow_data result: '$workflow_data'"
         workflow_run_id=$(echo "$workflow_data" | jq -r '.id')

@@ -9,14 +9,12 @@ release:
     ###### !!! REMOVE THIS HEADER BEFORE PUBLISHING !!!
     ## Release Checklist
     ### Draft Checklist
-    - [ ] Tests from last nightly build have passed and are stable.
     - [ ] Release notes below have been reviewed and edited as needed.
     - [ ] Binaries/Archives/Packages.
       - [ ] Artifacts for each distro have been attached to the draft release
       - [ ] Any new artifact type is attached to the draft release (we filter on upload for expected file types)
     - [ ] Docker images for each distro have been published to ECR
-    ### Publish Checklist
-    - [ ] Draft header has been removed.
+    ### Post-Publish Checklist
     - [ ] Docker images for each distro have been published to docker hub and tagged as latest
     - [ ] PR has been generated to update docs in [docs.newrelic.com](https://github.com/newrelic/docs-website/pulls)
     ###### !!! REMOVE THIS HEADER BEFORE PUBLISHING !!!
