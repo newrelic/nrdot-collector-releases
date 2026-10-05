@@ -44,6 +44,11 @@ runs:
             --jq '.[].sha')
         fi
 
+        if [[ -z "$shas" ]]; then
+          echo "❌ No commit shas found."
+          exit 1
+        fi
+
         workflow_data=""
         for s in $shas; do
           # Seek successful runs of ci.yaml (where artifacts are uploaded for nightly)
