@@ -36,6 +36,7 @@ var UpdateCmd = &cobra.Command{
 		nrForkContribVersion := persistentFlag(cmd, "nr-fork-contrib-version")
 		coreStable := persistentFlag(cmd, "core-stable")
 		coreBeta := persistentFlag(cmd, "core-beta")
+		contribStable := persistentFlag(cmd, "contrib-stable")
 		contribBeta := persistentFlag(cmd, "contrib-beta")
 
 		// Build module prefix -> VersionUpdate map used by CopyAndUpdateConfigModules.
@@ -49,8 +50,8 @@ var UpdateCmd = &cobra.Command{
 		if coreStable != "" || coreBeta != "" {
 			nrdotUpdates[manifest.CoreModule] = manifest.VersionUpdate{StableVersion: coreStable, BetaVersion: coreBeta}
 		}
-		if contribBeta != "" {
-			nrdotUpdates[manifest.ContribModule] = manifest.VersionUpdate{BetaVersion: contribBeta}
+		if contribStable != "" || contribBeta != "" {
+			nrdotUpdates[manifest.ContribModule] = manifest.VersionUpdate{StableVersion: contribStable, BetaVersion: contribBeta}
 		}
 
 		matches, _ := filepath.Glob(configPath)

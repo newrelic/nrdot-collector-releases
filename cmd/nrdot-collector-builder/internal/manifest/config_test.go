@@ -102,6 +102,7 @@ func TestConfig_IsNrForkContribComponent(t *testing.T) {
 func TestConfig_SetVersions(t *testing.T) {
 	cfg := &Config{
 		Extensions: []Module{
+			{GoMod: "github.com/open-telemetry/opentelemetry-collector-contrib/stablecomponent v1.0.0"},
 			{GoMod: "github.com/open-telemetry/opentelemetry-collector-contrib/component v0.1.0"},
 			{GoMod: "github.com/newrelic/nrdot-collector-components/component v0.1.0"},
 			{GoMod: "github.com/newrelic-forks/opentelemetry-collector-contrib/component v0.1.0"},
@@ -117,6 +118,7 @@ func TestConfig_SetVersions(t *testing.T) {
 
 	assert.Equal(t, "v1.0.0", cfg.Versions.StableCoreVersion)
 	assert.Equal(t, "v0.1.0", cfg.Versions.BetaCoreVersion)
+	assert.Equal(t, "v1.0.0", cfg.Versions.StableContribVersion)
 	assert.Equal(t, "v0.1.0", cfg.Versions.BetaContribVersion)
 	assert.Equal(t, "v0.1.0", cfg.Versions.NrdotVersion)
 	assert.Equal(t, "v0.1.0", cfg.Versions.NrForkContribVersion)

@@ -16,6 +16,7 @@ var (
 	nrForkContribVersion string
 	coreStableVersion    string
 	coreBetaVersion      string
+	contribStableVersion string
 	contribBetaVersion   string
 )
 
@@ -37,7 +38,8 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&nrForkContribVersion, "nr-fork-contrib-version", "", "Pin newrelic-forks/opentelemetry-collector-contrib to this version")
 	rootCmd.PersistentFlags().StringVar(&coreStableVersion, "core-stable", "", "Pin OTel core stable (v1.x) modules to this version")
 	rootCmd.PersistentFlags().StringVar(&coreBetaVersion, "core-beta", "", "Pin OTel core beta (v0.x) modules to this version")
-	rootCmd.PersistentFlags().StringVar(&contribBetaVersion, "contrib-beta", "", "Pin OTel contrib modules to this version")
+	rootCmd.PersistentFlags().StringVar(&contribStableVersion, "core-stable", "", "Pin OTel contrib stable (v1.x) modules to this version")
+	rootCmd.PersistentFlags().StringVar(&contribBetaVersion, "contrib-beta", "", "Pin OTel contrib beta (v0.x) modules to this version")
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

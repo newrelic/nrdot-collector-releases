@@ -97,7 +97,7 @@ func TestCopyAndUpdateConfigModules_StableNotAppliedToBeta(t *testing.T) {
 	assert.Equal(t, "go.opentelemetry.io/collector/receiver/otlpreceiver v0.142.0", result.Receivers[0].GoMod)
 }
 
-func TestCopyAndUpdateConfigModules_Contrib(t *testing.T) {
+func TestCopyAndUpdateConfigModules_BetaContrib(t *testing.T) {
 	cfg := newTestCfg()
 	cfg.Receivers = []Module{
 		{GoMod: "github.com/open-telemetry/opentelemetry-collector-contrib/receiver/filelogreceiver v0.142.0"},
@@ -108,6 +108,19 @@ func TestCopyAndUpdateConfigModules_Contrib(t *testing.T) {
 	result, err := CopyAndUpdateConfigModules(cfg, updates)
 	assert.NoError(t, err)
 	assert.Equal(t, "github.com/open-telemetry/opentelemetry-collector-contrib/receiver/filelogreceiver v0.147.2", result.Receivers[0].GoMod)
+}
+
+func TestCopyAndUpdateConfigModules_StableContrib(t *testing.T) {
+	cfg := newTestCfg()
+	cfg.Processors = []Module{
+		{GoMod: "github.com/open-telemetry/opentelemetry-collector-contrib/processor/k8sattributesprocessor v1.0.0"},
+	}
+	updates := map[string]VersionUpdate{
+		"github.com/open-telemetry/opentelemetry-collector-contrib": {BetaVersion: "v0.162.0", StableVersion: "v1.1.0"},
+	}
+	result, err := CopyAndUpdateConfigModules(cfg, updates)
+	assert.NoError(t, err)
+	assert.Equal(t, "github.com/open-telemetry/opentelemetry-collector-contrib/processor/k8sattributesprocessor v1.1.0", result.Processors[0].GoMod)
 }
 
 func TestCopyAndUpdateConfigModules_Nrdot(t *testing.T) {

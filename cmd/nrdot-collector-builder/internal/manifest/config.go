@@ -32,6 +32,7 @@ type Versions struct {
 	BetaCoreVersion      string `json:"betaCoreVersion"`
 	BetaContribVersion   string `json:"betaContribVersion"`
 	StableCoreVersion    string `json:"stableCoreVersion"`
+	StableContribVersion string `json:"stableContribVersion"`
 	NrdotVersion         string `json:"nrdotVersion"`
 	NrForkContribVersion string `json:"nrForkContribVersion"`
 }
@@ -158,14 +159,19 @@ func (c *Config) SetVersions() error {
 				}
 			}
 
-			if isOtelContribComponent(component.GoMod) && !isStableVersion(componentVersion) {
-				if !isCompatibleWithNrVersions(versions.NrdotVersion, versions.NrForkContribVersion, componentVersion) {
-					return fmt.Errorf("contrib version %s incompatible with nrdot %s or nr-fork %s", componentVersion, versions.NrdotVersion, versions.NrForkContribVersion)
+			if isOtelContribComponent(component.GoMod) {
+				if isStableVersion(componentVersion) {
+					versions.StableContribVersion = componentVersion
+				} else {
+					if !isCompatibleWithNrVersions(versions.NrdotVersion, versions.NrForkContribVersion, componentVersion) {
+						return fmt.Errorf("contrib version %s incompatible with nrdot %s or nr-fork %s", componentVersion, versions.NrdotVersion, versions.NrForkContribVersion)
+					}
+					versions.BetaContribVersion = componentVersion
 				}
-				versions.BetaContribVersion = componentVersion
 			}
 
-			if versions.StableCoreVersion != "" && versions.BetaCoreVersion != "" && versions.BetaContribVersion != "" {
+			if versions.StableCoreVersion != "" && versions.BetaCoreVersion != "" &&
+				versions.StableContribVersion != "" && versions.BetaContribVersion != "" {
 				break
 			}
 		}
