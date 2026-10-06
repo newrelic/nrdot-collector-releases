@@ -38,7 +38,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&nrForkContribVersion, "nr-fork-contrib-version", "", "Pin newrelic-forks/opentelemetry-collector-contrib to this version")
 	rootCmd.PersistentFlags().StringVar(&coreStableVersion, "core-stable", "", "Pin OTel core stable (v1.x) modules to this version")
 	rootCmd.PersistentFlags().StringVar(&coreBetaVersion, "core-beta", "", "Pin OTel core beta (v0.x) modules to this version")
-	rootCmd.PersistentFlags().StringVar(&contribStableVersion, "core-stable", "", "Pin OTel contrib stable (v1.x) modules to this version")
+	rootCmd.PersistentFlags().StringVar(&contribStableVersion, "contrib-stable", "", "Pin OTel contrib stable (v1.x) modules to this version")
 	rootCmd.PersistentFlags().StringVar(&contribBetaVersion, "contrib-beta", "", "Pin OTel contrib beta (v0.x) modules to this version")
 }
 
