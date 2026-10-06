@@ -121,7 +121,7 @@ if [[ -n "$core_beta" ]]; then
 fi
 
 # Utilize contrib's versions.yaml to determine the stable version associated with the desired beta version.
-# Contrib stable modules do NOT track the same minor as core stable. Furethermore, there is no guarantee
+# Contrib stable modules do NOT track the same minor as core stable. Furthermore, there is no guarantee
 # that stable and beta versions are bumped at the same time as evidenced by core's release history.
 contrib_stable=""
 if [[ -n "$contrib_beta" ]]; then
