@@ -113,7 +113,6 @@ popd > /dev/null || exit 1
 # Find the highest contrib patch whose minor version matches core_beta.
 # Contrib beta modules track the same minor as core beta (e.g., v0.147.x).
 contrib_beta=""
-contrib_beta_release_date=""
 if [[ -n "$core_beta" ]]; then
     core_minor=$(echo "$core_beta" | awk -F'.' '{print $1"."$2}')
     contrib_beta=$(${GO} list -m -versions \
