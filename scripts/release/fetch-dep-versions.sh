@@ -126,12 +126,16 @@ fi
 contrib_stable=""
 if [[ -n "$contrib_beta" ]]; then
     contrib_stable_declared=$(curl -sfL "https://raw.githubusercontent.com/open-telemetry/opentelemetry-collector-contrib/${contrib_beta}/versions.yaml" \
-        | yq -r '.module-sets.stable-base.version')
-    # Validate declared version is actually published in a module
-    contrib_stable=$(${GO} list -m -versions \
-        "github.com/open-telemetry/opentelemetry-collector-contrib/processor/k8sattributesprocessor" \
-        2>/dev/null | tr ' ' '\n' | grep "^${contrib_stable_declared}$") \
-        || echo "⚠️ Warning: k8sattributesprocessor ${contrib_stable_declared} not published." >&2
+        | yq -r '.module-sets.stable-base.version // ""')
+    if [[ -n "$contrib_stable_declared" ]]; then
+        # Validate declared version is actually published in a module
+        contrib_stable=$(${GO} list -m -versions \
+            "github.com/open-telemetry/opentelemetry-collector-contrib/processor/k8sattributesprocessor" \
+            2>/dev/null | tr ' ' '\n' | grep "^${contrib_stable_declared}$") \
+            || echo "⚠️ Warning: k8sattributesprocessor ${contrib_stable_declared} not published." >&2
+    else
+        echo "⚠️ Warning: Could not determine contrib stable version from ${contrib_beta} versions.yaml." >&2
+    fi
 fi
 
 
