@@ -131,8 +131,8 @@ if [[ -n "$contrib_beta" ]]; then
     # Validate declared version is actually published in a module
     contrib_stable=$(${GO} list -m -versions \
         "github.com/open-telemetry/opentelemetry-collector-contrib/processor/k8sattributesprocessor" \
-        2>/dev/null | tr ' ' '\n' | grep "^${candidate_stable}$") \
-        || echo "⚠️ Warning: k8sattributesprocessor ${candidate_stable} not published." >&2
+        2>/dev/null | tr ' ' '\n' | grep "^${contrib_stable_declared}$") \
+        || echo "⚠️ Warning: k8sattributesprocessor ${contrib_stable_declared} not published." >&2
 fi
 
 
