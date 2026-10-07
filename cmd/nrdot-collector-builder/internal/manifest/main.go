@@ -227,7 +227,7 @@ func fetchPromotedComponents(cfg *Config, updates map[string]VersionUpdate) (map
 		return nil, err
 	}
 
-	// For each beta component, if it has published a version matching the desired stable module, add it to the set of "promoted" components
+	// For each beta component, if it has published a version matching the desired stable version, add it to the set of "promoted" components
 	for _, component := range components {
 		module, currentVersion, _ := strings.Cut(component.GoMod, " ")
 		if isStableVersion(currentVersion) {
