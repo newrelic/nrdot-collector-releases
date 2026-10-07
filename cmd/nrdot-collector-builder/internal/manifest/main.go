@@ -138,16 +138,16 @@ type VersionUpdate struct {
 // replaced according to the updates map. Each key in updates is a module path
 // prefix; modules matching that prefix get either the StableVersion (v1.x) or
 // BetaVersion (v0.x) depending on their current stability level.
-func CopyAndUpdateConfigModules(cfg *Config, updates map[string]VersionUpdate) (*Config, error) {
+func CopyAndUpdateConfigModules(cfg *Config, updates map[string]VersionUpdate, promotions map[string]bool) (*Config, error) {
 	cfgCopy := *cfg
 
-	cfgCopy.Exporters = applyVersionUpdates(cfg, cfg.Exporters, updates)
-	cfgCopy.Receivers = applyVersionUpdates(cfg, cfg.Receivers, updates)
-	cfgCopy.Processors = applyVersionUpdates(cfg, cfg.Processors, updates)
-	cfgCopy.Extensions = applyVersionUpdates(cfg, cfg.Extensions, updates)
-	cfgCopy.Connectors = applyVersionUpdates(cfg, cfg.Connectors, updates)
-	cfgCopy.ConfmapProviders = applyVersionUpdates(cfg, cfg.ConfmapProviders, updates)
-	cfgCopy.ConfmapConverters = applyVersionUpdates(cfg, cfg.ConfmapConverters, updates)
+	cfgCopy.Exporters = applyVersionUpdates(cfg, cfg.Exporters, updates, promotions)
+	cfgCopy.Receivers = applyVersionUpdates(cfg, cfg.Receivers, updates, promotions)
+	cfgCopy.Processors = applyVersionUpdates(cfg, cfg.Processors, updates, promotions)
+	cfgCopy.Extensions = applyVersionUpdates(cfg, cfg.Extensions, updates, promotions)
+	cfgCopy.Connectors = applyVersionUpdates(cfg, cfg.Connectors, updates, promotions)
+	cfgCopy.ConfmapProviders = applyVersionUpdates(cfg, cfg.ConfmapProviders, updates, promotions)
+	cfgCopy.ConfmapConverters = applyVersionUpdates(cfg, cfg.ConfmapConverters, updates, promotions)
 
 	if err := cfgCopy.SetVersions(); err != nil {
 		return nil, fmt.Errorf("failed to derive versions from updated modules: %w", err)
@@ -158,7 +158,7 @@ func CopyAndUpdateConfigModules(cfg *Config, updates map[string]VersionUpdate) (
 
 // applyVersionUpdates returns a new slice with each module's version replaced
 // if its path matches a prefix in updates.
-func applyVersionUpdates(cfg *Config, components []Module, updates map[string]VersionUpdate) []Module {
+func applyVersionUpdates(cfg *Config, components []Module, updates map[string]VersionUpdate, promotions map[string]bool) []Module {
 	result := make([]Module, len(components))
 	for i, component := range components {
 		module, currentVersion, _ := strings.Cut(component.GoMod, " ")
@@ -168,7 +168,7 @@ func applyVersionUpdates(cfg *Config, components []Module, updates map[string]Ve
 			if !strings.HasPrefix(module, prefix) {
 				continue
 			}
-			if isStableVersion(currentVersion) {
+			if isStableVersion(currentVersion) || promotions[module] {
 				newVersion = u.StableVersion
 			} else {
 				newVersion = u.BetaVersion
@@ -207,9 +207,75 @@ func toVersionUpdates(latestVersions map[string][]string) map[string]VersionUpda
 	return updates
 }
 
-// UpdateConfigModules fetches the latest available versions for all modules and
+// fetchPromotedComponents returns the set of components whose pre-update version is
+// beta, but has been promoted to stable under a desired stable version.
+func fetchPromotedComponents(cfg *Config, updates map[string]VersionUpdate) (map[string]bool, error) {
+	promotedComponents := make(map[string]bool)
+
+	var components = slices.Concat(cfg.allOtelComponents(), cfg.allNrdotComponents(), cfg.allNrForkContribComponents())
+	var modules []string
+	for _, component := range components {
+		module, _, _ := strings.Cut(component.GoMod, " ")
+		modules = append(modules, module)
+	}
+	versions, err := fetchAllModuleVersions(cfg, modules)
+	if err != nil {
+		cfg.Logger.Warn("Failed to fetch module updates", zap.String("module", "all"), zap.Error(err))
+		return nil, err
+	}
+
+	for _, component := range components {
+		module, currentVersion, _ := strings.Cut(component.GoMod, " ")
+		if isStableVersion(currentVersion) {
+			continue
+		}
+		for prefix, u := range updates {
+			if !strings.HasPrefix(module, prefix) {
+				continue
+			}
+			if u.StableVersion != "" && slices.Contains(versions[module], u.StableVersion) {
+				promotedComponents[module] = true
+				if cfg.Verbose {
+					cfg.Logger.Info("Promoted component found", zap.String("module", module), zap.String("stableVersion", u.StableVersion))
+				}
+			}
+			break
+		}
+	}
+
+	return promotedComponents, nil
+}
+
+// UpdateConfigModulesSpecifiedVersions returns a copy of cfg with modules updated to the
+// specified versions, moving beta modules to the stable version if they have been promoted.
+func UpdateConfigModulesSpecifiedVersions(cfg *Config, updates map[string]VersionUpdate) (*Config, error) {
+	promotions, err := fetchPromotedComponents(cfg, updates)
+	if err != nil {
+		cfg.Logger.Error("Failed to fetch promoted components", zap.Error(err))
+		return nil, err
+	}
+
+	updatedCfg, err := CopyAndUpdateConfigModules(cfg, updates, promotions)
+	if err != nil {
+		cfg.Logger.Error("Failed to update config modules", zap.Error(err))
+		return nil, err
+	}
+
+	// Log the updated modules
+	for _, component := range updatedCfg.allComponents() {
+		if cfg.Verbose {
+			cfg.Logger.Info("Updated module",
+				zap.String("module", component.GoMod),
+			)
+		}
+	}
+
+	return updatedCfg, nil
+}
+
+// UpdateConfigModulesLatest fetches the latest available versions for all modules and
 // returns a copy of cfg with each module updated to the newest compatible version.
-func UpdateConfigModules(cfg *Config) (*Config, error) {
+func UpdateConfigModulesLatest(cfg *Config) (*Config, error) {
 	rawUpdates, err := fetchLatestModuleVersions(cfg)
 	if err != nil {
 		cfg.Logger.Error("Failed to fetch latest module versions", zap.Error(err))
@@ -218,7 +284,7 @@ func UpdateConfigModules(cfg *Config) (*Config, error) {
 
 	// Iterate over all components and check for updates
 	// Create a copy of cfg with updated modules
-	updatedCfg, err := CopyAndUpdateConfigModules(cfg, toVersionUpdates(rawUpdates))
+	updatedCfg, err := CopyAndUpdateConfigModules(cfg, toVersionUpdates(rawUpdates), nil)
 	if err != nil {
 		cfg.Logger.Error("Failed to update config modules", zap.Error(err))
 		return nil, err
