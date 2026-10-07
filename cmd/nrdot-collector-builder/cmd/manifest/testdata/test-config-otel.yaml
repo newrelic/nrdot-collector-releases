@@ -9,11 +9,11 @@ dist:
   output_path: ./_build
 
 receivers:
-  - gomod: go.opentelemetry.io/collector/receiver/nopreceiver v0.154.0
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/filelogreceiver v0.154.0
+  - gomod: go.opentelemetry.io/collector/receiver/nopreceiver v0.160.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/filelogreceiver v0.160.0
 processors:
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/k8sattributesprocessor v1.0.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/k8sattributesprocessor v0.160.0
 exporters:
-  - gomod: go.opentelemetry.io/collector/exporter/nopexporter v0.154.0
+  - gomod: go.opentelemetry.io/collector/exporter/nopexporter v0.160.0
 providers:
-  - gomod: go.opentelemetry.io/collector/confmap/provider/envprovider v1.60.0
+  - gomod: go.opentelemetry.io/collector/confmap/provider/envprovider v1.66.0

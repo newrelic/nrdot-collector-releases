@@ -146,10 +146,10 @@ func TestUpdateCmd_RunE_OtelComponents(t *testing.T) {
 	assert.NoError(t, err)
 	tempFile.Close() // Close the file to ensure the changes are flushed
 
-	coreStable := "v1.61.0"
-	coreBeta := "v0.155.0"
-	contribStable := "v1.1.0"
-	contribBeta := "v0.155.1"
+	coreStable := "v1.67.0"
+	coreBeta := "v0.161.0"
+	contribStable := "v1.0.0"
+	contribBeta := "v0.161.0"
 
 	cmd := &cobra.Command{}
 	cmd.Flags().String("config", tempFile.Name(), "")
