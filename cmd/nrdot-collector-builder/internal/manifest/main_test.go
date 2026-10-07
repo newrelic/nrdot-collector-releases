@@ -86,6 +86,27 @@ func TestFetchPromotedComponents_NoStable(t *testing.T) {
 	assert.Empty(t, promoted)
 }
 
+func TestFetchPromotedComponents_Failure(t *testing.T) {
+	cfg := &Config{
+		Verbose: true,
+		Logger:  zap.NewNop(),
+		Dir:     "./",
+		Distribution: Distribution{
+			Go: "nonexistent-go",
+		},
+		Processors: []Module{
+			{GoMod: "github.com/open-telemetry/opentelemetry-collector-contrib/processor/k8sattributesprocessor v0.160.0"},
+		},
+	}
+	updates := map[string]VersionUpdate{
+		"github.com/open-telemetry/opentelemetry-collector-contrib": {BetaVersion: "v0.161.0", StableVersion: "v1.0.0"},
+	}
+
+	_, err := fetchPromotedComponents(cfg, updates)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "failed to fetch module versions")
+}
+
 // newTestCfg returns a Config with the minimum set of modules required by
 // SetVersions: at least one beta core module (v0.x), one stable core module
 // (v1.x), and one contrib module. These are placed in Connectors so that
