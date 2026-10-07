@@ -135,6 +135,7 @@ if [[ -n "$contrib_beta" ]]; then
             || echo "⚠️ Warning: k8sattributesprocessor ${contrib_stable_declared} not published." >&2
     else
         echo "⚠️ Warning: Could not determine contrib stable version from ${contrib_beta} versions.yaml." >&2
+        exit 1
     fi
 fi
 
