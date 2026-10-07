@@ -212,34 +212,33 @@ func toVersionUpdates(latestVersions map[string][]string) map[string]VersionUpda
 func fetchPromotedComponents(cfg *Config, updates map[string]VersionUpdate) (map[string]bool, error) {
 	promotedComponents := make(map[string]bool)
 
+	// Fetch the list of all modules from the manifest
 	var components = slices.Concat(cfg.allOtelComponents(), cfg.allNrdotComponents(), cfg.allNrForkContribComponents())
 	var modules []string
 	for _, component := range components {
 		module, _, _ := strings.Cut(component.GoMod, " ")
 		modules = append(modules, module)
 	}
+
+	// Fetch all published versions of each module
 	versions, err := fetchAllModuleVersions(cfg, modules)
 	if err != nil {
 		cfg.Logger.Warn("Failed to fetch module updates", zap.String("module", "all"), zap.Error(err))
 		return nil, err
 	}
 
+	// For each beta component, if it has published a version matching the desired stable module, mark it as "promoted"
 	for _, component := range components {
 		module, currentVersion, _ := strings.Cut(component.GoMod, " ")
 		if isStableVersion(currentVersion) {
 			continue
 		}
-		for prefix, u := range updates {
-			if !strings.HasPrefix(module, prefix) {
-				continue
+		u := updates[getModulePrefix(component)]
+		if u.StableVersion != "" && slices.Contains(versions[module], u.StableVersion) {
+			promotedComponents[module] = true
+			if cfg.Verbose {
+				cfg.Logger.Info("Promoted component found", zap.String("module", module), zap.String("stableVersion", u.StableVersion))
 			}
-			if u.StableVersion != "" && slices.Contains(versions[module], u.StableVersion) {
-				promotedComponents[module] = true
-				if cfg.Verbose {
-					cfg.Logger.Info("Promoted component found", zap.String("module", module), zap.String("stableVersion", u.StableVersion))
-				}
-			}
-			break
 		}
 	}
 
@@ -275,6 +274,7 @@ func UpdateConfigModulesSpecifiedVersions(cfg *Config, updates map[string]Versio
 
 // UpdateConfigModulesLatest fetches the latest available versions for all modules and
 // returns a copy of cfg with each module updated to the newest compatible version.
+// NOTE: This cannot currently auto-detect promoted components.
 func UpdateConfigModulesLatest(cfg *Config) (*Config, error) {
 	rawUpdates, err := fetchLatestModuleVersions(cfg)
 	if err != nil {

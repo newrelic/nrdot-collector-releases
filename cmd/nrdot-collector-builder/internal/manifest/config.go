@@ -110,6 +110,20 @@ func isStableVersion(version string) bool {
 	return semver.Compare(version, "v1.0.0") >= 0
 }
 
+func getModulePrefix(module Module) string {
+	switch {
+	case isOtelCoreComponent(module.GoMod):
+		return CoreModule
+	case isOtelContribComponent(module.GoMod):
+		return ContribModule
+	case isNrdotComponent(module):
+		return NrModule
+	case isNrForkContribComponent(module):
+		return NrForkContribModule
+	}
+	return ""
+}
+
 func isCompatibleWithNrComponent(nrComponentVersion, betaVersion string) bool {
 	return semver.MajorMinor(nrComponentVersion) == semver.MajorMinor(betaVersion)
 }
