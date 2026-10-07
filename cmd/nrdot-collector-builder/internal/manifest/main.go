@@ -137,7 +137,8 @@ type VersionUpdate struct {
 // CopyAndUpdateConfigModules returns a shallow copy of cfg with module versions
 // replaced according to the updates map. Each key in updates is a module path
 // prefix; modules matching that prefix get either the StableVersion (v1.x) or
-// BetaVersion (v0.x) depending on their current stability level.
+// BetaVersion (v0.x) depending on their current stability level, or if they are
+// present in the promotions set.
 func CopyAndUpdateConfigModules(cfg *Config, updates map[string]VersionUpdate, promotions map[string]bool) (*Config, error) {
 	cfgCopy := *cfg
 
