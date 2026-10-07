@@ -137,7 +137,7 @@ if [[ -n "$contrib_beta" ]]; then
         echo "⚠️ Warning: Could not determine contrib stable version from ${contrib_beta} versions.yaml." >&2
     fi
     if [[ -z "$contrib_stable" ]]; then
-        echo "❌ Error: Could not determine contrib stable version for ${contrib_beta}." >&2
+        echo "❌ Error: Could not determine contrib stable version accompanying ${contrib_beta}." >&2
         exit 1
     fi
 fi
