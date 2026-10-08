@@ -128,7 +128,7 @@ func fetchLatestModuleVersions(cfg *Config) (map[string][]string, error) {
 }
 
 // VersionUpdate holds the target versions for a module path prefix.
-// StableVersion applies to modules currently at v1.x; BetaVersion to v0.x.
+// StableVersion applies to modules currently at or promoted to v1.x; BetaVersion to v0.x.
 type VersionUpdate struct {
 	StableVersion string
 	BetaVersion   string
