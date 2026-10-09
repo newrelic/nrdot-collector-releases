@@ -1,4 +1,4 @@
-brew 'go@1.24'
+brew 'go@1.26'
 brew 'goreleaser/tap/goreleaser-pro'
 brew 'act'
 brew 'helm'
