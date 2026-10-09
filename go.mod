@@ -1,6 +1,6 @@
 module github.com/newrelic/nrdot-collector-releases
 
-go 1.24.11
+go 1.26.9
 
 require (
 	github.com/goreleaser/goreleaser-pro/v2 v2.14.3
