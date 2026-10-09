@@ -2,6 +2,14 @@
 
 <!-- next version -->
 
+## 2.7.1
+
+### Bug Fixes
+
+- CVE-2026-78667, CVE-2026-97031 (#681)
+
+<!-- previous-version -->
+
 ## 2.7.0
 
 ### Features
