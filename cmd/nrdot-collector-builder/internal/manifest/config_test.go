@@ -99,9 +99,18 @@ func TestConfig_IsNrForkContribComponent(t *testing.T) {
 	assert.False(t, isNrForkContribComponent(Module{GoMod: "github.com/some/other/module"}))
 }
 
+func TestConfig_GetModulePrefix(t *testing.T) {
+	assert.Equal(t, CoreModule, getModulePrefix(Module{GoMod: "go.opentelemetry.io/collector/receiver/otlpreceiver v0.1.0"}))
+	assert.Equal(t, ContribModule, getModulePrefix(Module{GoMod: "github.com/open-telemetry/opentelemetry-collector-contrib/processor/k8sattributesprocessor v0.1.0"}))
+	assert.Equal(t, NrModule, getModulePrefix(Module{GoMod: "github.com/newrelic/nrdot-collector-components/processor/adaptivetelemetryprocessor v0.1.0"}))
+	assert.Equal(t, NrForkContribModule, getModulePrefix(Module{GoMod: "github.com/newrelic-forks/opentelemetry-collector-contrib/receiver/nrsqlserverreceiver v0.1.0"}))
+	assert.Empty(t, getModulePrefix(Module{GoMod: "github.com/some/other/module v1.0.0"}))
+}
+
 func TestConfig_SetVersions(t *testing.T) {
 	cfg := &Config{
 		Extensions: []Module{
+			{GoMod: "github.com/open-telemetry/opentelemetry-collector-contrib/stablecomponent v1.0.0"},
 			{GoMod: "github.com/open-telemetry/opentelemetry-collector-contrib/component v0.1.0"},
 			{GoMod: "github.com/newrelic/nrdot-collector-components/component v0.1.0"},
 			{GoMod: "github.com/newrelic-forks/opentelemetry-collector-contrib/component v0.1.0"},
@@ -117,6 +126,7 @@ func TestConfig_SetVersions(t *testing.T) {
 
 	assert.Equal(t, "v1.0.0", cfg.Versions.StableCoreVersion)
 	assert.Equal(t, "v0.1.0", cfg.Versions.BetaCoreVersion)
+	assert.Equal(t, "v1.0.0", cfg.Versions.StableContribVersion)
 	assert.Equal(t, "v0.1.0", cfg.Versions.BetaContribVersion)
 	assert.Equal(t, "v0.1.0", cfg.Versions.NrdotVersion)
 	assert.Equal(t, "v0.1.0", cfg.Versions.NrForkContribVersion)
