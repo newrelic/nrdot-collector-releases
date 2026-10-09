@@ -1,6 +1,6 @@
 module newrelic-collector-builder
 
-go 1.24.11
+go 1.26.9
 
 require (
 	github.com/knadh/koanf/parsers/yaml v1.0.0

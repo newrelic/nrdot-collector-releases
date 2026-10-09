@@ -1,4 +1,4 @@
-FROM golang:1.24-alpine3.20
+FROM golang:1.26-alpine3.24
 RUN apk --update add ca-certificates
 
 ARG SERVICE_NAME="nrdot-collector-builder"
