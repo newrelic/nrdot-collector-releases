@@ -16,8 +16,8 @@ exclude  = [
 
 exclude_path = [
     "lychee/out.md", # avoid picking up lychee report on reruns
+    'CHANGELOG\.md', # changelog is a point in time which shouldn't be retroactively updated
 ]
-
 
 #### Avoid rate limiting / timeouts 
 host_concurrency = 1
