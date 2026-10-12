@@ -2,7 +2,7 @@ dist:
   module: github.com/newrelic/nrdot-collector-releases/nrdot-collector-experimental
   name: nrdot-collector-experimental
   description: NRDOT Collector Experimental
-  version: 2.7.1
+  version: 2.7.2
   output_path: ./_build
 receivers:
   - gomod: go.opentelemetry.io/collector/receiver/otlpreceiver v0.162.0
@@ -66,3 +66,6 @@ providers:
   # Secret Management Providers
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/confmap/provider/secretsmanagerprovider v0.162.0
 # When adding a replace, add a comment before it to document why it's needed and when it can be removed
+replaces:
+  # Why: Fixes CVE-2026-78669; can be removed when contrib and core components pull in >= v0.60.0
+  - golang.org/x/net v0.59.0 => golang.org/x/net v0.60.0
