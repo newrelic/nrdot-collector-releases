@@ -1,6 +1,6 @@
 module github.com/newrelic/nrdot-collector-releases/internal/tools
 
-go 1.26.9
+go 1.26.10
 
 require (
 	github.com/newrelic/nrdot-collector-components/cmd/nrlicense v0.142.1
