@@ -47,6 +47,19 @@ variable "test_key" {
   default     = ""
 }
 
+# Shared VPC and subnet, same as nrdot-ci-permanent-infra (ci/vars.tf)
+variable "vpc_id" {
+  type        = string
+  description = "VPC to deploy the EC2 hosts to"
+  default     = "vpc-0f62d8a55c8d9ad61"
+}
+
+variable "subnet_id" {
+  type        = string
+  description = "Subnet to deploy the EC2 hosts to"
+  default     = "subnet-00aa02e6d991b478e"
+}
+
 /* 
   EC2 config options
 */ 
