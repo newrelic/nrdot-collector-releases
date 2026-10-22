@@ -1,7 +1,7 @@
 locals {
   fips_str             = var.fips ? "-fips" : ""
   test_env_name        = "${var.test_env_prefix}${local.fips_str}"
-  releases_bucket_name = "nr-releases"
+  releases_bucket_name = "nrdot-test-artifacts"
 }
 
 data "aws_eks_cluster" "eks_cluster" {
