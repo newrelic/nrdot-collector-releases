@@ -36,7 +36,7 @@ data "aws_ami" "ubuntu_ami" {
 resource "aws_instance" "ubuntu" {
   ami                    = data.aws_ami.ubuntu_ami.id
   instance_type          = "t2.micro"
-  subnet_id              = module.common_infrastructure.private_subnet_ids[0]
+  subnet_id              = var.subnet_id
   vpc_security_group_ids = [module.common_infrastructure.security_group_id]
   iam_instance_profile   = module.common_infrastructure.instance_profile_name
 

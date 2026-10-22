@@ -4,10 +4,6 @@ locals {
   releases_bucket_name = "nrdot-test-artifacts"
 }
 
-data "aws_eks_cluster" "eks_cluster" {
-  name = "aws-ci-e2etest"
-}
-
 module "ci_e2e_ec2_ubuntu" {
   count                = var.platform == "ubuntu" ? 1 : 0
   source               = "../modules/ec2/ubuntu"
@@ -15,8 +11,8 @@ module "ci_e2e_ec2_ubuntu" {
   releases_bucket_name = local.releases_bucket_name
   collector_distro     = var.distro
   nr_ingest_key        = var.nr_ingest_key
-  # reuse vpc to avoid having to pay for second NAT gateway for this simple use case
-  vpc_id              = data.aws_eks_cluster.eks_cluster.vpc_config[0].vpc_id
+  vpc_id              = var.vpc_id
+  subnet_id           = var.subnet_id
   test_key            = var.test_key
   nrdot_version       = var.nrdot_version
   commit_sha_short    = var.commit_sha_short
@@ -30,8 +26,8 @@ module "ci_e2e_ec2_windows" {
   releases_bucket_name = local.releases_bucket_name
   collector_distro     = var.distro
   nr_ingest_key        = var.nr_ingest_key
-  # reuse vpc to avoid having to pay for second NAT gateway for this simple use case
-  vpc_id              = data.aws_eks_cluster.eks_cluster.vpc_config[0].vpc_id
+  vpc_id              = var.vpc_id
+  subnet_id           = var.subnet_id
   test_key            = var.test_key
   nrdot_version       = var.nrdot_version
   commit_sha_short    = var.commit_sha_short

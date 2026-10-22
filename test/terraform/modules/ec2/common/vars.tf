@@ -1,5 +1,5 @@
 variable "vpc_id" {
-  description = "The ID of the VPC where the instance will be deployed to (in one of the private subnets)"
+  description = "The ID of the VPC where the instance will be deployed to"
   type        = string
 }
 
