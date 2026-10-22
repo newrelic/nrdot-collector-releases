@@ -250,11 +250,9 @@ jobs:
       - name: Terraform Setup & Workspace
         uses: ./.github/actions/terraform-setup
         with:
-          terraform_version: 1.9.8
-          aws_account_id: ${{ secrets.aws_account_id }}
+          terraform_version: "~> 1.14.0"
           working_directory: ./test/terraform/nightly
           workspace: ${{ needs.setup.outputs.workspace }}-ubuntu-${{ matrix.version }}
-          assume_role: "false"
       
       - name: Generate E2E scenario tag
         shell: bash
@@ -323,11 +321,9 @@ jobs:
       - name: Terraform Setup & Workspace
         uses: ./.github/actions/terraform-setup
         with:
-          terraform_version: 1.9.8
-          aws_account_id: ${{ secrets.aws_account_id }}
+          terraform_version: "~> 1.14.0"
           working_directory: ./test/terraform/nightly
           workspace: ${{ needs.setup.outputs.workspace }}-windows-${{ matrix.version }}
-          assume_role: "false"
       
       - name: Generate E2E scenario tag
         shell: bash
