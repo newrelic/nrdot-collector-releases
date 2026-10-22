@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 env:
-  REGISTRY: ${{ vars.AC_AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com
+  REGISTRY: ${{ vars.AC_AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com
 
 jobs:
   tag-latest:
@@ -43,7 +43,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@d979d5b3a71173a29b74b5b88418bfda9437d885 # v6
         with:
           role-to-assume: ${{ secrets.NRDOT_OIDC_ROLE_ARN }}
-          aws-region: us-east-1
+          aws-region: us-east-2
 
       - name: Login to ECR
         uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4
