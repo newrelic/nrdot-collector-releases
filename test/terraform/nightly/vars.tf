@@ -6,7 +6,7 @@ variable "aws_account_id" {
 variable "aws_region" {
   type        = string
   description = "AWS region to deploy to"
-  default     = "us-east-1"
+  default     = "us-east-2"
 }
 
 variable "distro" {

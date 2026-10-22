@@ -15,7 +15,7 @@ permissions:
   id-token: write
 
 env:
-  REGISTRY: "${{ vars.AC_AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com"
+  REGISTRY: "${{ vars.AC_AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com"
 jobs:
   setup:
     name: Setup Workflow

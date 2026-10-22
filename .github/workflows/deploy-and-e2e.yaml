@@ -187,7 +187,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@d979d5b3a71173a29b74b5b88418bfda9437d885 # v6
         with:
           role-to-assume: ${{ secrets.aws_oidc_role_arn }}
-          aws-region: us-east-1
+          aws-region: us-east-2
 
       - name: Configure kubectl
         run: |
@@ -208,7 +208,7 @@ jobs:
           NR_BACKEND_URL: ${{ env.NR_BACKEND_URL }}
           LICENSE_KEY: ${{ secrets.nr_ingest_key }}
           IMAGE_TAG: ${{ needs.setup.outputs.image-tag }}
-          IMAGE_REPO: ${{ secrets.aws_account_id }}.dkr.ecr.us-east-1.amazonaws.com/${{ inputs.distro }}
+          IMAGE_REPO: ${{ secrets.aws_account_id }}.dkr.ecr.us-east-2.amazonaws.com/${{ inputs.distro }}
         with:
           retry_seconds: 30
           retry_attempts: 20
@@ -245,7 +245,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@d979d5b3a71173a29b74b5b88418bfda9437d885 # v6
         with:
           role-to-assume: ${{ secrets.aws_oidc_role_arn }}
-          aws-region: us-east-1
+          aws-region: us-east-2
 
       - name: Terraform Setup & Workspace
         uses: ./.github/actions/terraform-setup
@@ -316,7 +316,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@d979d5b3a71173a29b74b5b88418bfda9437d885 # v6
         with:
           role-to-assume: ${{ secrets.aws_oidc_role_arn }}
-          aws-region: us-east-1
+          aws-region: us-east-2
 
       - name: Terraform Setup & Workspace
         uses: ./.github/actions/terraform-setup
