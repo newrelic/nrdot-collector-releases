@@ -191,7 +191,7 @@ jobs:
 
       - name: Configure kubectl
         run: |
-          aws eks update-kubeconfig --name aws-ci-e2etest --region us-east-1
+          aws eks update-kubeconfig --name nrdot-e2e-test --region us-east-2
 
       - name: Derive NR backend URL from region
         run: |
