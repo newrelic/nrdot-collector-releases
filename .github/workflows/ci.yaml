@@ -60,8 +60,8 @@ jobs:
       # namespace by distro to avoid issues with cleanup (distro 1 still running tests while distro 2 cleans up cluster)
       test_cluster_name: "${{ matrix.distribution }}-${{ github.run_id }}-${{ github.run_attempt }}"
     secrets:
-      aws_account_id: ${{ vars.OTELCOMM_AWS_TEST_ACC_ACCOUNT_ID }}
-      aws_oidc_role_arn: ${{ secrets.OTELCOMM_AWS_TEST_OIDC_ROLE_ARN }}
+      aws_account_id: ${{ vars.AC_AWS_ACCOUNT_ID }}
+      aws_oidc_role_arn: ${{ secrets.NRDOT_OIDC_ROLE_ARN }}
       goreleaser_key: ${{ secrets.GORELEASER_KEY }}
       gpg_private_key: ${{ secrets.OTELCOMM_GPG_PRIVATE_KEY_BASE64 }}
       gpg_passphrase: ${{ secrets.OTELCOMM_GPG_PASSPHRASE }}

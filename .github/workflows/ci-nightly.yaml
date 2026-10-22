@@ -15,7 +15,7 @@ permissions:
   id-token: write
 
 env:
-  REGISTRY: "${{ vars.OTELCOMM_AWS_TEST_ACC_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com"
+  REGISTRY: "${{ vars.AC_AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com"
 jobs:
   setup:
     name: Setup Workflow
@@ -79,8 +79,8 @@ jobs:
       execute_destroy: false
       workflow_run_id: ${{ needs.setup.outputs.workflow-run-id }}
     secrets:
-      aws_account_id: ${{ vars.OTELCOMM_AWS_TEST_ACC_ACCOUNT_ID }}
-      aws_oidc_role_arn: ${{ secrets.OTELCOMM_AWS_TEST_OIDC_ROLE_ARN }}
+      aws_account_id: ${{ vars.AC_AWS_ACCOUNT_ID }}
+      aws_oidc_role_arn: ${{ secrets.NRDOT_OIDC_ROLE_ARN }}
       nr_ingest_key: ${{ secrets.OTELCOMM_NR_INGEST_KEY }}
       nr_api_key: ${{ secrets.OTELCOMM_NR_API_KEY }}
       nr_account_id: ${{ vars.OTELCOMM_NR_TEST_ACCOUNT_ID }}
