@@ -24,4 +24,4 @@ jobs:
       - run: node .github/actions/gh-metrics.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NEW_RELIC_LICENSE_KEY: ${{ secrets.OTELCOMM_NR_INGEST_KEY }}
+          NEW_RELIC_LICENSE_KEY: ${{ secrets.AC_NR_INGEST_KEY }}
