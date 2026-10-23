@@ -5,7 +5,7 @@ on:
     # Scheduled to run in the morning (PT) on every day-of-week from Monday through Friday.
     - cron: "0 15 * * 1-5"
 concurrency:
-  group: ci-nightly
+  group: ci-nightly-migrate # TEMP-TEST
   cancel-in-progress: false
 
 permissions:
@@ -39,7 +39,7 @@ jobs:
         id: get-commit
         uses: ./.github/actions/get-ci-workflow-run
         with:
-          branch: main
+          branch: gsanchez/chore/migrate-infra # TEMP-TEST
   verify-artifacts:
     name: Verify Artifacts (${{ matrix.distribution }}${{ matrix.fips && ' - FIPS' || '' }})
     runs-on: ubuntu-latest
