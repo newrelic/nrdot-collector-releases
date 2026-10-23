@@ -2,19 +2,7 @@ name: 🔄 CI | PR / Merge
 
 on:
   push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-    paths-ignore:
-      - '**.md'
-      - '.github/workflows/check-links.yaml'
-      - '.github/workflows/lint-conventional-commits.yaml'
-      - '.github/workflows/lint-renovate-config.yaml'
-      - '.github/workflows/renovate.yaml'
-      - '.github/workflows/repolinter.yaml'
-      - '.github/workflows/report-metrics.yaml'
-      - '.github/workflows/security.yaml'
-      - '.github/workflows/trivy-cache.yaml'
+    branches: [main, gsanchez/chore/migrate-infra] # TEMP-TEST
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -56,15 +44,15 @@ jobs:
     with:
       distribution: ${{ matrix.distribution }}
       fips: ${{ matrix.fips }}
-      publish: ${{ github.ref_name == 'main' && github.event_name == 'push' }}
+      publish: ${{ (github.ref_name == 'main' || github.ref_name == 'gsanchez/chore/migrate-infra') && github.event_name == 'push' }} # TEMP-TEST
       # namespace by distro to avoid issues with cleanup (distro 1 still running tests while distro 2 cleans up cluster)
       test_cluster_name: "${{ matrix.distribution }}-${{ github.run_id }}-${{ github.run_attempt }}"
     secrets:
-      aws_account_id: ${{ vars.OTELCOMM_AWS_TEST_ACC_ACCOUNT_ID }}
-      aws_oidc_role_arn: ${{ secrets.OTELCOMM_AWS_TEST_OIDC_ROLE_ARN }}
+      aws_account_id: ${{ vars.AC_AWS_ACCOUNT_ID }}
+      aws_oidc_role_arn: ${{ secrets.NRDOT_OIDC_ROLE_ARN }}
       goreleaser_key: ${{ secrets.GORELEASER_KEY }}
       gpg_private_key: ${{ secrets.OTELCOMM_GPG_PRIVATE_KEY_BASE64 }}
       gpg_passphrase: ${{ secrets.OTELCOMM_GPG_PASSPHRASE }}
-      nr_ingest_key: ${{ secrets.OTELCOMM_NR_INGEST_KEY }}
-      nr_account_id: ${{ vars.OTELCOMM_NR_TEST_ACCOUNT_ID }}
-      nr_api_key: ${{ secrets.OTELCOMM_NR_API_KEY }}
+      nr_ingest_key: ${{ secrets.AC_NR_INGEST_KEY }}
+      nr_account_id: ${{ vars.AC_NR_ACCOUNT_ID }}
+      nr_api_key: ${{ secrets.AC_NR_API_KEY }}
