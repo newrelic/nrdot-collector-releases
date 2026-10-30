@@ -187,11 +187,11 @@ jobs:
         uses: aws-actions/configure-aws-credentials@d979d5b3a71173a29b74b5b88418bfda9437d885 # v6
         with:
           role-to-assume: ${{ secrets.aws_oidc_role_arn }}
-          aws-region: us-east-1
+          aws-region: us-east-2
 
       - name: Configure kubectl
         run: |
-          aws eks update-kubeconfig --name aws-ci-e2etest --region us-east-1
+          aws eks update-kubeconfig --name nrdot-e2e-test --region us-east-2
 
       - name: Derive NR backend URL from region
         run: |
@@ -208,7 +208,7 @@ jobs:
           NR_BACKEND_URL: ${{ env.NR_BACKEND_URL }}
           LICENSE_KEY: ${{ secrets.nr_ingest_key }}
           IMAGE_TAG: ${{ needs.setup.outputs.image-tag }}
-          IMAGE_REPO: ${{ secrets.aws_account_id }}.dkr.ecr.us-east-1.amazonaws.com/${{ inputs.distro }}
+          IMAGE_REPO: ${{ secrets.aws_account_id }}.dkr.ecr.us-east-2.amazonaws.com/${{ inputs.distro }}
         with:
           retry_seconds: 30
           retry_attempts: 20
@@ -245,16 +245,14 @@ jobs:
         uses: aws-actions/configure-aws-credentials@d979d5b3a71173a29b74b5b88418bfda9437d885 # v6
         with:
           role-to-assume: ${{ secrets.aws_oidc_role_arn }}
-          aws-region: us-east-1
+          aws-region: us-east-2
 
       - name: Terraform Setup & Workspace
         uses: ./.github/actions/terraform-setup
         with:
-          terraform_version: 1.9.8
-          aws_account_id: ${{ secrets.aws_account_id }}
+          terraform_version: "~> 1.14.0"
           working_directory: ./test/terraform/nightly
           workspace: ${{ needs.setup.outputs.workspace }}-ubuntu-${{ matrix.version }}
-          assume_role: "false"
       
       - name: Generate E2E scenario tag
         shell: bash
@@ -318,16 +316,14 @@ jobs:
         uses: aws-actions/configure-aws-credentials@d979d5b3a71173a29b74b5b88418bfda9437d885 # v6
         with:
           role-to-assume: ${{ secrets.aws_oidc_role_arn }}
-          aws-region: us-east-1
+          aws-region: us-east-2
 
       - name: Terraform Setup & Workspace
         uses: ./.github/actions/terraform-setup
         with:
-          terraform_version: 1.9.8
-          aws_account_id: ${{ secrets.aws_account_id }}
+          terraform_version: "~> 1.14.0"
           working_directory: ./test/terraform/nightly
           workspace: ${{ needs.setup.outputs.workspace }}-windows-${{ matrix.version }}
-          assume_role: "false"
       
       - name: Generate E2E scenario tag
         shell: bash

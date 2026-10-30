@@ -5,7 +5,7 @@ on:
     # Scheduled to run in the morning (PT) on every day-of-week from Monday through Friday.
     - cron: "0 15 * * 1-5"
 concurrency:
-  group: ci-nightly
+  group: ci-nightly-migrate # TEMP-TEST
   cancel-in-progress: false
 
 permissions:
@@ -15,7 +15,7 @@ permissions:
   id-token: write
 
 env:
-  REGISTRY: "${{ vars.OTELCOMM_AWS_TEST_ACC_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com"
+  REGISTRY: "${{ vars.AC_AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com"
 jobs:
   setup:
     name: Setup Workflow
@@ -39,7 +39,7 @@ jobs:
         id: get-commit
         uses: ./.github/actions/get-ci-workflow-run
         with:
-          branch: main
+          branch: gsanchez/chore/migrate-infra # TEMP-TEST
   verify-artifacts:
     name: Verify Artifacts (${{ matrix.distribution }}${{ matrix.fips && ' - FIPS' || '' }})
     runs-on: ubuntu-latest
@@ -79,8 +79,8 @@ jobs:
       execute_destroy: false
       workflow_run_id: ${{ needs.setup.outputs.workflow-run-id }}
     secrets:
-      aws_account_id: ${{ vars.OTELCOMM_AWS_TEST_ACC_ACCOUNT_ID }}
-      aws_oidc_role_arn: ${{ secrets.OTELCOMM_AWS_TEST_OIDC_ROLE_ARN }}
-      nr_ingest_key: ${{ secrets.OTELCOMM_NR_INGEST_KEY }}
-      nr_api_key: ${{ secrets.OTELCOMM_NR_API_KEY }}
-      nr_account_id: ${{ vars.OTELCOMM_NR_TEST_ACCOUNT_ID }}
+      aws_account_id: ${{ vars.AC_AWS_ACCOUNT_ID }}
+      aws_oidc_role_arn: ${{ secrets.NRDOT_OIDC_ROLE_ARN }}
+      nr_ingest_key: ${{ secrets.AC_NR_INGEST_KEY }}
+      nr_api_key: ${{ secrets.AC_NR_API_KEY }}
+      nr_account_id: ${{ vars.AC_NR_ACCOUNT_ID }}

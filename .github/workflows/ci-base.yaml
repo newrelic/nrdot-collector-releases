@@ -49,7 +49,7 @@ permissions:
 
 env:
   caching_enabled: ${{ !inputs.publish }}
-  registry: "${{ secrets.aws_account_id }}.dkr.ecr.us-east-1.amazonaws.com"
+  registry: "${{ secrets.aws_account_id }}.dkr.ecr.us-east-2.amazonaws.com"
 
 jobs:
   build:
@@ -92,7 +92,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@d979d5b3a71173a29b74b5b88418bfda9437d885 # v6
         with:
           role-to-assume: ${{ secrets.aws_oidc_role_arn }}
-          aws-region: us-east-1
+          aws-region: us-east-2
       
       - name: Login to ECR
         if: ${{ inputs.publish }}
@@ -139,7 +139,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@d979d5b3a71173a29b74b5b88418bfda9437d885 # v6
         with:
           role-to-assume: ${{ secrets.aws_oidc_role_arn }}
-          aws-region: us-east-1
+          aws-region: us-east-2
 
       - name: Build Args
         run: |

@@ -157,8 +157,8 @@ func Blob(dist Distribution) config.Blob {
 	shortCommit := "{{ .ShortCommit }}"
 	return config.Blob{
 		Provider:  "s3",
-		Region:    "us-east-1",
-		Bucket:    "nr-releases",
+		Region:    "us-east-2",
+		Bucket:    "nrdot-test-artifacts",
 		Directory: fmt.Sprintf("nrdot-collector-releases/%s/%s/%s", dist.FullName, version, shortCommit),
 	}
 }

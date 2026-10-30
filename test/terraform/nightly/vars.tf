@@ -6,7 +6,7 @@ variable "aws_account_id" {
 variable "aws_region" {
   type        = string
   description = "AWS region to deploy to"
-  default     = "us-east-1"
+  default     = "us-east-2"
 }
 
 variable "distro" {
@@ -45,6 +45,19 @@ variable "test_key" {
   description = "Test key for scoping queries (used by action-based tests, Go tests use generated pattern)"
   type        = string
   default     = ""
+}
+
+# Shared VPC and subnet, same as nrdot-ci-permanent-infra (ci/vars.tf)
+variable "vpc_id" {
+  type        = string
+  description = "VPC to deploy the EC2 hosts to"
+  default     = "vpc-0f62d8a55c8d9ad61"
+}
+
+variable "subnet_id" {
+  type        = string
+  description = "Subnet to deploy the EC2 hosts to"
+  default     = "subnet-00aa02e6d991b478e"
 }
 
 /* 
