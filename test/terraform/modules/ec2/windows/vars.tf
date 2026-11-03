@@ -18,7 +18,12 @@ variable "test_environment" {
 }
 
 variable "vpc_id" {
-  description = "The ID of the VPC where the instance will be deployed to (in one of the private subnets)"
+  description = "The ID of the VPC where the instance will be deployed to"
+  type        = string
+}
+
+variable "subnet_id" {
+  description = "The ID of the subnet where the instance will be deployed to"
   type        = string
 }
 

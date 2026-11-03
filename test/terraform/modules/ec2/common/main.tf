@@ -4,17 +4,6 @@ data "aws_vpc" "ec2_vpc" {
   id = var.vpc_id
 }
 
-data "aws_subnets" "private_subnets" {
-  filter {
-    name   = "vpc-id"
-    values = [var.vpc_id]
-  }
-  filter {
-    name   = "tag:Name"
-    values = ["*private*"]
-  }
-}
-
 # Shared IAM resources pre-created by bootstrap script — not managed by Terraform.
 data "aws_iam_instance_profile" "s3_read_access" {
   name = "nrdot-ec2-s3-nr-releases-read-access"

@@ -84,9 +84,9 @@ checksum:
   algorithm: sha256
   split: true
 blobs:
-  - bucket: nr-releases
+  - bucket: nrdot-test-artifacts
     provider: s3
-    region: us-east-1
+    region: us-east-2
     directory: nrdot-collector-releases/nrdot-collector/{{ .Version }}/{{ .ShortCommit }}
 changelog:
   disable: "true"

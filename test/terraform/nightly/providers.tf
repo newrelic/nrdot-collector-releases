@@ -1,22 +1,19 @@
 terraform {
-  required_version = "1.9.8"
+  required_version = "~> 1.14.0"
   required_providers {
     aws = {
       version = "5.81.0"
-    }
-    helm = {
-      version = "2.17.0"
     }
   }
 }
 
 terraform {
   backend "s3" {
-    encrypt        = true
-    dynamodb_table = "terraform-states-lock"
-    region         = "us-east-1"
-    key            = "newrelic/nrdot-collector-releases/nightly/terraform.tfstate"
-    # 'bucket' and 'role_arn' provided via '-backend-config'
+    bucket       = "nrdot-terraform-states"
+    encrypt      = true
+    use_lockfile = true
+    region       = "us-east-1"
+    key          = "newrelic/nrdot-collector-releases/nightly/terraform.tfstate"
   }
 }
 
