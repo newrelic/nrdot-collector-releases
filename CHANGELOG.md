@@ -2,6 +2,10 @@
 
 <!-- next version -->
 
+## 2.8.0
+
+<!-- previous-version -->
+
 ## 2.7.3
 
 ### Bug Fixes
