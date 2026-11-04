@@ -53,20 +53,20 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     outputs:
       artifact_name: ${{ steps.set-outputs.outputs.artifact_name }}
       docker_manifest_sha_name: ${{ steps.set-outputs.outputs.docker_manifest_sha_name }}
     steps:
       - name: Checkout
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 0 # required for tag metadata
 
       - run: ./scripts/misc/free-disk-space.sh
 
       - name: Setup Go
-        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: "~1.26"
           cache: ${{ env.caching_enabled == 'true' }}
@@ -176,7 +176,7 @@ jobs:
       - name: Cache goreleaser build
         id: cache-goreleaser
         if: env.caching_enabled == 'true'
-        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: |
             distributions/${{ inputs.distribution }}/dist
