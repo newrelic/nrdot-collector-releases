@@ -56,6 +56,7 @@ extensions:
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/extension/healthcheckextension v0.163.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/extension/observer/hostobserver v0.163.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/extension/observer/k8sobserver v0.163.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/extension/dbauth/awsiamdbauthextension v0.163.0
 providers:
   - gomod: go.opentelemetry.io/collector/confmap/provider/envprovider v1.69.0
   - gomod: go.opentelemetry.io/collector/confmap/provider/fileprovider v1.69.0
