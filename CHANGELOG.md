@@ -2,6 +2,14 @@
 
 <!-- next version -->
 
+## 2.8.1
+
+### Features
+
+- Add `awsiamdbauthextension` to nrdot-collector-experimental (#764)
+
+<!-- previous-version -->
+
 ## 2.8.0
 
 ### Features
