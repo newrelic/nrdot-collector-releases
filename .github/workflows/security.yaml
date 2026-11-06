@@ -17,7 +17,7 @@ permissions:
 jobs:
   docker-trivy:
     name: Trivy scanner for docker
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     strategy:
       matrix:
@@ -26,7 +26,7 @@ jobs:
           - nrdot-collector-experimental
     steps:
       - name: Checkout .trivyignore
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           sparse-checkout: .trivyignore
           sparse-checkout-cone-mode: false
@@ -76,7 +76,7 @@ jobs:
 
       - name: Send notification to Slack Workflow
         if: ${{ failure() && env.tag_to_scan == 'latest' }}
-        uses: slackapi/slack-github-action@0d95c9a7becc1e6e297d76df9bc735c44f4cbcbc # v3.0.5
+        uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
         with:
           webhook: ${{ secrets.OTELCOMM_BOTS_SLACK_HOOK }}
           webhook-type: incoming-webhook
