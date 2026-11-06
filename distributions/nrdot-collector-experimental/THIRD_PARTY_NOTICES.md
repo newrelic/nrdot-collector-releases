@@ -92,6 +92,14 @@ Distributed under the following license(s):
 
 
 
+## [github.com/open-telemetry/opentelemetry-collector-contrib/extension/dbauth/awsiamdbauthextension](https://github.com/open-telemetry/opentelemetry-collector-contrib)
+
+Distributed under the following license(s):
+
+* Apache-2.0
+
+
+
 ## [github.com/open-telemetry/opentelemetry-collector-contrib/extension/healthcheckextension](https://github.com/open-telemetry/opentelemetry-collector-contrib)
 
 Distributed under the following license(s):
