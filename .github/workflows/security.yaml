@@ -78,7 +78,7 @@ jobs:
         if: ${{ failure() && env.tag_to_scan == 'latest' }}
         uses: slackapi/slack-github-action@0d95c9a7becc1e6e297d76df9bc735c44f4cbcbc # v3.0.5
         with:
-          webhook: ${{ secrets.OTELCOMM_BOTS_SLACK_HOOK }}
+          webhook: ${{ secrets.AC_SLACK_WEBHOOK }}
           webhook-type: incoming-webhook
           # This data can be any valid JSON from a previous step in the GitHub Action
           payload: |

@@ -83,7 +83,7 @@ jobs:
         if: failure() && github.event_name != 'pull_request'
         uses: slackapi/slack-github-action@0d95c9a7becc1e6e297d76df9bc735c44f4cbcbc # v3.0.5
         with:
-          webhook: ${{ secrets.OTELCOMM_BOTS_SLACK_HOOK }}
+          webhook: ${{ secrets.AC_SLACK_WEBHOOK }}
           webhook-type: incoming-webhook
           payload: |
             text: ":link: Broken links found in nrdot-collector-releases documentation. See workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} :link:"

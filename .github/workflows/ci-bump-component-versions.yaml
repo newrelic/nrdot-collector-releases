@@ -52,7 +52,7 @@ jobs:
           if: steps.fetch_dep_versions.outputs.drift_grace_period_exceeded == 'true'
           uses: slackapi/slack-github-action@0d95c9a7becc1e6e297d76df9bc735c44f4cbcbc # v3.0.5
           with:
-            webhook: ${{ secrets.OTELCOMM_BOTS_SLACK_HOOK }}
+            webhook: ${{ secrets.AC_SLACK_WEBHOOK }}
             webhook-type: incoming-webhook
             payload: |
               text: ":warning: *Components repo and Forks repo versions have been out-of-sync for over 14 days!*\n\nnrdot-collector-components version: `${{ steps.fetch_dep_versions.outputs.nrdot_latest }}`\nnewrelic-forks/opentelemetry-collector-contrib version: `${{ steps.fetch_dep_versions.outputs.nr_fork_latest }}`\nDays out-of-sync: *${{ steps.fetch_dep_versions.outputs.days_drifted }}*"
