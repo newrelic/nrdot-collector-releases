@@ -10,7 +10,6 @@ on:
       - '.github/workflows/check-links.yaml'
       - '.github/workflows/lint-conventional-commits.yaml'
       - '.github/workflows/lint-renovate-config.yaml'
-      - '.github/workflows/renovate.yaml'
       - '.github/workflows/repolinter.yaml'
       - '.github/workflows/report-metrics.yaml'
       - '.github/workflows/security.yaml'
