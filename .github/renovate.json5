@@ -10,7 +10,8 @@
     {
       "matchManagers": ["github-actions"],
       "pinDigests": true,
-      "groupName": "github actions"
+      "groupName": "github actions",
+      "schedule": ["on monday"]
     }
   ],
   "customManagers": [
