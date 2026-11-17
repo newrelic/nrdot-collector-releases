@@ -168,7 +168,7 @@ scenarios:
         --set image.tag=${IMAGE_TAG} \
         --set image.repository=${IMAGE_REPO}
     after:
-      - kubectl logs -l e2eTestLogSelector=nrdot-collector-e2e -n nr-${SCENARIO_TAG} --all-containers --prefix=true
+      - kubectl logs -l e2eTestLogSelector=nrdot-collector-e2e -n nr-${SCENARIO_TAG} --all-containers --prefix=true --tail=-1
       - kubectl get all -o wide
       - helm uninstall ${SCENARIO_TAG} --namespace nr-${SCENARIO_TAG}
       - kubectl delete namespace nr-${SCENARIO_TAG}
