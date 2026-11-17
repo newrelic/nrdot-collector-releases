@@ -138,12 +138,15 @@ description: nrdot-collector E2E Nightly Test - Kind (K8s)
       - key: logs_all
         lowerBoundedValue: 1
   # Guards the severity attribute name used below, so the warn/error check cannot pass on a wrong name
-  - query: FROM Log SELECT filter(count(*), severity.text = 'INFO') as logs_info
+  - query: FROM Log SELECT filter(count(*), severity.text = 'info') as logs_info
     expected_results:
       - key: logs_info
         lowerBoundedValue: 1
-  # Allowlist: append `AND message NOT LIKE '<known message>%'` for each warn or error log that is expected
-  - query: FROM Log SELECT count(*) as logs_warn_or_error WHERE severity.text IN ('WARN', 'ERROR')
+  # Allowlist: one `AND message NOT LIKE '<message>%'` line per expected warn or error log
+  # - 'failed to get host ID': the resource_detection processor finds no /etc/machine-id in kind containers
+  - query: >-
+      FROM Log SELECT count(*) as logs_warn_or_error WHERE severity.text IN ('warn', 'error')
+      AND message NOT LIKE 'failed to get host ID%'
     expected_results:
       - key: logs_warn_or_error
         upperBoundedValue: 0
