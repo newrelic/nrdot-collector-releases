@@ -150,6 +150,27 @@ description: nrdot-collector E2E Test
     expected_results:
       - key: logs_warn_or_error
         upperBoundedValue: 0
+  # TEMPORARY DIAGNOSTICS: every query below fails on purpose so CI prints its value. Remove after use.
+  - query: FROM Log SELECT count(*) as diag_warn_total WHERE severity.text = 'warn'
+    expected_results: [{key: diag_warn_total, upperBoundedValue: -1}]
+  - query: FROM Log SELECT count(*) as diag_error_total WHERE severity.text = 'error'
+    expected_results: [{key: diag_error_total, upperBoundedValue: -1}]
+  - query: FROM Log SELECT count(*) as diag_host_id WHERE severity.text IN ('warn', 'error') AND message LIKE 'failed to get host ID%'
+    expected_results: [{key: diag_host_id, upperBoundedValue: -1}]
+  - query: FROM Log SELECT count(*) as diag_message_null WHERE severity.text IN ('warn', 'error') AND message IS NULL
+    expected_results: [{key: diag_message_null, upperBoundedValue: -1}]
+  - query: FROM Log SELECT count(*) as diag_component WHERE severity.text IN ('warn', 'error') AND otelcol.component.id IS NOT NULL
+    expected_results: [{key: diag_component, upperBoundedValue: -1}]
+  - query: FROM Log SELECT count(*) as diag_service_name WHERE severity.text IN ('warn', 'error') AND service.name IS NOT NULL
+    expected_results: [{key: diag_service_name, upperBoundedValue: -1}]
+  - query: FROM Log SELECT count(*) as diag_file_path WHERE severity.text IN ('warn', 'error') AND log.file.path IS NOT NULL
+    expected_results: [{key: diag_file_path, upperBoundedValue: -1}]
+  - query: FROM Log SELECT count(*) as diag_pod WHERE severity.text IN ('warn', 'error') AND k8s.pod.name IS NOT NULL
+    expected_results: [{key: diag_pod, upperBoundedValue: -1}]
+  - query: FROM Log SELECT count(*) as diag_logs_all
+    expected_results: [{key: diag_logs_all, upperBoundedValue: -1}]
+  - query: FROM Log SELECT count(*) as diag_logs_info WHERE severity.text = 'info'
+    expected_results: [{key: diag_logs_info, upperBoundedValue: -1}]
 
 scenarios:
   - description: host telemetry
