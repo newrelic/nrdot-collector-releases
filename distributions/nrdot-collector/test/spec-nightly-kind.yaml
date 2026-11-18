@@ -144,9 +144,13 @@ description: nrdot-collector E2E Nightly Test - Kind (K8s)
         lowerBoundedValue: 1
   # Allowlist: one `AND message NOT LIKE '<message>%'` line per expected warn or error log
   # - 'failed to get host ID': the resource_detection processor finds no /etc/machine-id in kind containers
+  # - 'No `root_path` config set': the filesystem scraper runs in a container in kind
+  # - '"otlphttp" alias is deprecated': config.yaml uses the deprecated exporter alias. Remove this entry once config.yaml uses `otlp_http`
   - query: >-
       FROM Log SELECT count(*) as logs_warn_or_error WHERE severity.text IN ('warn', 'error')
       AND message NOT LIKE 'failed to get host ID%'
+      AND message NOT LIKE 'No `root_path` config set%'
+      AND message NOT LIKE '"otlphttp" alias is deprecated%'
     expected_results:
       - key: logs_warn_or_error
         upperBoundedValue: 0
