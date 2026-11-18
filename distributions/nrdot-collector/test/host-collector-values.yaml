@@ -27,6 +27,9 @@ configMap:
 command:
   extraArgs:
     - --config=/etc/nrdot-collector/config.yaml
+    # internal telemetry: logs only, via OTLP with the same endpoint and license key as the main export
+    - '"--config=yaml:service::telemetry::resource::attributes: [{ name: testKey, value: \"${env:SCENARIO_TAG}\" }]"'
+    - '"--config=yaml:service::telemetry::logs::processors: [{ batch: { exporter: { otlp: { protocol: http/protobuf, endpoint: \"${env:OTEL_EXPORTER_OTLP_ENDPOINT}\", headers: [{ name: api-key, value: \"${env:NEW_RELIC_LICENSE_KEY}\" }] } } } }]"'
     # configure liveliness probe according to chart's expectations
     - '"--config=yaml:extensions::health_check::endpoint: ${env:MY_POD_IP}:13133"'
     # enable virtual filesystems for e2e tests running in containers (kind/Docker)

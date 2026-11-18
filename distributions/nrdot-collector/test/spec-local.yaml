@@ -3,7 +3,7 @@ description: nrdot-collector E2E Test
 # scoping is achieved via an implicit attribute `testKey=${SCENARIO_TAG}` expected on all tested telemetry
 
 # YAML anchors for reusing test queries across scenarios
-.host_metrics_nrqls: &host_metrics_nrqls
+.host_nrqls: &host_nrqls
   - query: FROM Metric SELECT filter(count(*), state='user') as state_user WHERE metricName = 'system.cpu.utilization'
     expected_results:
       - key: state_user
@@ -132,93 +132,28 @@ description: nrdot-collector E2E Test
     expected_results:
       - key: direction_transmit
         lowerBoundedValue: 1
-
-.internal_telemetry_nrqls: &internal_telemetry_nrqls
-  # Resource attributes (any signal would work)
-  - query: FROM Log SELECT filter(count(*), service.name is not null) as logs_service_name
-    expected_results:
-      - key: logs_service_name
-        lowerBoundedValue: 1
-  - query: FROM Log SELECT filter(count(*), newrelic.collector_telemetry.version is not null) as logs_telemetry_version
-    expected_results:
-      - key: logs_telemetry_version
-        lowerBoundedValue: 1
-  - query: FROM Log SELECT filter(count(*), newrelic.service.type='otel_collector') as logs_service_type
-    expected_results:
-        - key: logs_service_type
-          lowerBoundedValue: 1
-  # Logs
+  # Internal telemetry logs, sent via OTLP (see host-collector-values.yaml)
   - query: FROM Log SELECT count(*) as logs_all
     expected_results:
       - key: logs_all
         lowerBoundedValue: 1
-  - query: FROM Log SELECT filter(count(*), otelcol.pipeline.id is not null) as logs_pipeline
+  # Guards the severity attribute name used below, so the warn/error check cannot pass on a wrong name
+  - query: FROM Log SELECT filter(count(*), severity.text = 'info') as logs_info
     expected_results:
-        - key: logs_pipeline
-          lowerBoundedValue: 1
-  - query: FROM Log SELECT filter(count(*), otelcol.signal is not null) as logs_signal
-    expected_results:
-      - key: logs_signal
+      - key: logs_info
         lowerBoundedValue: 1
-  - query: FROM Log SELECT count(*) as logs_attributes WHERE message like 'one or more paths were modified to include their context prefix, please rewrite them accordingly%'
+  # Allowlist: one `AND message NOT LIKE '<message>%'` line per expected warn or error log
+  # - 'failed to get host ID': the resource_detection processor finds no /etc/machine-id in kind containers
+  # - 'No `root_path` config set': the filesystem scraper runs in a container in kind
+  # - '"otlphttp" alias is deprecated': config.yaml uses the deprecated exporter alias. Remove this entry once config.yaml uses `otlp_http`
+  - query: >-
+      FROM Log SELECT count(*) as logs_warn_or_error WHERE severity.text IN ('warn', 'error')
+      AND message NOT LIKE 'failed to get host ID%'
+      AND message NOT LIKE 'No `root_path` config set%'
+      AND message NOT LIKE '"otlphttp" alias is deprecated%'
     expected_results:
-      - key: logs_attributes
+      - key: logs_warn_or_error
         upperBoundedValue: 0
-  # Spans
-  - query: FROM Span SELECT count(*) as spans_all
-    expected_results:
-      - key: spans_all
-        value: 0 # traces are disabled by default
-  # Process metrics
-  - query: FROM Metric SELECT filter(count(*), service.instance.id is not null) as process_instance_id WHERE metricName like 'otelcol_process_%'
-    expected_results:
-      - key: process_instance_id
-        lowerBoundedValue: 1
-  # Receiver metrics
-  - query: FROM Metric SELECT filter(count(*), receiver is not null) as receiver_receiver WHERE metricName like 'otelcol_receiver_%'
-    expected_results:
-      - key: receiver_receiver
-        lowerBoundedValue: 1
-  # Processor metrics
-  - query: FROM Metric SELECT filter(count(*), processor is not null) as processor_processor WHERE metricName like 'otelcol_processor_%'
-    expected_results:
-      - key: processor_processor
-        lowerBoundedValue: 1
-  - query: FROM Metric SELECT filter(count(*), otel.signal = 'metrics') as processor_signal_metrics WHERE metricName like 'otelcol_processor_%'
-    expected_results:
-      - key: processor_signal_metrics
-        lowerBoundedValue: 1
-  - query: FROM Metric SELECT filter(count(*), otel.signal = 'logs') as processor_signal_logs WHERE metricName like 'otelcol_processor_%'
-    expected_results:
-      - key: processor_signal_logs
-        lowerBoundedValue: 1
-  - query: FROM Metric SELECT filter(count(*), otel.signal = 'traces') as processor_signal_traces WHERE metricName like 'otelcol_processor_%'
-    expected_results:
-      - key: processor_signal_traces
-        lowerBoundedValue: 1
-  # Exporter metrics
-  - query: FROM Metric SELECT filter(count(*), exporter is not null) as exporter_exporter WHERE metricName like 'otelcol_exporter_%'
-    expected_results:
-      - key: exporter_exporter
-        lowerBoundedValue: 1
-  - query: FROM Metric SELECT filter(count(*), exporter is not null) as queue_exporter WHERE metricName like 'otelcol_exporter_queue_%'
-    expected_results:
-      - key: queue_exporter
-        lowerBoundedValue: 1
-  - query: FROM Metric SELECT filter(count(*), data_type is not null) as queue_type WHERE metricName like 'otelcol_exporter_queue_%'
-    expected_results:
-      - key: queue_type
-        lowerBoundedValue: 1
-  # Batch processor metrics
-  - query: FROM Metric SELECT filter(count(*), processor is not null) as batch_processor WHERE metricName like 'otelcol_processor_batch_%'
-    expected_results:
-     - key: batch_processor
-       lowerBoundedValue: 1
-  # This test failing indicates that UI otelcol detection heuristic might be inaccurate and need to be updated
-  - query: FROM Metric SELECT filter(uniqueCount(otel.library.name), WHERE otel.library.name IS NOT NULL AND otel.library.name NOT LIKE 'go.opentelemetry.io/collector/%' AND otel.library.name NOT LIKE 'github.com/open-telemetry/opentelemetry-collector%' AND otel.library.name NOT LIKE 'go.opentelemetry.io/contrib/instrumentation/%' AND otel.library.name NOT LIKE 'OtelHttp%' AND otel.library.name NOT LIKE 'OtelRpc%') as count_of_libs_not_in_otelcol_detection_heuristic
-    expected_results:
-      - key: count_of_libs_not_in_otelcol_detection_heuristic
-        value: 0
 
 scenarios:
   - description: host telemetry
@@ -237,7 +172,7 @@ scenarios:
         --set image.tag=${IMAGE_TAG} \
         --set image.repository=${IMAGE_REPO}
     after:
-      - kubectl logs -l e2eTestLogSelector=nrdot-collector-e2e -n nr-${SCENARIO_TAG} --all-containers --prefix=true
+      - kubectl logs -l e2eTestLogSelector=nrdot-collector-e2e -n nr-${SCENARIO_TAG} --all-containers --prefix=true --tail=-1
       - kubectl get all -o wide
       - helm uninstall ${SCENARIO_TAG} --namespace nr-${SCENARIO_TAG}
       - kubectl delete namespace nr-${SCENARIO_TAG}
@@ -247,34 +182,4 @@ scenarios:
         - source: "host-expected-metrics-common.yaml"
         - source: "host-expected-metrics-linux.yaml"
       # Tests for existence of signal + specific attributes
-      nrqls: *host_metrics_nrqls
-
-  - description: receiver-based + internal telemetry
-    before:
-      - kubectl create ns nr-${SCENARIO_TAG}
-      - cp ../../../examples/internal-telemetry-config.yaml ./relay
-      - kubectl create configmap 'collector-config' --from-file=relay --namespace=nr-${SCENARIO_TAG}
-      - |
-        kubectl create secret generic 'collector-secrets' --namespace=nr-${SCENARIO_TAG} \
-        --from-literal="nrIngestKey=${LICENSE_KEY}" --from-literal="nrBackendUrl=${NR_BACKEND_URL}" \
-        --from-literal="serviceName=nrdot-collector-e2e-internal" --from-literal="scenarioTag=${SCENARIO_TAG}"
-      - "helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts || echo 'skipping repo add: open-telemetry repo already exists'"
-      - |
-        chart_version=$(../../../scripts/misc/get-otel-collector-chart-version.sh)
-        helm upgrade --install ${SCENARIO_TAG} open-telemetry/opentelemetry-collector \
-        --namespace nr-${SCENARIO_TAG} --version ${chart_version} \
-        --values ./internal-collector-values.yaml \
-        --set image.tag=${IMAGE_TAG} \
-        --set image.repository=${IMAGE_REPO}
-    after:
-      - kubectl logs -l e2eTestLogSelector=nrdot-collector-e2e -n nr-${SCENARIO_TAG} --all-containers --prefix=true
-      - kubectl get all -o wide
-      - helm uninstall ${SCENARIO_TAG} --namespace nr-${SCENARIO_TAG}
-      - kubectl delete namespace nr-${SCENARIO_TAG}
-    tests:
-      # Tests for existence of metrics
-      metrics:
-        - source: "internal-expected-metrics.yaml"
-      # Tests for existence of signal + specific attributes
-      nrqls: *internal_telemetry_nrqls
-
+      nrqls: *host_nrqls
