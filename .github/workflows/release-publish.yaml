@@ -85,6 +85,12 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ !github.event.release.prerelease && !github.event.release.draft }}
     steps:
+      - name: Checkout source repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 1
+          ref: ${{ github.event.release.tag_name }}
+
       - name: Sync Fork
         run: |
           gh repo sync otelcomm-bot/docs-website -b develop --force --source newrelic/docs-website
@@ -116,21 +122,16 @@ jobs:
           echo "gh_username=${gh_username}" >> $GITHUB_ENV
 
       - name: Commit Release Notes
+        env:
+          RELEASE_BODY: ${{ github.event.release.body }}
         run: |
           cd docs-website/src/content/docs/release-notes
           git switch -c ${{ env.branch }}
          
           release_notes_file="nrdot-release-notes/nrdot-${{ env.version_slug }}.mdx"
 
-          echo "---" > $release_notes_file
-          echo "subject: NRDOT" >> $release_notes_file
-          echo "releaseDate: '${{ env.release_date }}'" >> $release_notes_file
-          echo "version: ${{ env.version }}" >> $release_notes_file
-          echo "metaDescription: Release notes for NRDOT Collector version ${{ env.version }}" >> $release_notes_file
-          echo "category: Collector" >> $release_notes_file
-          echo "---" >> $release_notes_file
-          echo "" >> $release_notes_file
-          echo '${{ github.event.release.body }}' >> $release_notes_file
+          "$GITHUB_WORKSPACE/scripts/release/generate-docs-release-notes.sh" \
+            "${{ env.version }}" "${{ env.release_date }}" "$release_notes_file"
 
           echo "Release notes file created at ${release_notes_file} with:"
           cat $release_notes_file

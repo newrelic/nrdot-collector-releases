@@ -46,6 +46,9 @@ jobs:
           echo "old_version=${old_version}" >> $GITHUB_OUTPUT
           echo "branch=nrdot-release/${{ inputs.new_version }}" >> $GITHUB_OUTPUT
 
+      - name: Record structured changelog
+        run: ./scripts/release/record-changelog.sh "${{ inputs.new_version }}"
+
       - name: Generate changelog
         id: chloggen
         run: |
